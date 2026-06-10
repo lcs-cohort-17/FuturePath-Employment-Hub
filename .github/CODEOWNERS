@@ -1,17 +1,17 @@
-# CODEOWNERS — FuturePath Employment Hub (Beginner Setup)
+# CODEOWNERS — FuturePath Employment Hub
 
 # ─────────────────────────────────────────────
-# 💻 DAILY DEV WORKSPACE
-# The Dev Team owns the rest of the project by default.
-# Any peer on the team can review and approve each other's code.
-# ─────────────────────────────────────────────
-*                               @lcs-cohort-17/Full-Stack_Team
-
-# ─────────────────────────────────────────────
-# 🛑 CRITICAL PROJECT SETTINGS
-# Only Scrum Masters or Product Owners can approve changes to these.
-# This prevents accidental project breaks.
+# 🛡️ ADMINISTRATIVE SETTINGS
+# Only Product Owners and Scrum Masters control repository health.
 # ─────────────────────────────────────────────
 .github/                        @lcs-cohort-17/scrum_masters @lcs-cohort-17/product-owners
 .gitignore                      @lcs-cohort-17/product-owners
-pubspec.yaml                    @lcs-cohort-17/scrum_masters
+pubspec.yaml                    @lcs-cohort-17/scrum_masters @lcs-cohort-17/product-owners
+
+# ─────────────────────────────────────────────
+# 💻 APPLICATION CODE CHAIN
+# Requires oversight from QA, Scrum Masters, and Product Owners.
+# Developers (Full-Stack_Team) are intentionally excluded here.
+# ─────────────────────────────────────────────
+*                               @lcs-cohort-17/QA_Team @lcs-cohort-17/scrum_masters @lcs-cohort-17/product-owners
+lib/                            @lcs-cohort-17/QA_Team @lcs-cohort-17/scrum_masters @lcs-cohort-17/product-owners
