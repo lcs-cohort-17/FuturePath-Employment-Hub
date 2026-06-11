@@ -74,8 +74,6 @@ Do not wait until the end of the day to commit. Small, frequent commits are bett
 | Type | Format | Example |
 |---|---|---|
 | Flutter feature | `your-name/feature/screen-name` | `jake/feature/home-screen` |
-| Bug fix | `bugfix/short-description` | `bugfix/search-filter-crash` |
-| Chore / config | `chore/short-description` | `chore/update-gitignore` |
 
 ---
 
@@ -97,7 +95,7 @@ Do not wait until the end of the day to commit. Small, frequent commits are bett
 - Always pull from `dev` at the start of the day
 - One branch per task — do not mix multiple screens in one branch
 - Keep API keys out of the repo — use a `.env` file listed in `.gitignore`
-- Delete your feature branch after it has been merged
+- Delete your feature branch after it has been merged (unless you are fixing code)
 
 ---
 
