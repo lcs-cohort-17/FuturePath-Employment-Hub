@@ -7,11 +7,3 @@
 .github/                        @lcs-cohort-17/scrum_masters @lcs-cohort-17/product-owners
 .gitignore                      @lcs-cohort-17/product-owners
 pubspec.yaml                    @lcs-cohort-17/scrum_masters @lcs-cohort-17/product-owners
-
-# ─────────────────────────────────────────────
-# 💻 APPLICATION CODE CHAIN
-# Requires oversight from QA, Scrum Masters, and Product Owners.
-# Developers (Full-Stack_Team) are intentionally excluded here.
-# ─────────────────────────────────────────────
-*                               @lcs-cohort-17/QA_Team @lcs-cohort-17/scrum_masters @lcs-cohort-17/product-owners
-lib/                            @lcs-cohort-17/QA_Team @lcs-cohort-17/scrum_masters @lcs-cohort-17/product-owners

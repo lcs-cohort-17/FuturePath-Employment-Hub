@@ -1,45 +1,69 @@
-# Miscellaneous
-*.class
-*.log
-*.pyc
-*.swp
-.DS_Store
-.atom/
-.build/
-.buildlog/
-.history
-.svn/
-.swiftpm/
-migrate_working_dir/
-
-# IntelliJ related
-*.iml
-*.ipr
-*.iws
-.idea/
-
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
-
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
+# -------------------------------------------------------------------------
+# FLUTTER & DART BLOAT
+# -------------------------------------------------------------------------
 .dart_tool/
+.flutter-plugins
 .flutter-plugins-dependencies
+.packages
 .pub-cache/
 .pub/
-/build/
-/coverage/
+build/
+filtered_hashes.txt
+extracted_berbix_inline_activity.txt
+/lib/generated_plugin_registrant.dart
 
-# Symbolication related
-app.*.symbols
+# -------------------------------------------------------------------------
+# ANDROID NATIVE BLOAT (The source of your 2,000 files)
+# -------------------------------------------------------------------------
+**/android/.gradle/
+**/android/app/build/
+**/android/captures/
+**/android/local.properties
+**/android/**/GeneratedPluginRegistrant.java
+**/android/key.properties
+*.jks
+*.keystore
+.cxx/
 
-# Obfuscation related
-app.*.map.json
+# -------------------------------------------------------------------------
+# IOS NATIVE BLOAT
+# -------------------------------------------------------------------------
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/.last_build_id
+**/ios/Flutter/app.flx
+**/ios/Flutter/app.zip
+**/ios/Flutter/flutter_assets/
+**/ios/ServiceDefinitions.json
+**/ios/Runner/GeneratedPluginRegistrant.*
+**/ios/.generated/
+*.mode1v3
+*.mode2v3
+*.moved-aside
+*.pbxuser
+*.perspectivev3
+xcuserdata/
 
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+# -------------------------------------------------------------------------
+# IDEs, EDITORS, & OS JUNK
+# -------------------------------------------------------------------------
+.idea/
+.vscode/
+*.iml
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+
+# -------------------------------------------------------------------------
+# SECURITY / SECRETS (Never commit these)
+# -------------------------------------------------------------------------
+.env
+.env.*
+secrets.dart
