@@ -37,6 +37,8 @@ extracted_berbix_inline_activity.txt
 **/ios/Flutter/app.flx
 **/ios/Flutter/app.zip
 **/ios/Flutter/flutter_assets/
+**/ios/Flutter/*.sh
+**/ios/Flutter/GeneratedFiles/
 **/ios/ServiceDefinitions.json
 **/ios/Runner/GeneratedPluginRegistrant.*
 **/ios/.generated/
@@ -46,6 +48,7 @@ extracted_berbix_inline_activity.txt
 *.pbxuser
 *.perspectivev3
 xcuserdata/
+
 
 # -------------------------------------------------------------------------
 # IDEs, EDITORS, & OS JUNK
