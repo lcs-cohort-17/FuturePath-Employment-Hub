@@ -4,6 +4,6 @@
 # 🛡️ ADMINISTRATIVE SETTINGS
 # Only Product Owners and Scrum Masters control repository health.
 # ─────────────────────────────────────────────
-.github/                        @lcs-cohort-17/scrum_masters @lcs-cohort-17/product-owners
+.github/                        @lcs-cohort-17/product-owners
 .gitignore                      @lcs-cohort-17/product-owners
-pubspec.yaml                    @lcs-cohort-17/scrum_masters @lcs-cohort-17/product-owners
+pubspec.yaml                    @lcs-cohort-17/product-owners
