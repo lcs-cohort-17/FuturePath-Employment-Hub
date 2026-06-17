@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'screens/jobs/job_apply_screen.dart';
+import 'screens/jobs/job_apply_success_screen.dart';
+import 'screens/jobs/opportunity_detail_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -28,7 +31,7 @@ class MyApp extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
@@ -102,12 +105,24 @@ class _MyHomePageState extends State<MyHomePage> {
           // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
           // action in the IDE, or press "p" in the console), to see the
           // wireframe for each widget.
-          mainAxisAlignment: .center,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text('You have pushed the button this many times:'),
             Text(
               '$_counter',
               style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const OpportunityDetailScreen(),
+                  ),
+                );
+              },
+              child: const Text('View Job Opportunity'),
             ),
           ],
         ),
