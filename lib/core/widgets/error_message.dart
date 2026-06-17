@@ -2,25 +2,26 @@ import 'package:flutter/material.dart';
 
 class ErrorMessage extends StatelessWidget {
   final String message;
-  final VoidCallback onRetry;
-
-  const ErrorMessage({
-    super.key,
-    required this.message,
-    required this.onRetry,
-  });
+  const ErrorMessage({super.key, required this.message});
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.red.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.red.shade200),
+      ),
+      child: Row(
         children: [
-          Text(message),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: onRetry,
-            child: const Text("Retry"),
+          const Icon(Icons.error_outline, color: Colors.red, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(color: Colors.red.shade700, fontSize: 14),
+            ),
           ),
         ],
       ),
