@@ -4,23 +4,34 @@ class AppTheme {
   static const Color primary = Color(0xFF1A365D);
   static const Color secondary = Color(0xFFEFF6FF);
   static const Color accent = Color(0xFF008080);
+<<<<<<< HEAD
 
   static const Color background = Color(0xFFF8FAFC);
   static const Color card = Color(0xFFFFFFFF);
 
+=======
+  static const Color background = Color(0xFFF8FAFC);
+  static const Color card = Color(0xFFFFFFFF);
+>>>>>>> 8667def18c7b4a0bbd3c26f350566073c3c62a80
   static const Color textDark = Color(0xFF1E293B);
   static const Color mutedText = Color(0xFF64748B);
 
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
     scaffoldBackgroundColor: background,
+<<<<<<< HEAD
 
+=======
+>>>>>>> 8667def18c7b4a0bbd3c26f350566073c3c62a80
     colorScheme: const ColorScheme.light(
       primary: primary,
       secondary: secondary,
       surface: card,
     ),
+<<<<<<< HEAD
 
+=======
+>>>>>>> 8667def18c7b4a0bbd3c26f350566073c3c62a80
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       selectedItemColor: accent,
       unselectedItemColor: mutedText,
