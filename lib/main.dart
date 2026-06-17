@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
-import 'screens/home/search_results_screen.dart';
+import 'core/theme/app_theme.dart';
+import 'router/app_router.dart';
+import 'services/auth_services.dart';
 
-void main() {
-  runApp(const FuturePathApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const MyApp());
 }
 
-class FuturePathApp extends StatelessWidget {
-  const FuturePathApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
       title: 'FuturePath Employment Hub',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
-      ),
-      home: const SearchResultsScreen(),
+      theme: AppTheme.lightTheme,
+      debugShowCheckedModeBanner: false,
+      initialRoute: AppRouter.login,
+      onGenerateRoute: AppRouter.generateRoute,
     );
   }
 }
