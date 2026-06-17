@@ -1,4 +1,6 @@
-# Flutter / Dart
+# -------------------------------------------------------------------------
+# FLUTTER & DART BLOAT
+# -------------------------------------------------------------------------
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
@@ -6,60 +8,64 @@
 .pub-cache/
 .pub/
 build/
-flutter_*.png
-*.iml
+filtered_hashes.txt
+extracted_berbix_inline_activity.txt
+/lib/generated_plugin_registrant.dart
 
-# Android
-**/android/**/gradle-wrapper.jar
-**/android/.gradle
+# -------------------------------------------------------------------------
+# ANDROID NATIVE BLOAT (The source of your 2,000 files)
+# -------------------------------------------------------------------------
+**/android/.gradle/
+**/android/app/build/
 **/android/captures/
-**/android/gradlew
-**/android/gradlew.bat
 **/android/local.properties
 **/android/**/GeneratedPluginRegistrant.java
 **/android/key.properties
 *.jks
+*.keystore
+.cxx/
 
-# iOS
-**/ios/**/*.mode1v3
-**/ios/**/*.mode2v3
-**/ios/**/*.moved-aside
-**/ios/**/*.pbxuser
-**/ios/**/*.perspectivev3
-**/ios/**xcuserdata
-**/ios/.generated/
-**/ios/Flutter/.last_build_id
+# -------------------------------------------------------------------------
+# IOS NATIVE BLOAT
+# -------------------------------------------------------------------------
+**/ios/Flutter/ephemeral/
 **/ios/Flutter/App.framework
 **/ios/Flutter/Flutter.framework
 **/ios/Flutter/Flutter.podspec
 **/ios/Flutter/Generated.xcconfig
-**/ios/Flutter/ephemeral/
+**/ios/Flutter/.last_build_id
 **/ios/Flutter/app.flx
 **/ios/Flutter/app.zip
 **/ios/Flutter/flutter_assets/
+**/ios/Flutter/*.sh
+**/ios/Flutter/GeneratedFiles/
 **/ios/ServiceDefinitions.json
 **/ios/Runner/GeneratedPluginRegistrant.*
+**/ios/.generated/
+*.mode1v3
+*.mode2v3
+*.moved-aside
+*.pbxuser
+*.perspectivev3
+xcuserdata/
 
-# Environment / secrets — never commit these
-.env
-.env.local
-.env.*.local
-secrets.dart
-google_sheets_credentials.json
-
-# IDE
+# -------------------------------------------------------------------------
+# IDEs, EDITORS, & OS JUNK
+# -------------------------------------------------------------------------
 .idea/
 .vscode/
+*.iml
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 .DS_Store
+Thumbs.db
 
-# Coverage
-coverage/
-
-# Dart generated files
-*.g.dart
-*.freezed.dart
+# -------------------------------------------------------------------------
+# SECURITY / SECRETS (Never commit these)
+# -------------------------------------------------------------------------
+.env
+.env.*
+secrets.dart
