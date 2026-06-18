@@ -1,31 +1,22 @@
-class NotificationItem {
-  final String id;
-  final String type; // "programme" | "job" | "application"
-  final String referenceId;
-  final String title;
-  final String body;
-  final String timestamp;
-  bool isRead;
+import 'package:flutter/material.dart';
 
-  NotificationItem({
-    required this.id,
-    required this.type,
-    required this.referenceId,
-    required this.title,
-    required this.body,
-    required this.timestamp,
-    this.isRead = false,
-  });
+class PublicDataProvider extends ChangeNotifier {
+  List<dynamic> _allEmployers = [];
+  List<dynamic> _allOpportunities = [];
 
-  factory NotificationItem.fromJson(Map<String, dynamic> json) {
-    return NotificationItem(
-      id: json['id'] ?? '',
-      type: json['type'] ?? 'application',
-      referenceId: json['referenceId'] ?? '',
-      title: json['title'] ?? '',
-      body: json['body'] ?? '',
-      timestamp: json['timestamp'] ?? '',
-      isRead: json['isRead'] ?? false,
-    );
+  List<dynamic> get allEmployers => _allEmployers;
+
+  // Resolves employer meta matrices by ID
+  Map<String, dynamic>? getEmployerById(String employerId) {
+    try {
+      return _allEmployers.firstWhere((emp) => emp['id'] == employerId);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // Filters opportunities list matching targeted employerId matching guideline logic
+  List<dynamic> getOpportunitiesByEmployer(String employerId) {
+    return _allOpportunities.where((opp) => opp['employerId'] == employerId).toList();
   }
 }

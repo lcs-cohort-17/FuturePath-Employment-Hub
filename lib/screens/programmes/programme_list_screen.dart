@@ -4,6 +4,7 @@ import '../../services/sheets_service.dart';
 import '../../core/widgets/loading_overlay.dart';
 import '../../core/widgets/error_message.dart';
 import '../../core/widgets/empty_state.dart';
+import '../../core/widgets/notification_badge.dart';
 
 class ProgrammeListScreen extends StatefulWidget {
   const ProgrammeListScreen({super.key});
@@ -79,6 +80,12 @@ class _ProgrammeListScreenState
     return Scaffold(
       appBar: AppBar(
         title: const Text("Programmes"),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 8.0),
+            child: NotificationBadge(iconColor: Colors.black),
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: loadProgrammes,

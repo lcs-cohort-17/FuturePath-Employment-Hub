@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/core/widgets/skill_chip.dart';
+import 'package:futurepath_employment_hub/core/widgets/notification_badge.dart';
 import 'opportunity_detail_screen.dart';
 
 class Opportunity {
@@ -280,8 +281,8 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
+        children: const [
+          Text(
             'Opportunities',
             style: TextStyle(
               fontSize: 24,
@@ -289,32 +290,7 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
               color: AppTheme.textDark,
             ),
           ),
-          Stack(
-            children: [
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.notifications_outlined, color: AppTheme.textDark),
-              ),
-              Positioned(
-                right: 8,
-                top: 8,
-                child: Container(
-                  width: 16,
-                  height: 16,
-                  decoration: const BoxDecoration(
-                    color: AppTheme.accent,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Center(
-                    child: Text(
-                      '4',
-                      style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+          NotificationBadge(iconColor: AppTheme.textDark),
         ],
       ),
     );
