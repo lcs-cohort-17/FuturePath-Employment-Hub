@@ -8,6 +8,7 @@ class AppTheme {
   static const Color card = Color(0xFFFFFFFF);
   static const Color textDark = Color(0xFF1E293B);
   static const Color mutedText = Color(0xFF64748B);
+  static const Color error = Colors.red;
 
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
