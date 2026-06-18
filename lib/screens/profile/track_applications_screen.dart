@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../core/widgets/status_chip.dart';
 
 class TrackApplicationsScreen extends StatefulWidget {
   final List<Map<String, dynamic>> applications;
@@ -20,7 +19,6 @@ class _TrackApplicationsScreenState extends State<TrackApplicationsScreen> {
   @override
   void initState() {
     super.initState();
-    // Safely initialize local state from the passed data
     _displayList = List<Map<String, dynamic>>.from(widget.applications);
   }
 
@@ -68,14 +66,14 @@ class _TrackApplicationsScreenState extends State<TrackApplicationsScreen> {
       body: _displayList.isEmpty
           ? const Center(child: Text("No active applications.", style: TextStyle(color: Color(0xFF64748B))))
           : ListView.builder(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              itemCount: _displayList.length,
-              itemBuilder: (context, index) {
-                final app = _displayList[index];
-                return _buildApplicationCard(app, index, _expandedIndex == index);
-              },
-            ),
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        itemCount: _displayList.length,
+        itemBuilder: (context, index) {
+          final app = _displayList[index];
+          return _buildApplicationCard(app, index, _expandedIndex == index);
+        },
+      ),
     );
   }
 
@@ -88,7 +86,8 @@ class _TrackApplicationsScreenState extends State<TrackApplicationsScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isExpanded ? statusColor.withOpacity(0.5) : const Color(0xFFE2E8F0)),
+        // FIXED: Replaced withOpacity with withValues
+        border: Border.all(color: isExpanded ? statusColor.withValues(alpha: 0.5) : const Color(0xFFE2E8F0)),
       ),
       child: Column(
         children: [
@@ -109,7 +108,12 @@ class _TrackApplicationsScreenState extends State<TrackApplicationsScreen> {
                       ],
                     ),
                   ),
-                  StatusChip(status: status),
+                  // FIXED: Replaced StatusChip with a simple Chip widget
+                  Chip(
+                    label: Text(status, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+                    backgroundColor: statusColor.withValues(alpha: 0.1),
+                    side: BorderSide(color: statusColor),
+                  ),
                   const SizedBox(width: 8),
                   Icon(isExpanded ? Icons.expand_more_rounded : Icons.chevron_right_rounded, color: const Color(0xFF64748B), size: 20),
                 ],
