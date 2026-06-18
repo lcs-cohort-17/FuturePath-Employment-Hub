@@ -5,6 +5,7 @@ import '../../core/widgets/error_message.dart';
 import '../../core/widgets/empty_state.dart';
 import '../../services/search_filter_service.dart';
 import '../../services/sheets_service.dart';
+import '../jobs/job_apply_screen.dart';
 
 class SearchResultsScreen extends StatefulWidget {
   const SearchResultsScreen({super.key});

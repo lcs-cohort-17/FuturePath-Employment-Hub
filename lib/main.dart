@@ -3,11 +3,11 @@ import 'core/theme/app_theme.dart';
 import 'router/app_router.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const FuturePathApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class FuturePathApp extends StatelessWidget {
+  const FuturePathApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       initialRoute: AppRouter.login, // Start with Login screen
-      onGenerateRoute: AppRouter.generateRoute, // Use your router
-    );
+      onGenerateRoute: AppRouter.generateRoute,
+      ),
   }
 }

@@ -15,5 +15,10 @@ class UserProfile {
 }
 
 class UserProfileProvider extends ChangeNotifier {
-  UserProfile? userProfile;
+  UserProfile? userProfile = UserProfile(
+    fullName: 'Keanu Visagie',
+    idNumber: '0000000000000',
+    email: 'keanu@example.com',
+    phone: '0712345678',
+  );
 }
