@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
-import 'package:futurepath_employment_hub/screens/jobs/opportunity_list_screen.dart';
+import 'package:futurepath_employment_hub/screens/jobs/job_list_screen.dart';
 
 void main() {
   group('UIUX-014: Location Filter', () {

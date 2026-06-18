@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../home/home_screen.dart';
 import '../programmes/programme_list_screen.dart';
-import '../jobs/opportunity_list_screen.dart';
+import '../jobs/job_list_screen.dart';
 import '../profile/profile_screen.dart';
 
 class AppShell extends StatefulWidget {

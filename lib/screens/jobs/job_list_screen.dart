@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/core/widgets/skill_chip.dart';
-import 'opportunity_detail_screen.dart';
+import 'job_apply_screen.dart';
 
 class Opportunity {
   final String id;

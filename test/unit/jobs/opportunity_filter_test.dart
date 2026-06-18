@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:futurepath_employment_hub/screens/jobs/opportunity_list_screen.dart';
+import 'package:futurepath_employment_hub/screens/jobs/job_list_screen.dart';
 import 'dart:ui';  // ← ADD THIS for Color
 
 void main() {
