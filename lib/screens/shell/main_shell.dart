@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-
-import 'home_screen.dart';
-import 'programmes_screen.dart';
-import 'jobs_screen.dart';
-import 'profile_screen.dart';
+import '../home/home_screen.dart';
+import '../programmes/programme_list_screen.dart';
+import '../jobs/opportunity_list_screen.dart';
+import '../profile/profile_screen.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -17,8 +16,8 @@ class _AppShellState extends State<AppShell> {
 
   final List<Widget> screens = const [
     HomeScreen(),
-    ProgrammesScreen(),
-    JobsScreen(),
+    ProgrammeListScreen(),
+    OpportunityListScreen(),
     ProfileScreen(),
   ];
 
