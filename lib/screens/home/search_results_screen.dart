@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import '../../core/widgets/loading_overlay.dart';
 import '../../core/widgets/error_message.dart';
 import '../../core/widgets/empty_state.dart';
-import '../../services/search_filter_service.dart';
+import '../auth/search_filter_service.dart';
 import '../../services/sheets_service.dart';
+
 
 class SearchResultsScreen extends StatefulWidget {
   const SearchResultsScreen({super.key});
