@@ -24,8 +24,7 @@ class AppGate extends StatelessWidget {
 
         final authState = snapshot.data!;
 
-        if (authState.event ==
-            AuthChangeEvent.passwordRecovery) {
+        if (authState.event == AuthChangeEvent.passwordRecovery) {
           return const ResetPasswordScreen();
         }
 

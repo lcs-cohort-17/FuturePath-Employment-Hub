@@ -37,6 +37,12 @@ class AuthService {
     await _supabase.auth.resetPasswordForEmail(email);
   }
 
+  Future<void> updatePassword(String password) async {
+    await _supabase.auth.updateUser(
+      UserAttributes(password: password),
+    );
+  }
+
   bool get isLoggedIn =>
       _supabase.auth.currentSession != null;
 
