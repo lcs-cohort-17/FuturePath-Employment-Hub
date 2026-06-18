@@ -99,7 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = true);
     await Future.delayed(const Duration(milliseconds: 800));
-    await AuthService.saveSession(_loginEmailCtrl.text.trim());
+
     if (!mounted) return;
     setState(() => _isLoading = false);
 
@@ -137,7 +137,6 @@ class _LoginScreenState extends State<LoginScreen> {
       skills: _signupSkillsCtrl,
     );
 
-    await AuthService.saveSession(_signupEmailCtrl.text.trim());
 
     if (!mounted) return;
     setState(() => _isLoading = false);

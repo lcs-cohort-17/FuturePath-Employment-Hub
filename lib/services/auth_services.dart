@@ -1,40 +1,68 @@
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthService {
-  static const _keyIsLoggedIn = 'is_logged_in';
-  static const _keyUserEmail = 'user_email';
+  // Private constructor for internal framework tracking
+  AuthService._();
 
-  static Future<void> saveSession(String email) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_keyIsLoggedIn, true);
-    await prefs.setString(_keyUserEmail, email);
+  // Central singleton memory container
+  static final AuthService _instance = AuthService._();
+
+  // Public factory exposing the absolute single instance globally
+  factory AuthService() => _instance;
+
+  final SupabaseClient _supabase = Supabase.instance.client;
+
+  // Stream checking the current reactive connection changes
+  Stream<AuthState> get authStateChanges => _supabase.auth.onAuthStateChange;
+
+  // Quick state getter evaluation
+  bool get isLoggedIn => _supabase.auth.currentSession != null;
+
+  // Information context extractions
+  User? get currentUser => _supabase.auth.currentUser;
+  String? get userEmail => _supabase.auth.currentUser?.email;
+
+  // Core authentication action handlers
+  Future<AuthResponse> signIn({
+    required String email,
+    required String password,
+  }) async {
+    return await _supabase.auth.signInWithPassword(
+      email: email,
+      password: password,
+    );
   }
 
-  static Future<void> clearSession() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_keyIsLoggedIn);
-    await prefs.remove(_keyUserEmail);
+  Future<AuthResponse> signUp({
+    required String email,
+    required String password,
+  }) async {
+    return await _supabase.auth.signUp(
+      email: email,
+      password: password,
+    );
   }
 
-  static Future<bool> isLoggedIn() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_keyIsLoggedIn) ?? false;
+  Future<void> signOut() async {
+    await _supabase.auth.signOut();
   }
 
-  static Future<String?> getUserEmail() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_keyUserEmail);
+  // Requests a deep-linked recovery link explicitly back to the app context
+  Future<void> resetPassword({
+    required String email,
+    required String redirectTo,
+  }) async {
+    await _supabase.auth.resetPasswordForEmail(
+      email,
+      redirectTo: redirectTo,
+    );
   }
 
-  Future<void> sendPasswordResetEmail(String email) async {
-    try {
-      // Simulate API call for now
-      await Future.delayed(const Duration(seconds: 2));
-      print('Password reset link sent to: $email');
-    } catch (e) {
-      print('Error sending password reset email: $e');
-      rethrow;
-    }
+  // Updates the password for the currently active recovery session.
+  // Call this from ResetPasswordScreen after the user lands via the recovery link.
+  Future<UserResponse> updatePassword(String newPassword) async {
+    return await _supabase.auth.updateUser(
+      UserAttributes(password: newPassword),
+    );
   }
 }
-
