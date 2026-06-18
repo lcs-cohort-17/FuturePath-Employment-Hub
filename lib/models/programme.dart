@@ -29,10 +29,10 @@ class Programme {
     description: row[2].toString(),
     startDate: DateTime.parse(row[3].toString()),
     endDate: DateTime.parse(row[4].toString()),
-    capacity: int.parse(row[6].toString()),
-    status: row[7].toString(), // dropdown value as string
-    skills: (row[8].toString().split(',').map((s) => s.trim()).toList()),
-    category: row[9].toString(),
+    capacity: int.parse(row[5].toString()),
+    status: row[6].toString(), // dropdown value as string
+    skills: (row[7].toString().split(',').map((s) => s.trim()).toList()),
+    category: row[8].toString(),
   );
   }
 }
