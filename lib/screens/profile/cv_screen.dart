@@ -116,7 +116,7 @@ class _CvScreenContentState extends State<CvScreenContent> {
         color: AppTheme.card,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppTheme.primary.withOpacity(0.2),
+          color: AppTheme.primary.withAlpha(51),
           width: 1.5,
         ),
       ),
@@ -240,13 +240,13 @@ class _CvScreenContentState extends State<CvScreenContent> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide(
-                      color: AppTheme.primary.withOpacity(0.2),
+                      color: AppTheme.primary.withAlpha(51),
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide(
-                      color: AppTheme.primary.withOpacity(0.2),
+                      color: AppTheme.primary.withAlpha(51),
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
@@ -290,7 +290,7 @@ class _CvScreenContentState extends State<CvScreenContent> {
               Icon(
                 Icons.school_outlined,
                 size: 48,
-                color: AppTheme.mutedText.withOpacity(0.5),
+                color: AppTheme.mutedText.withAlpha(128),
               ),
               const SizedBox(height: 12),
               Text(
@@ -387,7 +387,7 @@ class _CvScreenContentState extends State<CvScreenContent> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withAlpha(13),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -399,8 +399,8 @@ class _CvScreenContentState extends State<CvScreenContent> {
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: isEnrolled
-                  ? AppTheme.accent.withOpacity(0.1)
-                  : Colors.green.withOpacity(0.1),
+                  ? AppTheme.accent.withAlpha(26)
+                  : Colors.green.withAlpha(26),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
@@ -430,7 +430,7 @@ class _CvScreenContentState extends State<CvScreenContent> {
                     fontSize: 13,
                   ),
                 ),
-                if (prog.progress != null) ...[
+                if (prog.progress > 0) ...[
                   const SizedBox(height: 8),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(4),
@@ -445,7 +445,7 @@ class _CvScreenContentState extends State<CvScreenContent> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${(prog.progress! * 100).round()}% complete',
+                    '${(prog.progress * 100).round()}% complete',
                     style: TextStyle(
                       color: AppTheme.mutedText,
                       fontSize: 12,

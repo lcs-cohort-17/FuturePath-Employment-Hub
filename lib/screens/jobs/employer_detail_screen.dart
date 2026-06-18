@@ -5,28 +5,30 @@ class EmployerDetailScreen extends StatelessWidget {
   final EmployerModel? employerData;
 
   const EmployerDetailScreen({
-    Key? key,
+    super.key,
     this.employerData,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     final employer = employerData;
 
-    // 1. Automatically derive data status reactively
-    final bool isMissingInfo = employer == null ||
-                               employer.bio == null ||
-                               employer.website == null;
+    // Use a local variable to help type promotion
+    if (employer == null) {
+      return _buildNullState(context);
+    }
 
-    // 2. Define UI display fallback strings
-    final String currentCompanyName = employer?.companyName ?? "Unnamed Enterprise Asset";
-    final String currentIndustry = employer?.industry ?? "Sector Unspecified";
-    final String currentLocation = employer?.location ?? "Location Not Listed";
-    final int currentOpenings = employer?.activeOpeningsCount ?? 0;
-    final String currentEmail = employer?.email ?? "support@employerplatform.internal";
+    // Now employer is promoted to non-nullable EmployerModel
+    final bool isMissingInfo = employer.bio == null || employer.website == null;
 
-    final String? rawBio = isMissingInfo ? null : employer?.bio;
-    final String? rawWebsite = isMissingInfo ? null : employer?.website;
+    final String currentCompanyName = employer.companyName;
+    final String currentIndustry = employer.industry;
+    final String currentLocation = employer.location;
+    final int currentOpenings = employer.activeOpeningsCount;
+    final String currentEmail = employer.email ?? "support@employerplatform.internal";
+
+    final String? rawBio = isMissingInfo ? null : employer.bio;
+    final String? rawWebsite = isMissingInfo ? null : employer.website;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -76,10 +78,8 @@ class EmployerDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Only shows if data is missing or null
             if (isMissingInfo) _buildIncompleteWarning(),
 
-            // Both mode toggle buttons have been completely stripped out from here!
             const SizedBox(height: 12),
 
             // HERO IDENTITY CARD
@@ -174,14 +174,21 @@ class EmployerDetailScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildNullState(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Employer Detail')),
+      body: const Center(child: Text('No employer data provided.')),
+    );
+  }
+
   Widget _buildIncompleteWarning() {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.amber.shade50,
+        color: Colors.amber.withAlpha(26),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.amber.shade200),
+        border: Border.all(color: Colors.amber.withAlpha(51)),
       ),
       child: Row(
         children: [

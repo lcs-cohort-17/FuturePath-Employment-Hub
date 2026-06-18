@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/user_profile_provider.dart';
-import '../../services/auth_service.dart';
+import '../../services/auth_services.dart';
+import '../../models/user_profile.dart';
 import 'cv_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -101,7 +102,7 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                 children: [
                   CircleAvatar(
                     radius: 60,
-                    backgroundColor: AppTheme.primary.withOpacity(0.1),
+                    backgroundColor: AppTheme.primary.withAlpha(26),
                     child: Icon(
                       Icons.person,
                       size: 60,
@@ -131,7 +132,7 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                       color: AppTheme.secondary,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: AppTheme.primary.withOpacity(0.2),
+                        color: AppTheme.primary.withAlpha(51),
                       ),
                     ),
                     child: Text(
@@ -159,13 +160,13 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
             _buildSectionCard(
               title: 'Contact & Identity',
               children: [
-                _buildInfoRow(
+                _buildInformationRow(
                   Icons.email_outlined,
                   'Email',
                   widget.userProfile.email,
                 ),
                 const Divider(height: 24),
-                _buildInfoRow(
+                _buildInformationRow(
                   Icons.phone_outlined,
                   'Phone',
                   widget.userProfile.phone,
@@ -180,7 +181,7 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
               title: 'Bio',
               children: [
                 Text(
-                  widget.userProfile.bio,
+                  widget.userProfile.bio ?? 'No bio provided.',
                   style: TextStyle(
                     color: AppTheme.textDark,
                     fontSize: 14,
@@ -232,7 +233,7 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.1),
+        color: Colors.green.withAlpha(26),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.green, width: 1.5),
       ),
@@ -264,7 +265,7 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withAlpha(13),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -288,7 +289,7 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+  Widget _buildInformationRow(IconData icon, String label, String? value) {
     return Row(
       children: [
         Icon(icon, size: 20, color: AppTheme.mutedText),
@@ -306,7 +307,7 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                 ),
               ),
               Text(
-                value,
+                value ?? 'Not provided',
                 style: TextStyle(
                   color: AppTheme.textDark,
                   fontSize: 14,
@@ -331,7 +332,7 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withAlpha(13),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -342,7 +343,7 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppTheme.accent.withOpacity(0.1),
+                color: AppTheme.accent.withAlpha(26),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(

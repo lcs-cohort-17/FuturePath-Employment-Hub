@@ -4,10 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'screens/profile/profile_screen.dart';
 import 'screens/profile/cv_screen.dart';
-import 'services/auth_services.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/shell/programmes_screen.dart';
 import 'screens/jobs/job_apply_screen.dart'; // Currently contains JobsScreen
+import 'screens/auth/login_screen.dart';
 
 void main() {
   runApp(
@@ -89,45 +89,6 @@ class _MainShellState extends ConsumerState<MainShell> {
             label: 'Profile',
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Placeholder Login Screen (Move this to lib/screens/auth/login_screen.dart later)
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.lock_outline,
-              size: 64,
-              color: AppTheme.primary.withOpacity(0.3),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Login Screen',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushReplacementNamed(context, '/');
-              },
-              child: const Text('Go to Home'),
-            ),
-          ],
-        ),
       ),
     );
   }

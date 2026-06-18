@@ -23,7 +23,7 @@ class SkillChip extends StatelessWidget {
         color: AppTheme.secondary,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppTheme.primary.withOpacity(0.15),
+          color: AppTheme.primary.withAlpha(38),
         ),
       ),
       child: Row(

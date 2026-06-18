@@ -1,38 +1,16 @@
 // test/services/auth_service_test.dart
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:futurepath/services/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:futurepath_employment_hub/services/auth_services.dart';
 
 void main() {
-  group('AuthService', () {
-    late AuthService authService;
+  TestWidgetsFlutterBinding.ensureInitialized();
 
-    setUp(() {
-      authService = AuthService();
-    });
-
-    test('logout should complete without error', () async {
-      // Should not throw
-      await expectLater(authService.logout(), completes);
-    });
-
-    test('isLoggedIn should return a boolean', () async {
-      final result = await authService.isLoggedIn();
-      expect(result, isA<bool>());
-    });
-
-    test('authServiceProvider should provide AuthService', () {
-      final container = ProviderContainer();
-      final service = container.read(authServiceProvider);
-      expect(service, isA<AuthService>());
-    });
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
   });
-}// test/services/auth_service_test.dart
-import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:futurepath/services/auth_service.dart';
 
-void main() {
   group('AuthService', () {
     late AuthService authService;
 
@@ -46,7 +24,7 @@ void main() {
     });
 
     test('isLoggedIn should return a boolean', () async {
-      final result = await authService.isLoggedIn();
+      final result = await AuthService.isLoggedIn();
       expect(result, isA<bool>());
     });
 

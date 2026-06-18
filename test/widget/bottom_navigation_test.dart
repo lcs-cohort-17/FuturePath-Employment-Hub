@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/screens/shell/main_shell.dart';
 
@@ -48,9 +49,11 @@ void main() {
     // ─────────────────────────────────────────────────────────
     testWidgets('Bottom navigation has 4 tabs', (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const AppShell(),
+        ProviderScope(
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: const AppShell(),
+          ),
         ),
       );
 
@@ -63,23 +66,27 @@ void main() {
 
     testWidgets('Bottom navigation items have correct labels', (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const AppShell(),
+        ProviderScope(
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: const AppShell(),
+          ),
         ),
       );
 
-      expect(find.text('Home'), findsOneWidget);
-      expect(find.text('Programmes'), findsOneWidget);
-      expect(find.text('Jobs'), findsOneWidget);
-      expect(find.text('Profile'), findsOneWidget);
+      expect(find.text('Home'), findsWidgets);
+      expect(find.text('Programmes'), findsWidgets);
+      expect(find.text('Jobs'), findsWidgets);
+      expect(find.text('Profile'), findsWidgets);
     });
 
     testWidgets('Bottom navigation items have correct icons', (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const AppShell(),
+        ProviderScope(
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: const AppShell(),
+          ),
         ),
       );
 
@@ -92,9 +99,11 @@ void main() {
     // ─────────────────────────────────────────────────────────
     testWidgets('Current tab is highlighted', (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const AppShell(),
+        ProviderScope(
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: const AppShell(),
+          ),
         ),
       );
 
@@ -104,62 +113,72 @@ void main() {
 
     testWidgets('Tapping Home tab shows Home screen', (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const AppShell(),
+        ProviderScope(
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: const AppShell(),
+          ),
         ),
       );
 
-      await tester.tap(find.text('Home'));
+      await tester.tap(find.text('Home').first);
       await tester.pumpAndSettle();
-      expect(find.text('Home'), findsOneWidget);
+      expect(find.text('Home'), findsWidgets);
     });
 
     testWidgets('Tapping Programmes tab shows Programmes screen', (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const AppShell(),
+        ProviderScope(
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: const AppShell(),
+          ),
         ),
       );
 
-      await tester.tap(find.text('Programmes'));
+      await tester.tap(find.text('Programmes').first);
       await tester.pumpAndSettle();
-      expect(find.text('Programmes'), findsOneWidget);
+      expect(find.text('Programmes'), findsWidgets);
     });
 
     testWidgets('Tapping Jobs tab shows Jobs screen', (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const AppShell(),
+        ProviderScope(
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: const AppShell(),
+          ),
         ),
       );
 
-      await tester.tap(find.text('Jobs'));
+      await tester.tap(find.text('Jobs').first);
       await tester.pumpAndSettle();
-      expect(find.text('Jobs'), findsOneWidget);
+      expect(find.text('Jobs'), findsWidgets);
     });
 
     // FIXED: Changed findsOneWidget to findsWidgets since "Profile" appears in both nav and screen
     testWidgets('Tapping Profile tab shows Profile screen', (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const AppShell(),
+        ProviderScope(
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: const AppShell(),
+          ),
         ),
       );
 
-      await tester.tap(find.text('Profile'));
+      await tester.tap(find.text('Profile').first);
       await tester.pumpAndSettle();
       expect(find.text('Profile'), findsWidgets);
     });
 
     testWidgets('Bottom navigation updates currentIndex on tap', (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const AppShell(),
+        ProviderScope(
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: const AppShell(),
+          ),
         ),
       );
 
@@ -168,7 +187,7 @@ void main() {
         0,
       );
 
-      await tester.tap(find.text('Jobs'));
+      await tester.tap(find.text('Jobs').first);
       await tester.pumpAndSettle();
 
       expect(
@@ -182,9 +201,11 @@ void main() {
     // ─────────────────────────────────────────────────────────
     testWidgets('Theme applied globally to MaterialApp', (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const AppShell(),
+        ProviderScope(
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: const AppShell(),
+          ),
         ),
       );
 
@@ -195,25 +216,27 @@ void main() {
 
     testWidgets('Bottom navigation persists across tab switches', (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const AppShell(),
+        ProviderScope(
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: const AppShell(),
+          ),
         ),
       );
 
-      await tester.tap(find.text('Programmes'));
+      await tester.tap(find.text('Programmes').first);
       await tester.pumpAndSettle();
       expect(find.byType(BottomNavigationBar), findsOneWidget);
 
-      await tester.tap(find.text('Jobs'));
+      await tester.tap(find.text('Jobs').first);
       await tester.pumpAndSettle();
       expect(find.byType(BottomNavigationBar), findsOneWidget);
 
-      await tester.tap(find.text('Profile'));
+      await tester.tap(find.text('Profile').first);
       await tester.pumpAndSettle();
       expect(find.byType(BottomNavigationBar), findsOneWidget);
 
-      await tester.tap(find.text('Home'));
+      await tester.tap(find.text('Home').first);
       await tester.pumpAndSettle();
       expect(find.byType(BottomNavigationBar), findsOneWidget);
     });

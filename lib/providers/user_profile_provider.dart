@@ -1,4 +1,3 @@
-// lib/providers/user_profile_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_profile.dart';
 import '../models/programme.dart';
@@ -7,6 +6,7 @@ import '../models/programme.dart';
 final mockUserProfile = UserProfile(
   id: '1',
   name: 'Sipho Nkosi',
+  displayName: 'Sipho Nkosi',
   location: 'Mitchells Plain, Cape Town',
   employmentStatus: 'Unemployed',
   isHired: false,
@@ -20,12 +20,14 @@ final mockUserProfile = UserProfile(
       name: 'Computer Literacy Certificate',
       status: 'Certificate issued',
       isCompleted: true,
+      progress: 1.0,
     ),
     Programme(
       id: '2',
       name: 'Customer Service Training',
       status: 'Certificate issued',
       isCompleted: true,
+      progress: 1.0,
     ),
   ],
   enrolledProgrammes: [
@@ -42,16 +44,20 @@ final mockUserProfile = UserProfile(
 class UserProfileNotifier extends StateNotifier<UserProfile> {
   UserProfileNotifier() : super(mockUserProfile);
 
+  void setUserProfile(UserProfile profile) {
+    state = profile;
+  }
+
   void updateProfile(UserProfile updatedProfile) {
     state = updatedProfile;
   }
 
   void addSkill(String skill) {
-    if (!state.skills.contains(skill)) {
+    final trimmed = skill.trim();
+    if (trimmed.isNotEmpty && !state.skills.contains(trimmed)) {
       state = state.copyWith(
-        skills: [...state.skills, skill],
+        skills: [...state.skills, trimmed],
       );
-      // TODO: Call API to save to backend
     }
   }
 
@@ -59,12 +65,47 @@ class UserProfileNotifier extends StateNotifier<UserProfile> {
     state = state.copyWith(
       skills: state.skills.where((s) => s != skill).toList(),
     );
-    // TODO: Call API to save to backend
   }
 
   void updateHiredStatus(bool isHired) {
     state = state.copyWith(isHired: isHired);
-    // TODO: Call API to save to backend
+  }
+
+  void updateEmploymentStatus(String status) {
+    state = state.copyWith(employmentStatus: status);
+  }
+
+  void addSavedProgramme(Programme programme) {
+    final updatedSaved = List<Programme>.from(state.savedProgrammes)..add(programme);
+    state = state.copyWith(savedProgrammes: updatedSaved);
+  }
+
+  void removeSavedProgramme(String programmeId) {
+    final updatedSaved = state.savedProgrammes
+        .where((p) => p.id != programmeId)
+        .toList();
+    state = state.copyWith(savedProgrammes: updatedSaved);
+  }
+
+  void addEnrolledProgramme(Programme programme) {
+    final updatedEnrolled = List<Programme>.from(state.enrolledProgrammes)..add(programme);
+    state = state.copyWith(enrolledProgrammes: updatedEnrolled);
+  }
+
+  void removeEnrolledProgramme(String programmeId) {
+    final updatedEnrolled = state.enrolledProgrammes
+        .where((p) => p.id != programmeId)
+        .toList();
+    state = state.copyWith(enrolledProgrammes: updatedEnrolled);
+  }
+
+  void addCompletedProgramme(Programme programme) {
+    final updatedCompleted = List<Programme>.from(state.completedProgrammes)..add(programme);
+    state = state.copyWith(completedProgrammes: updatedCompleted);
+  }
+
+  void clearProfile() {
+    state = mockUserProfile;
   }
 }
 

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../services/auth_services.dart';
-import '../shell/main_shell.dart';
-import 'forgot_password_screen.dart';
 import '../../services/registration_service.dart';
 import '../../router/app_router.dart';
 
@@ -21,7 +19,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _loginPasswordCtrl = TextEditingController();
   bool _loginObscure = true;
   final _signupFormKey = GlobalKey<FormState>();
-  final _signupNameCtrl = TextEditingController();
   final _signupEmailCtrl = TextEditingController();
   final _signupPasswordCtrl = TextEditingController();
   final _signupConfirmCtrl = TextEditingController();
@@ -45,7 +42,6 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     _loginEmailCtrl.dispose();
     _loginPasswordCtrl.dispose();
-    _signupNameCtrl.dispose();
     _signupEmailCtrl.dispose();
     _signupPasswordCtrl.dispose();
     _signupConfirmCtrl.dispose();
@@ -187,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
             width: 72,
             height: 72,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
+              color: Colors.white.withAlpha(38),
               borderRadius: BorderRadius.circular(18),
             ),
             child: const Icon(Icons.work_outline_rounded, size: 38, color: Colors.white),
@@ -200,7 +196,7 @@ class _LoginScreenState extends State<LoginScreen> {
           const SizedBox(height: 4),
           Text(
             'Employment Hub',
-            style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14),
+            style: TextStyle(color: Colors.white.withAlpha(178), fontSize: 14),
           ),
         ],
       ),
@@ -234,7 +230,7 @@ class _LoginScreenState extends State<LoginScreen> {
             color: isActive ? Colors.white : Colors.transparent,
             borderRadius: BorderRadius.circular(26),
             boxShadow: isActive
-                ? [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, 2))]
+                ? [BoxShadow(color: Colors.black.withAlpha(20), blurRadius: 8, offset: const Offset(0, 2))]
                 : [],
           ),
           alignment: Alignment.center,
@@ -377,7 +373,7 @@ class _LoginScreenState extends State<LoginScreen> {
           _fieldLabel('Gender'),
           const SizedBox(height: 6),
           DropdownButtonFormField<String>(
-            value: _signupGenderCtrl.text.isEmpty ? null : _signupGenderCtrl.text,
+            initialValue: _signupGenderCtrl.text.isEmpty ? null : _signupGenderCtrl.text,
             autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: (v) => v == null ? 'Gender is required' : null,
             decoration: _fieldDecoration(hint: 'Select gender'),
@@ -419,7 +415,7 @@ class _LoginScreenState extends State<LoginScreen> {
           _fieldLabel('Highest Qualification'),
           const SizedBox(height: 6),
           DropdownButtonFormField<String>(
-            value: _signupQualificationCtrl.text.isEmpty ? null : _signupQualificationCtrl.text,
+            initialValue: _signupQualificationCtrl.text.isEmpty ? null : _signupQualificationCtrl.text,
             autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: (v) => v == null ? 'Qualification is required' : null,
             decoration: _fieldDecoration(hint: 'Select qualification'),
@@ -432,7 +428,7 @@ class _LoginScreenState extends State<LoginScreen> {
           _fieldLabel('Current Employment Status'),
           const SizedBox(height: 6),
           DropdownButtonFormField<String>(
-            value: _signupEmploymentCtrl.text.isEmpty ? null : _signupEmploymentCtrl.text,
+            initialValue: _signupEmploymentCtrl.text.isEmpty ? null : _signupEmploymentCtrl.text,
             autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: (v) => v == null ? 'Employment status is required' : null,
             decoration: _fieldDecoration(hint: 'Select employment status'),
@@ -476,7 +472,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     }
                   });
                 },
-                selectedColor: AppTheme.primary.withValues(alpha: 0.15),
+                selectedColor: AppTheme.primary.withAlpha(38),
                 checkmarkColor: AppTheme.primary,
                 labelStyle: TextStyle(
                   color: selected ? AppTheme.primary : AppTheme.mutedText,
@@ -536,7 +532,7 @@ class _LoginScreenState extends State<LoginScreen> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
         errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Colors.redAccent)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.6), width: 1.5)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: AppTheme.primary.withAlpha(153), width: 1.5)),
         focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Colors.redAccent, width: 1.5)),
       );
 
