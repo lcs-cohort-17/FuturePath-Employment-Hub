@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
-import 'package:futurepath/core/theme/app_theme.dart';
+import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import '../../services/sheets_service.dart';
 import '../../core/widgets/loading_overlay.dart';
 import '../../core/widgets/error_message.dart';
 import '../../core/widgets/empty_state.dart';
+import 'programme_detail_screen.dart';
 
 /// ─────────────────────────────────────────────────────────────
 /// DATA MODEL
@@ -261,7 +262,19 @@ class _ProgrammeListScreenState extends State<ProgrammeListScreen> {
                 itemBuilder: (context, index) {
                   final programme = filtered[index];
 
-                  return ProgrammeCard(programme: programme);
+                  return InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ProgrammeDetailScreen(
+                            programme: programme,
+                          ),
+                        ),
+                      );
+                    },
+                    child: ProgrammeCard(programme: programme),
+                  );
                 },
               ),
             ),

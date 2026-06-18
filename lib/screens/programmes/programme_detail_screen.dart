@@ -2,9 +2,10 @@
 // Lutfeeya-UIUX-004
 // ═══════════════════════════════════════════════════════════════════════
 import 'package:flutter/material.dart';
-import 'package:futurepath/core/theme/app_theme.dart';
-import 'package:futurepath/screens/programmes/programme_list_screen.dart'
-    show Programme, mockProgrammes;
+import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
+import 'package:futurepath_employment_hub/screens/programmes/programme_list_screen.dart'
+    show Programme;
+import 'programme_application_screen.dart';
 
 class ProgrammeDetailScreen extends StatelessWidget {
   final Programme programme;
@@ -13,7 +14,7 @@ class ProgrammeDetailScreen extends StatelessWidget {
 
   const ProgrammeDetailScreen({
     super.key,
-    this.programme = mockProgrammes[1],
+    required this.programme,
     this.onApplyNow,
     this.onBack,
   });
@@ -143,7 +144,8 @@ class ProgrammeDetailScreen extends StatelessWidget {
                             icon: Icons.people_outline,
                             label: 'CAPACITY',
                             value:
-                            '${programme.enrolledCount}/${programme.capacity} enrolled',
+                            '${programme.enrolledCount}/${programme
+                                .capacity} enrolled',
                           ),
                         ),
                       ],
@@ -308,9 +310,15 @@ class ProgrammeDetailScreen extends StatelessWidget {
                     onPressed: () {
                       if (onApplyNow != null) {
                         onApplyNow!(programme);
+                      } else {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) =>
+                              ProgrammeApplyScreen(programme: programme),
+                        );
                       }
-                      // Navigates to UIUX-012 Programme Application Form —
-                      // NOT the job application flow (UIUX-006).
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.accent,

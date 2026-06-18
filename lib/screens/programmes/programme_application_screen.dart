@@ -2,9 +2,9 @@
 // Lutfeeya-UIUX-012
 // ═══════════════════════════════════════════════════════════════════════
 import 'package:flutter/material.dart';
-import 'package:futurepath/core/theme/app_theme.dart';
-import 'package:futurepath/screens/programmes/programme_list_screen.dart'
-    show Programme, mockProgrammes;
+import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
+import 'package:futurepath_employment_hub/screens/programmes/programme_list_screen.dart'
+    show Programme;
 
 // ───────────────────────────────────────────────────────────────────────
 // MODELS
@@ -104,14 +104,14 @@ class ProgrammeApplyScreen extends StatefulWidget {
   final void Function(ProgrammeApplicationData data)? onSuccess;
   final VoidCallback? onClose;
 
-  ProgrammeApplyScreen({
+  const ProgrammeApplyScreen({
     super.key,
-    Programme? programme,
+    required this.programme,
     this.applicantProfile = mockApplicantProfile,
     this.onSubmit,
     this.onSuccess,
     this.onClose,
-  }) : programme = programme ?? mockProgrammes[1];
+  });
 
   @override
   State<ProgrammeApplyScreen> createState() => _ProgrammeApplyScreenState();
