@@ -13,10 +13,10 @@ class ProgrammeDetailScreen extends StatelessWidget {
 
   const ProgrammeDetailScreen({
     super.key,
-    this.programme = mockProgrammes[1],
+    Programme? programme,                 // ← make it nullable with no default
     this.onApplyNow,
     this.onBack,
-  });
+  }) : programme = programme ?? mockProgrammes[1];   // ✅ assignment in initializer
 
   @override
   Widget build(BuildContext context) {
