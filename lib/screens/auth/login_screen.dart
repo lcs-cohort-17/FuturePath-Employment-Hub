@@ -1,25 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/app_theme.dart';
-import '../../services/auth_services.dart';
-import '../shell/main_shell.dart';
-import 'forgot_password_screen.dart';
+import '../../providers/auth_provider.dart';
 import '../../services/registration_service.dart';
-import '../../router/app_router.dart';
+import 'forgot_password_screen.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _isLoginTab = true;
 
   final _loginFormKey = GlobalKey<FormState>();
   final _loginEmailCtrl = TextEditingController(text: 'sipho.dlamini@gmail.com');
   final _loginPasswordCtrl = TextEditingController();
   bool _loginObscure = true;
+
   final _signupFormKey = GlobalKey<FormState>();
   final _signupNameCtrl = TextEditingController();
   final _signupEmailCtrl = TextEditingController();
@@ -40,6 +42,9 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _signupConfirmObscure = true;
 
   bool _isLoading = false;
+  String? _loginError;
+  String? _signupError;
+  String? _signupSuccess;
 
   @override
   void dispose() {
@@ -61,6 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  // --- Validators ---
   String? _validateEmail(String? v) {
     if (v == null || v.trim().isEmpty) return 'Email is required';
     if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v.trim())) {
@@ -80,74 +86,181 @@ class _LoginScreenState extends State<LoginScreen> {
     return null;
   }
 
+  // --- Login Handler (Enhanced with Debug Logging) ---
   Future<void> _login() async {
-    if (!_loginFormKey.currentState!.validate()) return;
-
-    const validEmail = 'sipho.dlamini@gmail.com';
-    const validPassword = 'password123';
-
-    if (_loginEmailCtrl.text.trim() != validEmail ||
-        _loginPasswordCtrl.text != validPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Invalid email or password. Please try again.'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
+    if (!_loginFormKey.currentState!.validate()) {
+      debugPrint('Login form validation failed.');
       return;
     }
 
-    setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 800));
-    await AuthService.saveSession(_loginEmailCtrl.text.trim());
-    if (!mounted) return;
-    setState(() => _isLoading = false);
+    debugPrint('Login form validation passed. Starting login...');
+    setState(() {
+      _isLoading = true;
+      _loginError = null;
+    });
 
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      AppRouter.home,
-          (route) => false,
-    );
+    final email = _loginEmailCtrl.text.trim();
+    final password = _loginPasswordCtrl.text.trim();
+
+    try {
+      debugPrint('Attempting login with email: $email');
+      await ref.read(authNotifierProvider.notifier).signIn(email, password);
+      debugPrint('Login successful – navigating to /home');
+      if (mounted) {
+        context.go('/home');
+      }
+    } catch (e, stackTrace) {
+      // Detailed logging
+      debugPrint('===== LOGIN ERROR =====');
+      debugPrint('Error type: ${e.runtimeType}');
+      debugPrint('Error: $e');
+      debugPrint('Stack trace: $stackTrace');
+
+      // Extract user-friendly message
+      final message = _getUserFriendlyErrorMessage(e);
+      debugPrint('User-friendly message: $message');
+
+      // Update UI state
+      setState(() {
+        _loginError = message;
+        _isLoading = false;
+      });
+      debugPrint('State updated. _loginError = $_loginError');
+
+      // Fallback: show SnackBar to ensure user sees error
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } finally {
+      // Only clear loading if no error was set
+      if (mounted && _loginError == null) {
+        debugPrint('No error, clearing loading state');
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
+  // --- Sign-Up Handler ---
   Future<void> _signup() async {
     if (!_signupFormKey.currentState!.validate()) return;
     if (_signupSkillsCtrl.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select at least one skill.'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
+      setState(() {
+        _signupError = 'Please select at least one skill.';
+      });
       return;
     }
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _signupError = null;
+      _signupSuccess = null;
+    });
 
-    await RegistrationService.saveApplicant(
-      firstName: _signupFirstNameCtrl.text.trim(),
-      lastName: _signupLastNameCtrl.text.trim(),
-      idNumber: _signupIdCtrl.text.trim(),
-      dateOfBirth: _signupDobCtrl.text.trim(),
-      gender: _signupGenderCtrl.text.trim(),
-      contactNumber: _signupPhoneCtrl.text.trim(),
-      email: _signupEmailCtrl.text.trim(),
-      residentialArea: _signupAreaCtrl.text.trim(),
-      highestQualification: _signupQualificationCtrl.text.trim(),
-      employmentStatus: _signupEmploymentCtrl.text.trim(),
-      skills: _signupSkillsCtrl,
-    );
+    final email = _signupEmailCtrl.text.trim();
+    final password = _signupPasswordCtrl.text.trim();
 
-    await AuthService.saveSession(_signupEmailCtrl.text.trim());
+    try {
+      // 1. Create Supabase user
+      await ref.read(authNotifierProvider.notifier).signUp(email, password);
 
-    if (!mounted) return;
-    setState(() => _isLoading = false);
+      // 2. Save applicant profile to Google Sheets (existing service)
+      await RegistrationService.saveApplicant(
+        firstName: _signupFirstNameCtrl.text.trim(),
+        lastName: _signupLastNameCtrl.text.trim(),
+        idNumber: _signupIdCtrl.text.trim(),
+        dateOfBirth: _signupDobCtrl.text.trim(),
+        gender: _signupGenderCtrl.text.trim(),
+        contactNumber: _signupPhoneCtrl.text.trim(),
+        email: email,
+        residentialArea: _signupAreaCtrl.text.trim(),
+        highestQualification: _signupQualificationCtrl.text.trim(),
+        employmentStatus: _signupEmploymentCtrl.text.trim(),
+        skills: _signupSkillsCtrl,
+      );
 
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      AppRouter.home,
-          (route) => false,
-    );
+      setState(() {
+        _signupSuccess = 'Account created! You can now log in.';
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _signupError = 'Sign-up failed: ${_getUserFriendlyErrorMessage(e)}';
+        _isLoading = false;
+      });
+    } finally {
+      if (mounted && _signupError == null && _signupSuccess == null) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
+  String _getUserFriendlyErrorMessage(dynamic error) {
+    // Handle Supabase AuthException
+    if (error is AuthException) {
+      debugPrint('AuthException statusCode: ${error.statusCode}, message: ${error.message}');
+      switch (error.statusCode) {
+        case '400':
+          return 'Invalid email or password.';
+        case '422':
+          return 'Please check your email format.';
+        case 'user_already_exists':
+          return 'An account with this email already exists.';
+        case 'email_not_confirmed':
+          return 'Please confirm your email address before logging in.';
+        default:
+          return 'Something went wrong. Please try again.';
+      }
+    }
+
+    // Handle error objects with a message property
+    if (error is Exception && error.toString().contains('message')) {
+      try {
+        final message = error.toString().split('message: ').last;
+        if (message.contains('Invalid login credentials')) {
+          return 'Invalid email or password.';
+        }
+        if (message.contains('Email not confirmed')) {
+          return 'Please confirm your email address before logging in.';
+        }
+        return message.length < 60 ? message : 'Something went wrong. Please try again.';
+      } catch (_) {
+        return 'Something went wrong. Please try again.';
+      }
+    }
+
+    // Handle generic exceptions
+    if (error is Exception && error.toString().isNotEmpty) {
+      final msg = error.toString();
+      if (msg.contains('Invalid login credentials')) {
+        return 'Invalid email or password.';
+      }
+      if (msg.contains('Email not confirmed')) {
+        return 'Please confirm your email address before logging in.';
+      }
+    }
+
+    // Handle error objects with a statusCode property
+    if (error is dynamic && error is Map<String, dynamic>) {
+      final statusCode = error['statusCode'] ?? error['code'];
+      if (statusCode == '400') {
+        return 'Invalid email or password.';
+      }
+      if (statusCode == '422') {
+        return 'Please check your email format.';
+      }
+    }
+
+    // Default fallback
+    return 'Something went wrong. Please try again.';
+  }
+
+  // --- UI Build ---
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -273,7 +386,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
-              onPressed: () => Navigator.of(context).pushNamed(AppRouter.forgotPassword),
+              onPressed: () => context.pushNamed('forgot-password'),
               style: TextButton.styleFrom(
                 foregroundColor: AppTheme.accent,
                 padding: EdgeInsets.zero,
@@ -282,6 +395,14 @@ class _LoginScreenState extends State<LoginScreen> {
               child: const Text('Forgot Password?', style: TextStyle(fontWeight: FontWeight.w600)),
             ),
           ),
+          if (_loginError != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              _loginError!,
+              style: const TextStyle(color: Colors.red, fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+          ],
           const SizedBox(height: 16),
           _primaryButton(label: 'Log In', isLoading: _isLoading, onPressed: _login),
           const SizedBox(height: 20),
@@ -504,6 +625,14 @@ class _LoginScreenState extends State<LoginScreen> {
             validator: _validateConfirmPassword,
           ),
           const SizedBox(height: 24),
+          if (_signupError != null) ...[
+            Text(_signupError!, style: const TextStyle(color: Colors.red)),
+            const SizedBox(height: 8),
+          ],
+          if (_signupSuccess != null) ...[
+            Text(_signupSuccess!, style: const TextStyle(color: Colors.green)),
+            const SizedBox(height: 8),
+          ],
           _primaryButton(label: 'Create Account', isLoading: _isLoading, onPressed: _signup),
           const SizedBox(height: 20),
           _orDivider(),
@@ -520,6 +649,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // --- Helper widgets ---
   Widget _fieldLabel(String text) => Text(
     text,
     style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: AppTheme.textDark),
@@ -536,8 +666,14 @@ class _LoginScreenState extends State<LoginScreen> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
         errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Colors.redAccent)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.6), width: 1.5)),
-        focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Colors.redAccent, width: 1.5)),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.6), width: 1.5),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+        ),
       );
 
   Widget _emailField(TextEditingController ctrl) => TextFormField(
@@ -551,7 +687,11 @@ class _LoginScreenState extends State<LoginScreen> {
     ),
   );
 
-  Widget _textField({required TextEditingController controller, required String hint, String? Function(String?)? validator}) =>
+  Widget _textField({
+    required TextEditingController controller,
+    required String hint,
+    String? Function(String?)? validator,
+  }) =>
       TextFormField(
         controller: controller,
         autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -581,7 +721,11 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
 
-  Widget _primaryButton({required String label, required bool isLoading, required VoidCallback onPressed}) =>
+  Widget _primaryButton({
+    required String label,
+    required bool isLoading,
+    required VoidCallback onPressed,
+  }) =>
       SizedBox(
         height: 54,
         child: FilledButton(
@@ -625,7 +769,11 @@ class _LoginScreenState extends State<LoginScreen> {
     ),
   );
 
-  Widget _switchTabPrompt({required String question, required String action, required VoidCallback onTap}) =>
+  Widget _switchTabPrompt({
+    required String question,
+    required String action,
+    required VoidCallback onTap,
+  }) =>
       Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

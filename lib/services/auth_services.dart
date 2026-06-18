@@ -1,40 +1,56 @@
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthService {
-  static const _keyIsLoggedIn = 'is_logged_in';
-  static const _keyUserEmail = 'user_email';
+  final SupabaseClient _supabase = Supabase.instance.client;
 
-  static Future<void> saveSession(String email) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_keyIsLoggedIn, true);
-    await prefs.setString(_keyUserEmail, email);
+  // ---- Sign In ----
+  Future<AuthResponse> signIn(String email, String password) async {
+    return await _supabase.auth.signInWithPassword(
+      email: email,
+      password: password,
+    );
   }
 
-  static Future<void> clearSession() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_keyIsLoggedIn);
-    await prefs.remove(_keyUserEmail);
+  // ---- Sign Up ----
+  Future<AuthResponse> signUp(String email, String password) async {
+    return await _supabase.auth.signUp(
+      email: email,
+      password: password,
+    );
   }
 
-  static Future<bool> isLoggedIn() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_keyIsLoggedIn) ?? false;
+  // ---- Sign Out ----
+  Future<void> signOut() async {
+    await _supabase.auth.signOut();
   }
 
-  static Future<String?> getUserEmail() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_keyUserEmail);
+  // ---- Forgot Password (reset) ----
+  Future<void> resetPassword(String email) async {
+    await _supabase.auth.resetPasswordForEmail(email);
   }
 
-  Future<void> sendPasswordResetEmail(String email) async {
-    try {
-      // Simulate API call for now
-      await Future.delayed(const Duration(seconds: 2));
-      print('Password reset link sent to: $email');
-    } catch (e) {
-      print('Error sending password reset email: $e');
-      rethrow;
-    }
+  // ---- Update Password (after reset) ----
+  Future<void> updatePassword(String newPassword) async {
+    await _supabase.auth.updateUser(
+      UserAttributes(password: newPassword),
+    );
   }
+
+  // ---- Get Current User ----
+  User? get currentUser => _supabase.auth.currentUser;
+
+  // ---- Get User Role (from profiles table) ----
+  Future<String?> getUserRole() async {
+    final user = currentUser;
+    if (user == null) return null;
+    final response = await _supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle();
+    return response?['role'] as String?;
+  }
+
+  // ---- Auth State Stream ----
+  Stream<AuthState> get authStateChange => _supabase.auth.onAuthStateChange;
 }
-
