@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../screens/auth/login_screen.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../screens/auth/app_gate.dart';
-import '../screens/auth/sign_up_screen.dart';
+import 'core/theme/app_theme.dart';
+import 'router/app_router.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,15 +26,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'FuturePath Employment Hub',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const AppGate(),
-      routes: {
-        '/login': (context) => const LoginScreen(),
-        '/signup': (context) => const SignupScreen(),
-      },
+      theme: AppTheme.lightTheme,
+      initialRoute: AppRouter.login, // Start with Login screen
+      onGenerateRoute: AppRouter.generateRoute, // Use your router
     );
   }
 }
+
