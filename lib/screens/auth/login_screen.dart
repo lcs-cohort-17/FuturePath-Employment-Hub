@@ -5,6 +5,7 @@ import '../shell/main_shell.dart';
 import 'forgot_password_screen.dart';
 import '../../services/registration_service.dart';
 import '../../router/app_router.dart';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -102,12 +103,12 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    // Navigate to home (AppShell with search)
     Navigator.of(context).pushNamedAndRemoveUntil(
       AppRouter.home,
           (route) => false,
     );
   }
+
   Future<void> _signup() async {
     if (!_signupFormKey.currentState!.validate()) return;
     if (_signupSkillsCtrl.isEmpty) {
@@ -141,7 +142,6 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    // Navigate to home (AppShell with search)
     Navigator.of(context).pushNamedAndRemoveUntil(
       AppRouter.home,
           (route) => false,
@@ -314,15 +314,12 @@ class _LoginScreenState extends State<LoginScreen> {
       'Doctoral Degree',
     ];
 
-
-
     return Form(
       key: _signupFormKey,
       child: Column(
         key: const ValueKey('signup'),
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // First Name
           _fieldLabel('First Name'),
           const SizedBox(height: 6),
           _textField(
@@ -331,8 +328,6 @@ class _LoginScreenState extends State<LoginScreen> {
             validator: (v) => _validateRequired(v, 'First name'),
           ),
           const SizedBox(height: 16),
-
-          // Last Name
           _fieldLabel('Last Name'),
           const SizedBox(height: 6),
           _textField(
@@ -341,8 +336,6 @@ class _LoginScreenState extends State<LoginScreen> {
             validator: (v) => _validateRequired(v, 'Last name'),
           ),
           const SizedBox(height: 16),
-
-          // ID Number
           _fieldLabel('ID Number'),
           const SizedBox(height: 6),
           _textField(
@@ -356,8 +349,6 @@ class _LoginScreenState extends State<LoginScreen> {
             },
           ),
           const SizedBox(height: 16),
-
-          // Date of Birth
           _fieldLabel('Date of Birth'),
           const SizedBox(height: 6),
           TextFormField(
@@ -383,8 +374,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
           const SizedBox(height: 16),
-
-          // Gender
           _fieldLabel('Gender'),
           const SizedBox(height: 6),
           DropdownButtonFormField<String>(
@@ -398,8 +387,6 @@ class _LoginScreenState extends State<LoginScreen> {
             onChanged: (v) => setState(() => _signupGenderCtrl.text = v ?? ''),
           ),
           const SizedBox(height: 16),
-
-          // Contact Number
           _fieldLabel('Contact Number'),
           const SizedBox(height: 6),
           TextFormField(
@@ -417,14 +404,10 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
           const SizedBox(height: 16),
-
-          // Email Address
           _fieldLabel('Email Address'),
           const SizedBox(height: 6),
           _emailField(_signupEmailCtrl),
           const SizedBox(height: 16),
-
-          // Residential Area
           _fieldLabel('Residential Area'),
           const SizedBox(height: 6),
           _textField(
@@ -433,8 +416,6 @@ class _LoginScreenState extends State<LoginScreen> {
             validator: (v) => _validateRequired(v, 'Residential area'),
           ),
           const SizedBox(height: 16),
-
-          // Highest Qualification
           _fieldLabel('Highest Qualification'),
           const SizedBox(height: 6),
           DropdownButtonFormField<String>(
@@ -447,10 +428,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 .toList(),
             onChanged: (v) => setState(() => _signupQualificationCtrl.text = v ?? ''),
           ),
-
           const SizedBox(height: 16),
-
-// Current Employment Status
           _fieldLabel('Current Employment Status'),
           const SizedBox(height: 6),
           DropdownButtonFormField<String>(
@@ -468,8 +446,6 @@ class _LoginScreenState extends State<LoginScreen> {
             onChanged: (v) => setState(() => _signupEmploymentCtrl.text = v ?? ''),
           ),
           const SizedBox(height: 16),
-
-// Skills (multi-select)
           _fieldLabel('Skills'),
           const SizedBox(height: 6),
           Wrap(
@@ -509,10 +485,7 @@ class _LoginScreenState extends State<LoginScreen> {
               );
             }).toList(),
           ),
-
           const SizedBox(height: 16),
-
-          // Password
           _fieldLabel('Password'),
           const SizedBox(height: 6),
           _passwordField(
@@ -521,8 +494,6 @@ class _LoginScreenState extends State<LoginScreen> {
             onToggle: () => setState(() => _signupObscure = !_signupObscure),
           ),
           const SizedBox(height: 16),
-
-          // Confirm Password
           _fieldLabel('Confirm Password'),
           const SizedBox(height: 6),
           _passwordField(
@@ -533,7 +504,6 @@ class _LoginScreenState extends State<LoginScreen> {
             validator: _validateConfirmPassword,
           ),
           const SizedBox(height: 24),
-
           _primaryButton(label: 'Create Account', isLoading: _isLoading, onPressed: _signup),
           const SizedBox(height: 20),
           _orDivider(),
