@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../services/auth_services.dart';
-import '../shell/main_shell.dart';
-import 'forgot_password_screen.dart';
 import '../../services/registration_service.dart';
 import '../../router/app_router.dart';
 
@@ -103,10 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      AppRouter.home,
-          (route) => false,
-    );
+    _navigateToHome();
   }
 
   Future<void> _signup() async {
@@ -142,10 +137,13 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      AppRouter.home,
-          (route) => false,
-    );
+    _navigateToHome();
+  }
+
+  void _navigateToHome() {
+    final navigator = Navigator.of(context);
+    navigator.popUntil((route) => route.isFirst);
+    navigator.pushReplacementNamed(AppRouter.home);
   }
 
   @override
