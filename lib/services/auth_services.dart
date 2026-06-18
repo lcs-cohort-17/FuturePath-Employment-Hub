@@ -1,38 +1,40 @@
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/foundation.dart';
 
 class AuthService {
-  static const String _sessionKey = 'user_session';
+  static const _keyIsLoggedIn = 'is_logged_in';
+  static const _keyUserEmail = 'user_email';
 
   static Future<void> saveSession(String email) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_sessionKey, email);
-  }
-
-  static Future<String?> getSession() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_sessionKey);
+    await prefs.setBool(_keyIsLoggedIn, true);
+    await prefs.setString(_keyUserEmail, email);
   }
 
   static Future<void> clearSession() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_sessionKey);
+    await prefs.remove(_keyIsLoggedIn);
+    await prefs.remove(_keyUserEmail);
   }
 
   static Future<bool> isLoggedIn() async {
-    final email = await getSession();
-    return email != null && email.isNotEmpty;
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_keyIsLoggedIn) ?? false;
   }
 
-  // Add this method for forgot password
+  static Future<String?> getUserEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keyUserEmail);
+  }
+
   Future<void> sendPasswordResetEmail(String email) async {
     try {
-      // Simulate API call
+      // Simulate API call for now
       await Future.delayed(const Duration(seconds: 2));
-      debugPrint('Password reset link sent to: $email');
+      print('Password reset link sent to: $email');
     } catch (e) {
-      debugPrint('Error sending password reset email: $e');
+      print('Error sending password reset email: $e');
       rethrow;
     }
   }
 }
+
