@@ -1,9 +1,8 @@
-// ═══════════════════════════════════════════════════════════════════════
-// Lutfeeya-UIUX-004
-// ═══════════════════════════════════════════════════════════════════════
 import 'package:flutter/material.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/screens/programmes/programme_detail_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:futurepath_employment_hub/providers/search_filter_provider.dart';
 
 class Programme {
   final String id;
@@ -44,8 +43,7 @@ class Programme {
 }
 
 // ───────────────────────────────────────────────────────────────────────
-// MOCK DATA — demo/QA default only. Replace via constructor parameter
-// once INT-003 PublicDataService.fetchProgrammes() is available.
+// MOCK DATA
 // ───────────────────────────────────────────────────────────────────────
 const List<Programme> mockProgrammes = [
   Programme(
@@ -55,16 +53,14 @@ const List<Programme> mockProgrammes = [
     category: 'Technology',
     level: 'Beginner-Intermediate',
     status: 'Open',
-    description:
-    'Build cross-platform mobile apps using Flutter & Dart for iOS and Android.',
+    description: 'Build cross-platform mobile apps using Flutter & Dart for iOS and Android.',
     startDate: '01 Jul 2026',
     endDate: '01 Oct 2026',
     duration: '3 months',
     enrolledCount: 24,
     capacity: 30,
     skills: ['Flutter', 'Dart', 'Mobile UI', 'State Management'],
-    careerOpportunities:
-    'Completing this programme can qualify you for roles such as mobile developer and app engineer.',
+    careerOpportunities: 'Completing this programme can qualify you for roles such as mobile developer and app engineer.',
     imageUrl: 'assets/images/programmes/flutter_mobile.jpg',
   ),
   Programme(
@@ -74,23 +70,14 @@ const List<Programme> mockProgrammes = [
     category: 'Business',
     level: 'Beginner',
     status: 'Open',
-    description:
-    "This 3-month programme covers user management, security configuration, data management, automation with Flow Builder, reports and dashboards, and AppExchange integration. You'll sit the official Salesforce Certified Administrator (SCA) exam at the end, fully sponsored by FutureTech Africa. Our graduates have a 94% pass rate. Real-world scenarios from live Salesforce orgs are used throughout.",
+    description: "This 3-month programme covers user management, security configuration, data management, automation with Flow Builder, reports and dashboards, and AppExchange integration.",
     startDate: '15 Jul 2026',
     endDate: '15 Oct 2026',
     duration: '3 months',
     enrolledCount: 20,
     capacity: 25,
-    skills: [
-      'Salesforce',
-      'CRM',
-      'Data Management',
-      'Automation',
-      'Reports & Dashboards',
-      'Admin',
-    ],
-    careerOpportunities:
-    'Completing this programme can qualify you for roles in business such as developer positions, analyst roles, and more. Browse our opportunities to see relevant jobs.',
+    skills: ['Salesforce', 'CRM', 'Data Management', 'Automation', 'Reports & Dashboards', 'Admin'],
+    careerOpportunities: 'Completing this programme can qualify you for roles in business such as developer positions, analyst roles, and more.',
     imageUrl: 'assets/images/programmes/salesforce_admin.jpg',
   ),
   Programme(
@@ -100,19 +87,20 @@ const List<Programme> mockProgrammes = [
     category: 'Marketing',
     level: 'Beginner',
     status: 'Open',
-    description:
-    'Learn SEO, social media marketing, content strategy and paid advertising fundamentals.',
+    description: 'Learn SEO, social media marketing, content strategy and paid advertising fundamentals.',
     startDate: '10 Jul 2026',
     endDate: '10 Sep 2026',
     duration: '2 months',
     enrolledCount: 18,
     capacity: 20,
     skills: ['SEO', 'Social Media', 'Content Strategy', 'Google Ads'],
-    careerOpportunities:
-    'Completing this programme can qualify you for roles such as marketing assistant and social media coordinator.',
+    careerOpportunities: 'Completing this programme can qualify you for roles such as marketing assistant and social media coordinator.',
     imageUrl: 'assets/images/programmes/digital_marketing.jpg',
   ),
 ];
+
+const List<String> _locationFilters = ['All Locations', 'Cape Town', 'Johannesburg', 'Pretoria', 'Durban', 'Remote'];
+const List<String> _programmeTypeFilters = ['All Types', 'Full-time', 'Part-time', 'Internship', 'Apprenticeship', 'Contract', 'Remote', 'Hybrid'];
 
 // ───────────────────────────────────────────────────────────────────────
 // SCREEN
@@ -148,37 +136,187 @@ class _ProgrammeListScreenState extends State<ProgrammeListScreen> {
 
   @override
   void initState() {
-    // initState: nothing to set up beyond defaults — search/filter state
-    // initialised above. Kept here (commented) per architecture rule 6
-    // requiring a documented initState/dispose pair on stateful widgets.
     super.initState();
   }
 
   @override
   void dispose() {
-    // dispose: release the search field's controller to avoid leaks.
     _searchController.dispose();
     super.dispose();
   }
 
   List<Programme> get _filteredProgrammes {
+    final filterProvider = context.read<SearchFilterProvider>();
+
     return widget.programmes.where((programme) {
-      final matchesCategory = _selectedCategory == 'All' ||
-          programme.category == _selectedCategory;
+      final matchesCategory = _selectedCategory == 'All' || programme.category == _selectedCategory;
       final query = _searchQuery.trim().toLowerCase();
       final matchesSearch = query.isEmpty ||
           programme.title.toLowerCase().contains(query) ||
           programme.description.toLowerCase().contains(query);
-      return matchesCategory && matchesSearch;
+
+      // Apply location filter if any selected
+      final matchesLocation = filterProvider.selectedLocations.isEmpty ||
+          filterProvider.selectedLocations.contains(programme.provider);
+
+      return matchesCategory && matchesSearch && matchesLocation;
     }).toList();
+  }
+
+  void _showFilterBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Consumer<SearchFilterProvider>(
+        builder: (context, provider, child) {
+          return Container(
+            decoration: const BoxDecoration(
+              color: Color(0xFF1E293B),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header with close button
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Filters',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Location Section
+                  const Text(
+                    'Location',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _locationFilters.map((location) {
+                      final isSelected = location == 'All Locations'
+                          ? provider.selectedLocations.isEmpty
+                          : provider.selectedLocations.contains(location);
+
+                      return _FilterChip(
+                        label: location,
+                        selected: isSelected,
+                        onTap: () {
+                          provider.toggleLocation(location);
+                        },
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Programme Type Section
+                  const Text(
+                    'Programme Type',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _programmeTypeFilters.map((type) {
+                      final isSelected = type == 'All Types'
+                          ? provider.selectedLocations.isEmpty
+                          : provider.selectedLocations.contains(type);
+
+                      return _FilterChip(
+                        label: type,
+                        selected: isSelected,
+                        onTap: () {
+                          provider.toggleLocation(type);
+                        },
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Action Buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {
+                            provider.clearFilters();
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            side: const BorderSide(color: Colors.white38),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Reset',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.accent,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Apply Filters',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   Future<void> _handleRefresh() async {
     if (widget.onRefresh != null) {
       await widget.onRefresh!();
     } else {
-      // Mock refresh delay — replace by passing a real onRefresh callback
-      // once INT-003's fetchProgrammes() is wired up.
       await Future.delayed(const Duration(milliseconds: 600));
     }
     setState(() {});
@@ -192,15 +330,71 @@ class _ProgrammeListScreenState extends State<ProgrammeListScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Text(
-              'Programmes',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textDark,
-              ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Programmes',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textDark,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${filtered.length} programmes available',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppTheme.mutedText,
+                      ),
+                    ),
+                  ],
+                ),
+                Consumer<SearchFilterProvider>(
+                  builder: (context, provider, child) {
+                    return Stack(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: AppTheme.card,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: IconButton(
+                            onPressed: _showFilterBottomSheet,
+                            icon: const Icon(Icons.tune, color: AppTheme.textDark, size: 24),
+                          ),
+                        ),
+                        if (provider.activeFilterCount > 0)
+                          Positioned(
+                            right: 8,
+                            top: 8,
+                            child: Container(
+                              padding: const EdgeInsets.all(3),
+                              decoration: const BoxDecoration(
+                                color: AppTheme.accent,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text(
+                                '${provider.activeFilterCount}',
+                                style: const TextStyle(
+                                  fontSize: 9,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                ),
+              ],
             ),
           ),
           Padding(
@@ -211,8 +405,7 @@ class _ProgrammeListScreenState extends State<ProgrammeListScreen> {
               decoration: InputDecoration(
                 hintText: 'Search programmes...',
                 hintStyle: const TextStyle(color: AppTheme.mutedText),
-                prefixIcon:
-                const Icon(Icons.search, color: AppTheme.mutedText),
+                prefixIcon: const Icon(Icons.search, color: AppTheme.mutedText),
                 filled: true,
                 fillColor: AppTheme.secondary,
                 contentPadding: const EdgeInsets.symmetric(vertical: 14),
@@ -237,8 +430,7 @@ class _ProgrammeListScreenState extends State<ProgrammeListScreen> {
                 return ChoiceChip(
                   label: Text(category),
                   selected: isSelected,
-                  onSelected: (_) =>
-                      setState(() => _selectedCategory = category),
+                  onSelected: (_) => setState(() => _selectedCategory = category),
                   selectedColor: AppTheme.accent,
                   backgroundColor: AppTheme.secondary,
                   labelStyle: TextStyle(
@@ -256,29 +448,12 @@ class _ProgrammeListScreenState extends State<ProgrammeListScreen> {
           const SizedBox(height: 12),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '${filtered.length} programmes found',
-                  style: const TextStyle(
-                    color: AppTheme.mutedText,
-                    fontSize: 13,
-                  ),
-                ),
-                TextButton.icon(
-                  onPressed: () {
-                    // Filter button — opens additional filter options
-                    // (e.g. duration, level). Hook up to a filter sheet
-                    // when designed in a future ticket.
-                  },
-                  icon: const Icon(Icons.tune, size: 18, color: AppTheme.accent),
-                  label: const Text(
-                    'Filter',
-                    style: TextStyle(color: AppTheme.accent),
-                  ),
-                ),
-              ],
+            child: Text(
+              '${filtered.length} programmes found',
+              style: const TextStyle(
+                color: AppTheme.mutedText,
+                fontSize: 13,
+              ),
             ),
           ),
           Expanded(
@@ -287,8 +462,6 @@ class _ProgrammeListScreenState extends State<ProgrammeListScreen> {
               color: AppTheme.accent,
               child: filtered.isEmpty
                   ? ListView(
-                // ListView wrapper keeps pull-to-refresh working
-                // even when there are zero results.
                 children: const [
                   SizedBox(height: 80),
                   Center(
@@ -317,7 +490,7 @@ class _ProgrammeListScreenState extends State<ProgrammeListScreen> {
                             ),
                           ),
                         );
-                        },
+                      },
                     ),
                   );
                 },
@@ -325,6 +498,44 @@ class _ProgrammeListScreenState extends State<ProgrammeListScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _FilterChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _FilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? AppTheme.accent : Colors.white12,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected ? AppTheme.accent : Colors.white24,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+            color: selected ? Colors.white : Colors.white70,
+          ),
+        ),
       ),
     );
   }
@@ -346,9 +557,7 @@ class ProgrammeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final spotsLeft = programme.spotsRemaining;
-    final progress = programme.capacity == 0
-        ? 0.0
-        : programme.enrolledCount / programme.capacity;
+    final progress = programme.capacity == 0 ? 0.0 : programme.enrolledCount / programme.capacity;
 
     return Material(
       color: AppTheme.card,
@@ -366,11 +575,8 @@ class ProgrammeCard extends StatelessWidget {
                   aspectRatio: 16 / 9,
                   child: Container(
                     color: AppTheme.secondary,
-                    // Real image will be loaded from programme.imageUrl
-                    // once asset pipeline / network images are wired up.
                     child: const Center(
-                      child: Icon(Icons.image_outlined,
-                          size: 32, color: AppTheme.mutedText),
+                      child: Icon(Icons.image_outlined, size: 32, color: AppTheme.mutedText),
                     ),
                   ),
                 ),
@@ -383,8 +589,7 @@ class ProgrammeCard extends StatelessWidget {
                   top: 10,
                   left: 10,
                   child: Container(
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.6),
                       borderRadius: BorderRadius.circular(6),
@@ -452,9 +657,7 @@ class ProgrammeCard extends StatelessWidget {
                         child: _InfoColumn(
                           label: 'Spots left',
                           value: '$spotsLeft / ${programme.capacity}',
-                          valueColor: spotsLeft <= 5
-                              ? AppTheme.accent
-                              : AppTheme.textDark,
+                          valueColor: spotsLeft <= 5 ? AppTheme.accent : AppTheme.textDark,
                         ),
                       ),
                     ],
@@ -466,9 +669,7 @@ class ProgrammeCard extends StatelessWidget {
                       value: progress.clamp(0.0, 1.0),
                       minHeight: 4,
                       backgroundColor: AppTheme.secondary,
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                        AppTheme.accent,
-                      ),
+                      valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.accent),
                     ),
                   ),
                 ],
@@ -559,6 +760,3 @@ class _StatusBadge extends StatelessWidget {
     );
   }
 }
-// ═══════════════════════════════════════════════════════════════════════
-// Lutfeeya-UIUX-004
-// ═══════════════════════════════════════════════════════════════════════

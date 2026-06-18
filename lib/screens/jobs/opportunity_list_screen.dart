@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/core/widgets/skill_chip.dart';
+import 'package:futurepath_employment_hub/providers/search_filter_provider.dart';
+import 'package:provider/provider.dart';
 import 'opportunity_detail_screen.dart';
 
 class Opportunity {
@@ -137,7 +139,6 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
   String _searchQuery = '';
   String _selectedSkill = 'All';
   String _selectedJobType = 'All Types';
-  String _selectedLocation = 'All Locations';
   SortOption _sortOption = SortOption.mostRelevant;
 
   @override
@@ -159,6 +160,7 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
 
   List<Opportunity> get _filtered {
     List<Opportunity> list = _source;
+    final filterProvider = context.read<SearchFilterProvider>();
 
     if (_searchQuery.isNotEmpty) {
       list = list.where((opportunity) {
@@ -177,9 +179,10 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
       list = list.where((opportunity) => opportunity.jobType == _selectedJobType).toList();
     }
 
-    if (_selectedLocation != 'All Locations') {
+    // Use the provider's selected locations
+    if (filterProvider.selectedLocations.isNotEmpty) {
       list = list.where((opportunity) =>
-          opportunity.location.toLowerCase().contains(_selectedLocation.toLowerCase())).toList();
+          filterProvider.selectedLocations.contains(opportunity.location)).toList();
     }
 
     switch (_sortOption) {
@@ -209,6 +212,180 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
     return digits.map((match) => int.parse(match.group(0)!)).reduce((a, b) => a > b ? a : b);
   }
 
+  void _showFilterBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Consumer<SearchFilterProvider>(
+        builder: (context, provider, child) {
+          return Container(
+            decoration: const BoxDecoration(
+              color: Color(0xFF1E293B),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header with close button
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Filters',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Location Section
+                  const Text(
+                    'Location',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _locationFilters.map((location) {
+                      final isSelected = location == 'All Locations'
+                          ? provider.selectedLocations.isEmpty
+                          : provider.selectedLocations.contains(location);
+
+                      return _FilterChip(
+                        label: location,
+                        selected: isSelected,
+                        onTap: () {
+                          provider.toggleLocation(location);
+                        },
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Job Type Section
+                  const Text(
+                    'Job Type',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _jobTypeFilters.map((jobType) {
+                      final isSelected = jobType == 'All Types'
+                          ? _selectedJobType == 'All Types'
+                          : _selectedJobType == jobType;
+
+                      return _FilterChip(
+                        label: jobType,
+                        selected: isSelected,
+                        onTap: () {
+                          setState(() {
+                            _selectedJobType = jobType;
+                          });
+                        },
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Skills Section
+                  const Text(
+                    'Skills',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Use the skills chips above the list to filter by skill',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white54,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Action Buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {
+                            provider.clearFilters();
+                            setState(() {
+                              _selectedJobType = 'All Types';
+                            });
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            side: const BorderSide(color: Colors.white38),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Reset',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.accent,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Apply Filters',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final filtered = _filtered;
@@ -224,8 +401,6 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
               SliverToBoxAdapter(child: _buildHeader()),
               SliverToBoxAdapter(child: _buildSearchBar()),
               SliverToBoxAdapter(child: _buildSkillFilterRow()),
-              SliverToBoxAdapter(child: _buildJobTypeFilterRow()),
-              SliverToBoxAdapter(child: _buildLocationFilterRow()),
               SliverToBoxAdapter(child: _buildCountRow(filtered.length)),
               SliverToBoxAdapter(child: _buildSortFilterRow()),
               if (filtered.isEmpty)
@@ -289,29 +464,66 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
               color: AppTheme.textDark,
             ),
           ),
-          Stack(
+          Row(
             children: [
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.notifications_outlined, color: AppTheme.textDark),
+              // FILTER ICON BUTTON
+              Consumer<SearchFilterProvider>(
+                builder: (context, provider, child) {
+                  return Stack(
+                    children: [
+                      IconButton(
+                        onPressed: _showFilterBottomSheet,
+                        icon: const Icon(Icons.filter_list, color: AppTheme.textDark, size: 28),
+                      ),
+                      if (provider.activeFilterCount > 0)
+                        Positioned(
+                          right: 8,
+                          top: 8,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: AppTheme.accent,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(
+                              '${provider.activeFilterCount}',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
               ),
-              Positioned(
-                right: 8,
-                top: 8,
-                child: Container(
-                  width: 16,
-                  height: 16,
-                  decoration: const BoxDecoration(
-                    color: AppTheme.accent,
-                    shape: BoxShape.circle,
+              Stack(
+                children: [
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.notifications_outlined, color: AppTheme.textDark, size: 28),
                   ),
-                  child: const Center(
-                    child: Text(
-                      '4',
-                      style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w700),
+                  Positioned(
+                    right: 8,
+                    top: 8,
+                    child: Container(
+                      width: 16,
+                      height: 16,
+                      decoration: const BoxDecoration(
+                        color: AppTheme.accent,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Center(
+                        child: Text(
+                          '4',
+                          style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w700),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
             ],
           ),
@@ -371,55 +583,6 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
     );
   }
 
-  Widget _buildJobTypeFilterRow() {
-    return SizedBox(
-      height: 40,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: _jobTypeFilters.length,
-        separatorBuilder: (context, index) => const SizedBox(width: 12),
-        itemBuilder: (context, index) {
-          final label = _jobTypeFilters[index];
-          final selected = _selectedJobType == label;
-          return GestureDetector(
-            onTap: () => setState(() => _selectedJobType = label),
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
-                color: selected ? AppTheme.textDark : AppTheme.mutedText,
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildLocationFilterRow() {
-    return SizedBox(
-      height: 44,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        itemCount: _locationFilters.length,
-        separatorBuilder: (context, index) => const SizedBox(width: 8),
-        itemBuilder: (context, index) {
-          final label = _locationFilters[index];
-          final selected = _selectedLocation == label;
-          return _FilterChipItem(
-            label: label,
-            selected: selected,
-            onTap: () => setState(() => _selectedLocation = label),
-            outlined: true,
-          );
-        },
-      ),
-    );
-  }
-
   Widget _buildCountRow(int count) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
@@ -470,6 +633,44 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
         ),
         const SizedBox(height: 4),
       ],
+    );
+  }
+}
+
+class _FilterChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _FilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? AppTheme.accent : Colors.white12,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected ? AppTheme.accent : Colors.white24,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+            color: selected ? Colors.white : Colors.white70,
+          ),
+        ),
+      ),
     );
   }
 }
