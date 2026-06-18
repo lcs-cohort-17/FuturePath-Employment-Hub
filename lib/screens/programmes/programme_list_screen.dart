@@ -2,7 +2,8 @@
 // Lutfeeya-UIUX-004
 // ═══════════════════════════════════════════════════════════════════════
 import 'package:flutter/material.dart';
-import 'package:futurepath/core/theme/app_theme.dart';
+import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
+import 'package:futurepath_employment_hub/screens/programmes/programme_detail_screen.dart';
 
 class Programme {
   final String id;
@@ -308,10 +309,15 @@ class _ProgrammeListScreenState extends State<ProgrammeListScreen> {
                     child: ProgrammeCard(
                       programme: programme,
                       onTap: () {
-                        if (widget.onProgrammeTap != null) {
-                          widget.onProgrammeTap!(programme);
-                        }
-                      },
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ProgrammeDetailScreen(
+                              programmeId: programme.id,
+                            ),
+                          ),
+                        );
+                        },
                     ),
                   );
                 },

@@ -2,8 +2,8 @@
 // Lutfeeya-UIUX-012
 // ═══════════════════════════════════════════════════════════════════════
 import 'package:flutter/material.dart';
-import 'package:futurepath/core/theme/app_theme.dart';
-import 'package:futurepath/screens/programmes/programme_list_screen.dart'
+import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
+import 'package:futurepath_employment_hub/screens/programmes/programme_list_screen.dart'
     show Programme, mockProgrammes;
 
 // ───────────────────────────────────────────────────────────────────────
