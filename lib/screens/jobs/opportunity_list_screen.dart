@@ -1,50 +1,8 @@
-<<<<<<< HEAD
-import 'dart:convert';
-
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import '../../core/widgets/loading_overlay.dart';
-import '../../core/widgets/error_message.dart';
-import '../../core/widgets/empty_state.dart';
-import '../../services/search_filter_service.dart';
-
-class OpportunityListScreen extends StatefulWidget {
-  const OpportunityListScreen({super.key});
-
-  @override
-  State<OpportunityListScreen> createState() =>
-      _OpportunityListScreenState();
-}
-
-class _OpportunityListScreenState
-    extends State<OpportunityListScreen> {
-  bool isLoading = true;
-  bool hasError = false;
-
-  List opportunities = [];
-
-  // UIUX-014
-  List<String> selectedLocations = [];
-
-  // UIUX-009
-  DateTime? lastUpdated;
-=======
-// =============================================================================
-// PARAMETER CONTRACT
-// =============================================================================
-// opportunities   List<Opportunity>  required  Injected by INT-003 (mock default provided)
-// onRefresh       Future<void> Function()  required  Injected by INT-003 for pull-to-refresh
-// =============================================================================
-
 import 'package:flutter/material.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/core/widgets/skill_chip.dart';
-import 'package:futurepath_employment_hub/screens/jobs/opportunity_detail_screen.dart';
+import 'opportunity_detail_screen.dart';
 
-// ---------------------------------------------------------------------------
-// MODEL
-// ---------------------------------------------------------------------------
 class Opportunity {
   final String id;
   final String title;
@@ -97,9 +55,6 @@ class RelatedProgramme {
   });
 }
 
-// ---------------------------------------------------------------------------
-// MOCK DATA
-// ---------------------------------------------------------------------------
 final List<Opportunity> _mockOpportunities = [
   Opportunity(
     id: '1',
@@ -140,204 +95,8 @@ final List<Opportunity> _mockOpportunities = [
     logoInitials: 'F',
     logoColor: const Color(0xFF7C3AED),
   ),
-  Opportunity(
-    id: '3',
-    title: 'Digital Marketing Assistant',
-    company: 'Digital Growth Hub',
-    companyIndustry: 'Marketing',
-    location: 'Remote (SA-based)',
-    jobType: 'Full-time',
-    skills: ['SEO', 'Social Media', 'Content Creation', 'Google Ads', 'Canva'],
-    closingDate: '20 Jul 2026',
-    positions: 4,
-    salaryRange: 'R15,000 – R20,000',
-    isOpen: true,
-    description: 'Digital Growth Hub seeks a creative Digital Marketing Assistant.',
-    relatedProgrammes: [
-      RelatedProgramme(title: 'Digital Marketing Fundamentals', duration: '2 months', level: 'Beginner', isOpen: true),
-    ],
-    logoInitials: 'D',
-    logoColor: const Color(0xFFEA580C),
-  ),
-  Opportunity(
-    id: '4',
-    title: 'Data Analyst Trainee',
-    company: 'Innovate SA',
-    companyIndustry: 'Technology',
-    location: 'Durban',
-    jobType: 'Learnership',
-    skills: ['Python', 'SQL', 'Power BI', 'Excel', 'Statistics'],
-    closingDate: '01 Aug 2026',
-    positions: 8,
-    salaryRange: 'R14,000',
-    isOpen: true,
-    description: 'Innovate SA offers a structured Learnership for aspiring Data Analysts.',
-    relatedProgrammes: [
-      RelatedProgramme(title: 'Data Analytics with Python', duration: '4 months', level: 'Intermediate', isOpen: true),
-    ],
-    logoInitials: 'I',
-    logoColor: AppTheme.accent,
-  ),
-  Opportunity(
-    id: '5',
-    title: 'Front-End Developer (React)',
-    company: 'Innovate SA',
-    companyIndustry: 'Technology',
-    location: 'Cape Town',
-    jobType: 'Contract',
-    skills: ['React', 'TypeScript', 'Tailwind CSS', 'GraphQL', 'Git'],
-    closingDate: '10 Jul 2026',
-    positions: 2,
-    salaryRange: 'R350 – R500/hr',
-    isOpen: true,
-    description: 'Innovate SA needs a skilled Front-End Developer on a contract basis.',
-    relatedProgrammes: [
-      RelatedProgramme(title: 'React & Modern JS', duration: '3 months', level: 'Intermediate', isOpen: true),
-    ],
-    logoInitials: 'I',
-    logoColor: AppTheme.accent,
-  ),
-  Opportunity(
-    id: '6',
-    title: 'Social Media Coordinator',
-    company: 'Digital Growth Hub',
-    companyIndustry: 'Marketing',
-    location: 'Remote (SA-based)',
-    jobType: 'Part-time',
-    skills: ['Social Media', 'Content Creation', 'Canva', 'Analytics', 'Copywriting'],
-    closingDate: '05 Jul 2026',
-    positions: 3,
-    salaryRange: 'R8,000',
-    isOpen: true,
-    description: 'Digital Growth Hub is hiring a Social Media Coordinator.',
-    relatedProgrammes: [
-      RelatedProgramme(title: 'Social Media Management', duration: '1 month', level: 'Beginner', isOpen: true),
-    ],
-    logoInitials: 'D',
-    logoColor: const Color(0xFFEA580C),
-  ),
-  Opportunity(
-    id: '7',
-    title: 'IT Support Technician',
-    company: 'TechNova Solutions',
-    companyIndustry: 'Technology',
-    location: 'Johannesburg',
-    jobType: 'Full-time',
-    skills: ['Windows Server', 'Networking', 'Help Desk', 'Active Directory', 'CompTIA'],
-    closingDate: '15 Aug 2026',
-    positions: 5,
-    salaryRange: 'R14,000 – R18,000',
-    isOpen: true,
-    description: 'TechNova Solutions seeks an IT Support Technician.',
-    relatedProgrammes: [
-      RelatedProgramme(title: 'CompTIA A+ Prep', duration: '2 months', level: 'Beginner', isOpen: true),
-    ],
-    logoInitials: 'T',
-    logoColor: AppTheme.accent,
-  ),
-  Opportunity(
-    id: '8',
-    title: 'Business Development Intern',
-    company: 'FutureTech Africa',
-    companyIndustry: 'Business',
-    location: 'Pretoria, SA (Hybrid)',
-    jobType: 'Internship',
-    skills: ['Sales', 'CRM', 'Communication', 'Market Research', 'Microsoft Office'],
-    closingDate: '25 Jul 2026',
-    positions: 2,
-    salaryRange: 'R10,000',
-    isOpen: true,
-    duration: '6 months',
-    description: 'FutureTech Africa\'s Business Development team is looking for an energetic intern.',
-    relatedProgrammes: [
-      RelatedProgramme(title: 'Salesforce Administration', duration: '3 months', level: 'Beginner', isOpen: true),
-      RelatedProgramme(title: 'Financial Literacy & FinTech', duration: '2 months', level: 'Beginner', isOpen: true),
-    ],
-    logoInitials: 'F',
-    logoColor: const Color(0xFF7C3AED),
-  ),
-  Opportunity(
-    id: '9',
-    title: 'Cloud Support Engineer',
-    company: 'TechNova Solutions',
-    companyIndustry: 'Technology',
-    location: 'Cape Town',
-    jobType: 'Full-time',
-    skills: ['AWS', 'Linux', 'Terraform', 'Docker', 'Networking'],
-    closingDate: '01 Sep 2026',
-    positions: 4,
-    salaryRange: 'R22,000 – R30,000',
-    isOpen: true,
-    description: 'TechNova Solutions is expanding its Cloud team.',
-    relatedProgrammes: [
-      RelatedProgramme(title: 'AWS Cloud Practitioner', duration: '3 months', level: 'Intermediate', isOpen: true),
-    ],
-    logoInitials: 'T',
-    logoColor: AppTheme.accent,
-  ),
-  Opportunity(
-    id: '10',
-    title: 'UX Designer (Junior)',
-    company: 'Digital Growth Hub',
-    companyIndustry: 'Design',
-    location: 'Cape Town',
-    jobType: 'Full-time',
-    skills: ['Figma', 'User Research', 'Prototyping', 'Wireframing', 'Design Systems'],
-    closingDate: '10 Aug 2026',
-    positions: 2,
-    salaryRange: 'R18,000 – R24,000',
-    isOpen: true,
-    description: 'Digital Growth Hub is looking for a Junior UX Designer.',
-    relatedProgrammes: [
-      RelatedProgramme(title: 'UX Design Fundamentals', duration: '2 months', level: 'Beginner', isOpen: true),
-    ],
-    logoInitials: 'D',
-    logoColor: const Color(0xFFEA580C),
-  ),
-  Opportunity(
-    id: '11',
-    title: 'Cybersecurity Analyst Trainee',
-    company: 'Innovate SA',
-    companyIndustry: 'Technology',
-    location: 'Johannesburg',
-    jobType: 'Learnership',
-    skills: ['Network Security', 'Ethical Hacking', 'Linux', 'SIEM', 'CompTIA Security+'],
-    closingDate: '15 Oct 2026',
-    positions: 6,
-    salaryRange: 'R15,000',
-    isOpen: true,
-    description: 'Innovate SA\'s Cybersecurity Learnership is a 12-month programme.',
-    relatedProgrammes: [
-      RelatedProgramme(title: 'Ethical Hacking Bootcamp', duration: '4 months', level: 'Intermediate', isOpen: true),
-    ],
-    logoInitials: 'I',
-    logoColor: AppTheme.accent,
-  ),
-  Opportunity(
-    id: '12',
-    title: 'Financial Data Analyst',
-    company: 'FutureTech Africa',
-    companyIndustry: 'Finance',
-    location: 'Sandton',
-    jobType: 'Full-time',
-    skills: ['Excel', 'SQL', 'Power BI', 'Financial Modelling', 'Python'],
-    closingDate: '20 Aug 2026',
-    positions: 3,
-    salaryRange: 'R20,000 – R28,000',
-    isOpen: true,
-    description: 'FutureTech Africa\'s Finance division needs a Financial Data Analyst.',
-    relatedProgrammes: [
-      RelatedProgramme(title: 'Financial Literacy & FinTech', duration: '2 months', level: 'Beginner', isOpen: true),
-      RelatedProgramme(title: 'Data Analytics with Python', duration: '4 months', level: 'Intermediate', isOpen: true),
-    ],
-    logoInitials: 'F',
-    logoColor: const Color(0xFF7C3AED),
-  ),
 ];
 
-// ---------------------------------------------------------------------------
-// SORT OPTIONS
-// ---------------------------------------------------------------------------
 enum SortOption { mostRelevant, closingDate, salaryHighest, newest }
 
 extension SortOptionLabel on SortOption {
@@ -355,16 +114,10 @@ extension SortOptionLabel on SortOption {
   }
 }
 
-// ---------------------------------------------------------------------------
-// FILTER CONSTANTS
-// ---------------------------------------------------------------------------
 const List<String> _skillFilters = ['All', 'Flutter', 'Python', 'SQL', 'Salesforce', 'Digital Marketing'];
 const List<String> _jobTypeFilters = ['All Types', 'Full-time', 'Part-time', 'Internship', 'Learnership'];
 const List<String> _locationFilters = ['All Locations', 'Cape Town', 'Johannesburg', 'Durban', 'Remote'];
 
-// ---------------------------------------------------------------------------
-// SCREEN
-// ---------------------------------------------------------------------------
 class OpportunityListScreen extends StatefulWidget {
   final List<Opportunity> opportunities;
   final Future<void> Function()? onRefresh;
@@ -386,72 +139,10 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
   String _selectedJobType = 'All Types';
   String _selectedLocation = 'All Locations';
   SortOption _sortOption = SortOption.mostRelevant;
->>>>>>> 8667def18c7b4a0bbd3c26f350566073c3c62a80
 
   @override
   void initState() {
     super.initState();
-<<<<<<< HEAD
-    loadCachedOpportunities();
-    loadOpportunities();
-  }
-
-  Future<void> loadCachedOpportunities() async {
-    final prefs = await SharedPreferences.getInstance();
-    final cached = prefs.getString('opportunities');
-
-    if (cached != null) {
-      setState(() {
-        opportunities = List.from(
-          jsonDecode(cached),
-        );
-      });
-    }
-  }
-
-  Future<void> saveOpportunitiesToCache(
-      List data,
-      ) async {
-    final prefs = await SharedPreferences.getInstance();
-
-    await prefs.setString(
-      'opportunities',
-      jsonEncode(data),
-    );
-  }
-
-  Future<void> loadOpportunities() async {
-    setState(() {
-      isLoading = true;
-      hasError = false;
-    });
-
-    try {
-      // Replace with real service later
-      final data = [];
-
-      await saveOpportunitiesToCache(data);
-
-      setState(() {
-        opportunities = data;
-        lastUpdated = DateTime.now();
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        hasError = true;
-        isLoading = false;
-      });
-    }
-  }
-
-  List get filteredOpportunities {
-    return SearchFilterService
-        .filterOpportunitiesByLocation(
-      opportunities: opportunities,
-      locations: selectedLocations,
-    );
-=======
     _searchController.addListener(() {
       setState(() => _searchQuery = _searchController.text.toLowerCase());
     });
@@ -516,156 +207,10 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
     final digits = RegExp(r'\d+').allMatches(salaryRange.replaceAll(',', ''));
     if (digits.isEmpty) return 0;
     return digits.map((match) => int.parse(match.group(0)!)).reduce((a, b) => a > b ? a : b);
->>>>>>> 8667def18c7b4a0bbd3c26f350566073c3c62a80
   }
 
   @override
   Widget build(BuildContext context) {
-<<<<<<< HEAD
-    if (isLoading) {
-      return const Scaffold(
-        body: LoadingOverlay(),
-      );
-    }
-
-    if (hasError) {
-      return Scaffold(
-        body: ErrorMessage(
-          message: "Failed to load opportunities",
-          onRetry: loadOpportunities,
-        ),
-      );
-    }
-
-    if (opportunities.isEmpty) {
-      return const Scaffold(
-        body: EmptyState(
-          message: "No opportunities found",
-        ),
-      );
-    }
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Opportunities"),
-      ),
-      body: RefreshIndicator(
-        onRefresh: loadOpportunities,
-        child: Column(
-          children: [
-            if (lastUpdated != null)
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: Text(
-                  'Last updated ${DateTime.now().difference(lastUpdated!).inMinutes} minute(s) ago',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
-
-            const SizedBox(height: 10),
-
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  "All Locations",
-                  "Cape Town",
-                  "Johannesburg",
-                  "Durban",
-                  "Remote",
-                ].map((location) {
-                  final isSelected =
-                  selectedLocations.isEmpty
-                      ? location ==
-                      "All Locations"
-                      : selectedLocations
-                      .contains(location);
-
-                  return Padding(
-                    padding:
-                    const EdgeInsets.symmetric(
-                      horizontal: 6,
-                    ),
-                    child: ChoiceChip(
-                      label: Text(location),
-                      selected: isSelected,
-                      onSelected: (_) {
-                        setState(() {
-                          if (location ==
-                              "All Locations") {
-                            selectedLocations.clear();
-                          } else {
-                            if (selectedLocations
-                                .contains(location)) {
-                              selectedLocations
-                                  .remove(location);
-                            } else {
-                              selectedLocations
-                                  .add(location);
-                            }
-                          }
-                        });
-                      },
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-
-            if (selectedLocations.isNotEmpty)
-              Padding(
-                padding:
-                const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                child: Row(
-                  children: [
-                    Chip(
-                      label: Text(
-                        '${selectedLocations.length} filter(s) active',
-                      ),
-                    ),
-                    const Spacer(),
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          selectedLocations.clear();
-                        });
-                      },
-                      child: const Text(
-                        'Clear Filters',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-            Expanded(
-              child: ListView.builder(
-                itemCount:
-                filteredOpportunities.length,
-                itemBuilder:
-                    (context, index) {
-                  final job =
-                  filteredOpportunities[index];
-
-                  return ListTile(
-                    title: Text(
-                      job["title"]
-                          .toString(),
-                    ),
-                    subtitle: Text(
-                      job["location"]
-                          .toString(),
-                    ),
-                  );
-                },
-              ),
-=======
     final filtered = _filtered;
 
     return Scaffold(
@@ -929,9 +474,6 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
   }
 }
 
-// ---------------------------------------------------------------------------
-// FILTER CHIP ITEM
-// ---------------------------------------------------------------------------
 class _FilterChipItem extends StatelessWidget {
   final String label;
   final bool selected;
@@ -976,9 +518,6 @@ class _FilterChipItem extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// OPPORTUNITY CARD
-// ---------------------------------------------------------------------------
 class _OpportunityCard extends StatelessWidget {
   final Opportunity opportunity;
   final VoidCallback onTap;
@@ -992,7 +531,6 @@ class _OpportunityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final opportunity = this.opportunity;
     final visibleSkills = opportunity.skills.take(3).toList();
     final extraSkills = opportunity.skills.length > 3 ? opportunity.skills.length - 3 : 0;
 
@@ -1152,20 +690,14 @@ class _OpportunityCard extends StatelessWidget {
                   ),
                 ),
               ],
->>>>>>> 8667def18c7b4a0bbd3c26f350566073c3c62a80
             ),
           ],
         ),
       ),
     );
   }
-<<<<<<< HEAD
-=======
 }
 
-// ---------------------------------------------------------------------------
-// PLACEHOLDER SCREEN
-// ---------------------------------------------------------------------------
 class _PlaceholderScreen extends StatelessWidget {
   final String message;
 
@@ -1195,5 +727,4 @@ class _PlaceholderScreen extends StatelessWidget {
       ),
     );
   }
->>>>>>> 8667def18c7b4a0bbd3c26f350566073c3c62a80
 }
