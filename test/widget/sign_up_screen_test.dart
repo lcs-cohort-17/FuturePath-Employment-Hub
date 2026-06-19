@@ -1,98 +1,100 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:futurepath_employment_hub/screens/auth/login_screen.dart';
+import 'package:futurepath_employment_hub/screens/auth/sign_up_screen.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
-import 'package:futurepath_employment_hub/router/app_router.dart';
-import 'package:futurepath_employment_hub/services/registration_service.dart';
-import 'package:futurepath_employment_hub/services/auth_services.dart';
 
 void main() {
-  setUpAll(() {
+  setUpAll(() async {
+    // Prevent platform channel exceptions during Supabase initialization
     SharedPreferences.setMockInitialValues({});
-  });
 
-  setUp(() {
-    SharedPreferences.setMockInitialValues({});
-  });
-
-  Widget createApp() {
-    return MaterialApp(
-      theme: AppTheme.lightTheme,
-      initialRoute: AppRouter.login,
-      onGenerateRoute: AppRouter.generateRoute,
-      home: const LoginScreen(),
+    await Supabase.initialize(
+      url: 'https://supabase.co',
+      publishableKey: 'mock-anon-key-12345',
     );
-  }
+  });
 
-  group('UIUX-011: Sign Up / Registration Screen', () {
+  group('UIUX-011: Signup Screen Comprehensive Tests', () {
 
-    testWidgets('Sign Up tab switches to registration form', (WidgetTester tester) async {
-      await tester.pumpWidget(createApp());
-      expect(find.text('Log In'), findsWidgets);
-      await tester.tap(find.text('Sign Up'));
-      await tester.pumpAndSettle();
-      expect(find.text('First Name'), findsOneWidget);
-      expect(find.text('Create Account'), findsOneWidget);
-    });
-
-    testWidgets('All 13 Salesforce fields are present', (WidgetTester tester) async {
-      await tester.pumpWidget(createApp());
-      await tester.tap(find.text('Sign Up'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('First Name'), findsOneWidget);
-      expect(find.text('Last Name'), findsOneWidget);
-      expect(find.text('ID Number'), findsOneWidget);
-      expect(find.text('Date of Birth'), findsOneWidget);
-      expect(find.text('Gender'), findsOneWidget);
-      expect(find.text('Contact Number'), findsOneWidget);
-      expect(find.text('Email Address'), findsOneWidget);
-      expect(find.text('Residential Area'), findsOneWidget);
-      expect(find.text('Highest Qualification'), findsOneWidget);
-      expect(find.text('Current Employment Status'), findsOneWidget);
-      expect(find.text('Skills'), findsOneWidget);
-      expect(find.text('Password'), findsWidgets);
-      expect(find.text('Confirm Password'), findsOneWidget);
-    });
-
-    testWidgets('Form validation blocks empty submission', (WidgetTester tester) async {
-      await tester.pumpWidget(createApp());
-      await tester.tap(find.text('Sign Up'));
-      await tester.pumpAndSettle();
-
-      // Scroll down to bring the Create Account button into view
-      await tester.drag(find.byType(SingleChildScrollView).first, const Offset(0, -2000));
-      await tester.pumpAndSettle();
-
-      // Now tap the button
-      await tester.tap(find.text('Create Account'), warnIfMissed: false);
-      await tester.pumpAndSettle();
-
-      // Validation errors should appear
-      expect(find.textContaining('required'), findsWidgets);
-    });
-
-    testWidgets('RegistrationService stores data locally', (WidgetTester tester) async {
-      await RegistrationService.saveApplicant(
-        firstName: 'Test', lastName: 'User', idNumber: '0001010000000',
-        dateOfBirth: '01/01/2000', gender: 'Male', contactNumber: '0710000000',
-        email: 'test@test.com', residentialArea: 'Test City',
-        highestQualification: 'Matric', employmentStatus: 'Unemployed',
-        skills: ['Test'],
+    Widget createWidgetUnderTest() {
+      return MaterialApp(
+        theme: AppTheme.lightTheme,
+        home: const SignupScreen(),
       );
-      final applicants = await RegistrationService.getApplicants();
-      expect(applicants.length, 1);
-      expect(applicants[0]['firstName'], 'Test');
+    }
+
+    group('Dropdown Options & Choice Fields', () {
+      testWidgets('validates dropdown field choices render correctly', (WidgetTester tester) async {
+        await tester.pumpWidget(createWidgetUnderTest());
+
+        final genderDropdown = find.widgetWithText(DropdownButtonFormField<String>, 'Select gender');
+        final qualificationDropdown = find.widgetWithText(DropdownButtonFormField<String>, 'Select qualification');
+        final employmentDropdown = find.widgetWithText(DropdownButtonFormField<String>, 'Select employment status');
+
+        expect(genderDropdown, findsOneWidget);
+        expect(qualificationDropdown, findsOneWidget);
+        expect(employmentDropdown, findsOneWidget);
+      });
+
+      testWidgets('allows multi-selection checking on FilterChips skills', (WidgetTester tester) async {
+        await tester.pumpWidget(createWidgetUnderTest());
+
+        final communicationChip = find.widgetWithText(FilterChip, 'Communication');
+        expect(communicationChip, findsOneWidget);
+
+        // FIX: Scroll down inside SingleChildScrollView to bring the chip into view area
+        await tester.ensureVisible(communicationChip);
+        await tester.pumpAndSettle();
+
+        FilterChip communicationWidget = tester.widget<FilterChip>(communicationChip);
+        expect(communicationWidget.selected, isFalse);
+
+        // Tap the chip now that it is visible
+        await tester.tap(communicationChip);
+        await tester.pumpAndSettle();
+
+        communicationWidget = tester.widget<FilterChip>(communicationChip);
+        expect(communicationWidget.selected, isTrue);
+      });
     });
 
-    testWidgets('AuthService saves session', (WidgetTester tester) async {
-      // Save session
-      await AuthService.saveSession('test@test.com');
+    group('Interactive Regex & Form Rules', () {
+      testWidgets('enforces strict rules on input phone formats', (WidgetTester tester) async {
+        await tester.pumpWidget(createWidgetUnderTest());
 
-      // Verify it was saved by checking if isLoggedIn returns true
-      final isLoggedIn = await AuthService.isLoggedIn();
-      expect(isLoggedIn, true);
+        final phoneFieldFinder = find.widgetWithText(TextFormField, '071 234 5678');
+        final phoneField = tester.widget<TextFormField>(phoneFieldFinder);
+
+        expect(phoneField.validator!(''), equals('Contact number is required'));
+        expect(phoneField.validator!('071 abc 1234'), equals('Enter a valid contact number'));
+        expect(phoneField.validator!('0712345678'), isNull);
+      });
+
+      testWidgets('enforces safety rules on password complexity match strings', (WidgetTester tester) async {
+        await tester.pumpWidget(createWidgetUnderTest());
+
+        // FIX: Find the password text field directly by its hidden hint text layout parameter
+        final passwordFinder = find.widgetWithText(TextFormField, 'Password');
+        final passwordField = tester.widget<TextFormField>(passwordFinder);
+
+        expect(passwordField.validator!(''), equals('Password is required'));
+        expect(passwordField.validator!('123'), equals('Password must be at least 6 characters'));
+        expect(passwordField.validator!('password123'), isNull);
+      });
+    });
+
+    group('Submission Component Elements', () {
+      testWidgets('renders account creation submission action button', (WidgetTester tester) async {
+        await tester.pumpWidget(createWidgetUnderTest());
+
+        final buttonFinder = find.widgetWithText(FilledButton, 'Create Account');
+        expect(buttonFinder, findsOneWidget);
+
+        final filledButton = tester.widget<FilledButton>(buttonFinder);
+        expect(filledButton.onPressed, isNotNull);
+      });
     });
   });
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 import '../../services/auth_services.dart ';
+import '../../router/app_router.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
@@ -13,40 +15,46 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _auth = AuthService();
   bool _isLoading = false;
+  String? _errorMessage;
 
-  Future<void> _handlePasswordUpdate() async {
+  /// Called during an active passwordRecovery session. Validates the new
+  /// password, updates it via [AuthService], signs out the temporary
+  /// recovery session, and routes to Login so the user can sign in with
+  /// their new password. Clears the navigation stack so back cannot return
+  /// to Reset Password.
+  Future<void> _handleUpdatePassword() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
     try {
-      // 💡 Updates the active deep-linked recovery session password securely
       await _auth.updatePassword(_passwordController.text.trim());
+      await _auth.signOut();
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Password updated successfully! Please login.'),
-            backgroundColor: Colors.green,
-          ),
-        );
+      if (!mounted) return;
 
-        // Clear out the temporary recovery session and kick them back to login screen state
-        await _auth.signOut();
-      }
-    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password updated successfully! Please log in.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        AppRouter.login,
+            (route) => false,
+      );
+    } on AuthException catch (e) {
+      if (mounted) setState(() => _errorMessage = e.message);
+    } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error updating password: ${error.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        setState(() => _errorMessage = 'Something went wrong. Please try again.');
       }
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -88,8 +96,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   style: TextStyle(color: Colors.grey),
                 ),
                 const SizedBox(height: 32),
-
-                // Secure Password Field Input
                 TextFormField(
                   controller: _passwordController,
                   obscureText: true,
@@ -108,13 +114,36 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     return null;
                   },
                 ),
+                if (_errorMessage != null) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.error_outline, color: Colors.redAccent, size: 18),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _errorMessage!,
+                            style: const TextStyle(color: Colors.redAccent, fontSize: 13, fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 24),
-
-                // Submit Form Execution Controller
                 _isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : ElevatedButton(
-                  onPressed: _handlePasswordUpdate,
+                  onPressed: _handleUpdatePassword,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     backgroundColor: primaryColor,

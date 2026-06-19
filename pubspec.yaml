@@ -11,6 +11,8 @@ dependencies:
   flutter:
     sdk: flutter
 
+  flutter_riverpod: ^2.6.1
+
   cupertino_icons: ^1.0.8
 
   # Session management and local storage
