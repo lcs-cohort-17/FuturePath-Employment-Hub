@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/core/widgets/skill_chip.dart';
 import 'package:futurepath_employment_hub/providers/search_filter_provider.dart';
-import 'package:provider/provider.dart';
 import 'opportunity_detail_screen.dart';
 
 class Opportunity {
@@ -120,7 +120,7 @@ const List<String> _skillFilters = ['All', 'Flutter', 'Python', 'SQL', 'Salesfor
 const List<String> _jobTypeFilters = ['All Types', 'Full-time', 'Part-time', 'Internship', 'Learnership'];
 const List<String> _locationFilters = ['All Locations', 'Cape Town', 'Johannesburg', 'Durban', 'Remote'];
 
-class OpportunityListScreen extends StatefulWidget {
+class OpportunityListScreen extends ConsumerStatefulWidget {
   final List<Opportunity> opportunities;
   final Future<void> Function()? onRefresh;
 
@@ -131,10 +131,10 @@ class OpportunityListScreen extends StatefulWidget {
   });
 
   @override
-  State<OpportunityListScreen> createState() => _OpportunityListScreenState();
+  ConsumerState<OpportunityListScreen> createState() => _OpportunityListScreenState();
 }
 
-class _OpportunityListScreenState extends State<OpportunityListScreen> {
+class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   String _selectedSkill = 'All';
@@ -160,7 +160,7 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
 
   List<Opportunity> get _filtered {
     List<Opportunity> list = _source;
-    final filterProvider = context.read<SearchFilterProvider>();
+    final filterState = ref.read(searchFilterProvider);
 
     if (_searchQuery.isNotEmpty) {
       list = list.where((opportunity) {
@@ -179,10 +179,9 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
       list = list.where((opportunity) => opportunity.jobType == _selectedJobType).toList();
     }
 
-    // Use the provider's selected locations
-    if (filterProvider.selectedLocations.isNotEmpty) {
+    if (filterState.selectedLocations.isNotEmpty) {
       list = list.where((opportunity) =>
-          filterProvider.selectedLocations.contains(opportunity.location)).toList();
+          filterState.selectedLocations.contains(opportunity.location)).toList();
     }
 
     switch (_sortOption) {
@@ -217,8 +216,12 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Consumer<SearchFilterProvider>(
-        builder: (context, provider, child) {
+      builder: (context) => Consumer(
+        builder: (context, ref, child) {
+          // Get both state and notifier
+          final filterState = ref.watch(searchFilterProvider);
+          final filterNotifier = ref.watch(searchFilterProvider.notifier);
+
           return Container(
             decoration: const BoxDecoration(
               color: Color(0xFF1E293B),
@@ -230,7 +233,6 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header with close button
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -250,7 +252,6 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Location Section
                   const Text(
                     'Location',
                     style: TextStyle(
@@ -265,21 +266,21 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
                     runSpacing: 8,
                     children: _locationFilters.map((location) {
                       final isSelected = location == 'All Locations'
-                          ? provider.selectedLocations.isEmpty
-                          : provider.selectedLocations.contains(location);
+                          ? filterState.selectedLocations.isEmpty
+                          : filterState.selectedLocations.contains(location);
 
                       return _FilterChip(
                         label: location,
                         selected: isSelected,
                         onTap: () {
-                          provider.toggleLocation(location);
+                          // Use notifier to call method
+                          filterNotifier.toggleLocation(location);
                         },
                       );
                     }).toList(),
                   ),
                   const SizedBox(height: 24),
 
-                  // Job Type Section
                   const Text(
                     'Job Type',
                     style: TextStyle(
@@ -310,7 +311,6 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Skills Section
                   const Text(
                     'Skills',
                     style: TextStyle(
@@ -329,13 +329,13 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
                   ),
                   const SizedBox(height: 32),
 
-                  // Action Buttons
                   Row(
                     children: [
                       Expanded(
                         child: OutlinedButton(
                           onPressed: () {
-                            provider.clearFilters();
+                            // Use notifier to call method
+                            filterNotifier.clearFilters();
                             setState(() {
                               _selectedJobType = 'All Types';
                             });
@@ -466,16 +466,17 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
           ),
           Row(
             children: [
-              // FILTER ICON BUTTON
-              Consumer<SearchFilterProvider>(
-                builder: (context, provider, child) {
+              Consumer(
+                builder: (context, ref, child) {
+                  // Get state only (for reading properties)
+                  final filterState = ref.watch(searchFilterProvider);
                   return Stack(
                     children: [
                       IconButton(
                         onPressed: _showFilterBottomSheet,
                         icon: const Icon(Icons.filter_list, color: AppTheme.textDark, size: 28),
                       ),
-                      if (provider.activeFilterCount > 0)
+                      if (filterState.activeFilterCount > 0)
                         Positioned(
                           right: 8,
                           top: 8,
@@ -486,7 +487,7 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
                               shape: BoxShape.circle,
                             ),
                             child: Text(
-                              '${provider.activeFilterCount}',
+                              '${filterState.activeFilterCount}',
                               style: const TextStyle(
                                 fontSize: 10,
                                 color: Colors.white,

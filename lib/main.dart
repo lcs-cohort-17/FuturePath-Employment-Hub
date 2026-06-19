@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'router/app_router.dart';
 import 'providers/search_filter_provider.dart';
-import 'providers/user_profile.dart';
+import 'providers/user_profile_provider.dart';
 
 void main() {
   runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (context) => SearchFilterProvider()),
-        ChangeNotifierProvider(create: (context) => UserProfileNotifier()),
-      ],
+    ProviderScope(
       child: const MyApp(),
     ),
   );

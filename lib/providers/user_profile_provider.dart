@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_profile.dart';
 import '../models/programme.dart';
 
@@ -41,84 +41,76 @@ final mockUserProfile = UserProfile(
   ],
 );
 
-class UserProfileNotifier extends ChangeNotifier {
-  UserProfile _state = mockUserProfile;
-
-  UserProfile get state => _state;
+class UserProfileNotifier extends StateNotifier<UserProfile> {
+  UserProfileNotifier() : super(mockUserProfile);
 
   void setUserProfile(UserProfile profile) {
-    _state = profile;
-    notifyListeners();
+    state = profile;
   }
 
   void updateProfile(UserProfile updatedProfile) {
-    _state = updatedProfile;
-    notifyListeners();
+    state = updatedProfile;
   }
 
   void addSkill(String skill) {
     final trimmed = skill.trim();
-    if (trimmed.isNotEmpty && !_state.skills.contains(trimmed)) {
-      _state = _state.copyWith(
-        skills: [..._state.skills, trimmed],
+    if (trimmed.isNotEmpty && !state.skills.contains(trimmed)) {
+      state = state.copyWith(
+        skills: [...state.skills, trimmed],
       );
-      notifyListeners();
     }
   }
 
   void removeSkill(String skill) {
-    _state = _state.copyWith(
-      skills: _state.skills.where((s) => s != skill).toList(),
+    state = state.copyWith(
+      skills: state.skills.where((s) => s != skill).toList(),
     );
-    notifyListeners();
   }
 
   void updateHiredStatus(bool isHired) {
-    _state = _state.copyWith(isHired: isHired);
-    notifyListeners();
+    state = state.copyWith(isHired: isHired);
   }
 
   void updateEmploymentStatus(String status) {
-    _state = _state.copyWith(employmentStatus: status);
-    notifyListeners();
+    state = state.copyWith(employmentStatus: status);
   }
 
   void addSavedProgramme(Programme programme) {
-    final updatedSaved = List<Programme>.from(_state.savedProgrammes)..add(programme);
-    _state = _state.copyWith(savedProgrammes: updatedSaved);
-    notifyListeners();
+    final updatedSaved = List<Programme>.from(state.savedProgrammes)..add(programme);
+    state = state.copyWith(savedProgrammes: updatedSaved);
   }
 
   void removeSavedProgramme(String programmeId) {
-    final updatedSaved = _state.savedProgrammes
+    final updatedSaved = state.savedProgrammes
         .where((p) => p.id != programmeId)
         .toList();
-    _state = _state.copyWith(savedProgrammes: updatedSaved);
-    notifyListeners();
+    state = state.copyWith(savedProgrammes: updatedSaved);
   }
 
   void addEnrolledProgramme(Programme programme) {
-    final updatedEnrolled = List<Programme>.from(_state.enrolledProgrammes)..add(programme);
-    _state = _state.copyWith(enrolledProgrammes: updatedEnrolled);
-    notifyListeners();
+    final updatedEnrolled = List<Programme>.from(state.enrolledProgrammes)..add(programme);
+    state = state.copyWith(enrolledProgrammes: updatedEnrolled);
   }
 
   void removeEnrolledProgramme(String programmeId) {
-    final updatedEnrolled = _state.enrolledProgrammes
+    final updatedEnrolled = state.enrolledProgrammes
         .where((p) => p.id != programmeId)
         .toList();
-    _state = _state.copyWith(enrolledProgrammes: updatedEnrolled);
-    notifyListeners();
+    state = state.copyWith(enrolledProgrammes: updatedEnrolled);
   }
 
   void addCompletedProgramme(Programme programme) {
-    final updatedCompleted = List<Programme>.from(_state.completedProgrammes)..add(programme);
-    _state = _state.copyWith(completedProgrammes: updatedCompleted);
-    notifyListeners();
+    final updatedCompleted = List<Programme>.from(state.completedProgrammes)..add(programme);
+    state = state.copyWith(completedProgrammes: updatedCompleted);
   }
 
   void clearProfile() {
-    _state = mockUserProfile;
-    notifyListeners();
+    state = mockUserProfile;
   }
 }
+
+// 👇 THIS IS THE MISSING LINE 👇
+final userProfileProvider =
+StateNotifierProvider<UserProfileNotifier, UserProfile>((ref) {
+  return UserProfileNotifier();
+});

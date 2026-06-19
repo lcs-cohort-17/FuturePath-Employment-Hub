@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 // ═══════════════════════════════════════════════════════════════════════
 // Lutfeeya-UIUX-004
 // ═══════════════════════════════════════════════════════════════════════
@@ -145,8 +144,7 @@ class ProgrammeDetailScreen extends StatelessWidget {
                             icon: Icons.people_outline,
                             label: 'CAPACITY',
                             value:
-                            '${programme.enrolledCount}/${programme
-                                .capacity} enrolled',
+                            '${programme.enrolledCount}/${programme.capacity} enrolled',
                           ),
                         ),
                       ],
@@ -341,25 +339,10 @@ class ProgrammeDetailScreen extends StatelessWidget {
               ),
             ],
           ),
-=======
-import 'package:flutter/material.dart';
-
-class ProgrammesScreen extends StatelessWidget {
-  const ProgrammesScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text(
-          'Programme Screen',
-          style: TextStyle(fontSize: 24),
->>>>>>> 676db699f80e3d1a272c406f00a6e9c142ba795a
         ),
       ),
     );
   }
-<<<<<<< HEAD
 }
 
 // ───────────────────────────────────────────────────────────────────────
@@ -510,6 +493,3 @@ class _CircleIconButton extends StatelessWidget {
 // ═══════════════════════════════════════════════════════════════════════
 // Lutfeeya-UIUX-004
 // ═══════════════════════════════════════════════════════════════════════
-=======
-}
->>>>>>> 676db699f80e3d1a272c406f00a6e9c142ba795a
