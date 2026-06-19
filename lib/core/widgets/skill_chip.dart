@@ -1,4 +1,4 @@
-// lib/core/widgets/skill_chip.dart
+// skill chip.dart
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 
