@@ -136,8 +136,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
   void initState() {
     super.initState();
     // Auto-fill applicant fields from profile, per acceptance criteria #2.
-    // Fields are editable (not read-only) so the applicant can correct
-    // stale profile data without leaving this screen.
     _fullNameController =
         TextEditingController(text: widget.applicantProfile.fullName);
     _saIdController =
@@ -153,7 +151,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
 
   @override
   void dispose() {
-    // Release all text controllers to avoid leaks.
     _fullNameController.dispose();
     _saIdController.dispose();
     _emailController.dispose();
@@ -206,8 +203,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
       if (widget.onSuccess != null) {
         widget.onSuccess!(data);
       } else {
-        // Fallback navigation if NAV-002 hasn't injected onSuccess yet —
-        // pushes the success screen defined below in this same file.
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => ProgrammeApplicationSuccessScreen(
@@ -232,7 +227,7 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black.withOpacity(0.0),
+      backgroundColor: Colors.black.withValues(alpha: 0.0),
       body: SafeArea(
         child: Align(
           alignment: Alignment.bottomCenter,
@@ -316,8 +311,8 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                               color: AppTheme.secondary,
                               borderRadius: BorderRadius.circular(24),
                             ),
-                            child: Row(
-                              children: const [
+                            child: const Row(
+                              children: [
                                 Text('✨', style: TextStyle(fontSize: 14)),
                                 SizedBox(width: 8),
                                 Text(
@@ -436,7 +431,7 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                               const EdgeInsets.symmetric(vertical: 16),
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                  color: AppTheme.mutedText.withOpacity(0.4),
+                                  color: AppTheme.mutedText.withValues(alpha: 0.4),
                                   style: BorderStyle.solid,
                                 ),
                                 borderRadius: BorderRadius.circular(14),
@@ -531,7 +526,7 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                         backgroundColor: AppTheme.primary,
                         foregroundColor: Colors.white,
                         disabledBackgroundColor:
-                        AppTheme.primary.withOpacity(0.6),
+                        AppTheme.primary.withValues(alpha: 0.6),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(28),
@@ -597,7 +592,7 @@ class ProgrammeApplicationSuccessScreen extends StatelessWidget {
                 width: 88,
                 height: 88,
                 decoration: BoxDecoration(
-                  color: AppTheme.accent.withOpacity(0.12),
+                  color: AppTheme.accent.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -649,7 +644,7 @@ class ProgrammeApplicationSuccessScreen extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.12),
+                        color: Colors.orange.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Text(

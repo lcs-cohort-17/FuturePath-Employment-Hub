@@ -4,48 +4,24 @@
 import 'package:flutter/material.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/screens/programmes/programme_list_screen.dart'
-    show Programme, mockProgrammes;
-import 'package:futurepath_employment_hub/screens/programmes/programme_application_screen.dart';
-
+    show Programme;
+import 'programme_application_screen.dart';
 
 class ProgrammeDetailScreen extends StatelessWidget {
-  final String programmeId;
+  final Programme programme;
   final void Function(Programme programme)? onApplyNow;
   final VoidCallback? onBack;
 
   const ProgrammeDetailScreen({
     super.key,
-    required this.programmeId,
+    required this.programme,
     this.onApplyNow,
     this.onBack,
   });
 
   @override
   Widget build(BuildContext context) {
-    Programme? programme;
-
-    try {
-      programme = mockProgrammes.firstWhere(
-            (p) => p.id == programmeId,
-      );
-    } catch (_) {
-      programme = null;
-    }
-
-    if (programme == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.of(context).pop();
-      });
-
-      return const Scaffold(
-        body: Center(
-          child: Text('Programme not found'),
-        ),
-      );
-    }
-
     final spotsLeft = programme.spotsRemaining;
-
     final progress = programme.capacity == 0
         ? 0.0
         : programme.enrolledCount / programme.capacity;
@@ -168,7 +144,8 @@ class ProgrammeDetailScreen extends StatelessWidget {
                             icon: Icons.people_outline,
                             label: 'CAPACITY',
                             value:
-                            '${programme.enrolledCount}/${programme.capacity} enrolled',
+                            '${programme.enrolledCount}/${programme
+                                .capacity} enrolled',
                           ),
                         ),
                       ],
@@ -331,20 +308,18 @@ class ProgrammeDetailScreen extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      // lina nav-002
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ProgrammeApplyScreen(
-                            programme: programme,
-                          ),
-                        ),
-                      );
+                      if (onApplyNow != null) {
+                        onApplyNow!(programme);
+                      } else {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) =>
+                              ProgrammeApplyScreen(programme: programme),
+                        );
+                      }
                     },
-
-                      // Navigates to UIUX-012 Programme Application Form —
-                      // NOT the job application flow (UIUX-006).
-
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.accent,
                       foregroundColor: Colors.white,
