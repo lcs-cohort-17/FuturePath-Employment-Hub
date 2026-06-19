@@ -1,4 +1,6 @@
+//auth services.dart
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AuthService {
   static const _keyIsLoggedIn = 'is_logged_in';
@@ -26,15 +28,18 @@ class AuthService {
     return prefs.getString(_keyUserEmail);
   }
 
+  Future<void> logout() async {
+    await clearSession();
+  }
+
   Future<void> sendPasswordResetEmail(String email) async {
     try {
       // Simulate API call for now
       await Future.delayed(const Duration(seconds: 2));
-      print('Password reset link sent to: $email');
     } catch (e) {
-      print('Error sending password reset email: $e');
       rethrow;
     }
   }
 }
 
+final authServiceProvider = Provider<AuthService>((ref) => AuthService());

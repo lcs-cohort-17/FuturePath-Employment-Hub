@@ -1,8 +1,9 @@
+//notifications_screen.dart
 import 'package:flutter/material.dart';
 
 class NotificationsScreen extends StatefulWidget {
   final List<Map<String, dynamic>> notifications;
-  const NotificationsScreen({Key? key, required this.notifications}) : super(key: key);
+  const NotificationsScreen({super.key, required this.notifications});
 
   @override
   State<NotificationsScreen> createState() => _NotificationsScreenState();
@@ -89,7 +90,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         physics: const NeverScrollableScrollPhysics(),
         padding: EdgeInsets.zero,
         itemCount: items.length,
-        separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
+        separatorBuilder: (_, _) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
         itemBuilder: (context, idx) {
           final item = items[idx];
           final bool isUnread = !item['isRead'];
@@ -106,7 +107,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   Container(
                     width: 40,
                     height: 40,
-                    decoration: BoxDecoration(color: isUnread ? const Color(0xFF008080).withOpacity(0.1) : const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(10)),
+                    decoration: BoxDecoration(color: isUnread ? const Color(0xFF008080).withAlpha(26) : const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(10)),
                     child: Icon(_getIcon(item['type'] ?? ''), color: isUnread ? const Color(0xFF008080) : const Color(0xFF1A365D), size: 18),
                   ),
                   const SizedBox(width: 12),
@@ -122,7 +123,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         ),
                         const SizedBox(height: 4),
 
-                        // TRANSFORMAED TEXT CONTAINER BLOCK: Surface legible navigation text labels
+                        // Legible navigation text labels
                         GestureDetector(
                           onTap: () => setState(() => isExpanded ? _expandedIds.remove(id) : _expandedIds.add(id)),
                           child: RichText(

@@ -1,12 +1,13 @@
+//track profile.dart
 import 'package:flutter/material.dart';
 
 class TrackApplicationsScreen extends StatefulWidget {
   final List<Map<String, dynamic>> applications;
 
   const TrackApplicationsScreen({
-    Key? key,
+    super.key,
     required this.applications,
-  }) : super(key: key);
+  });
 
   @override
   State<TrackApplicationsScreen> createState() => _TrackApplicationsScreenState();

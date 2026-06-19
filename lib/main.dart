@@ -3,11 +3,15 @@ import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'router/app_router.dart';
 import 'providers/search_filter_provider.dart';
+import 'providers/user_profile.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => SearchFilterProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => SearchFilterProvider()),
+        ChangeNotifierProvider(create: (context) => UserProfileNotifier()),
+      ],
       child: const MyApp(),
     ),
   );
