@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/screens/programmes/programme_detail_screen.dart';
+import 'package:futurepath_employment_hub/core/widgets/notification_badge.dart';
 import 'package:provider/provider.dart';
 import 'package:futurepath_employment_hub/providers/search_filter_provider.dart';
 
@@ -356,43 +357,49 @@ class _ProgrammeListScreenState extends State<ProgrammeListScreen> {
                     ),
                   ],
                 ),
-                Consumer<SearchFilterProvider>(
-                  builder: (context, provider, child) {
-                    return Stack(
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            color: AppTheme.card,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: IconButton(
-                            onPressed: _showFilterBottomSheet,
-                            icon: const Icon(Icons.tune, color: AppTheme.textDark, size: 24),
-                          ),
-                        ),
-                        if (provider.activeFilterCount > 0)
-                          Positioned(
-                            right: 8,
-                            top: 8,
-                            child: Container(
-                              padding: const EdgeInsets.all(3),
-                              decoration: const BoxDecoration(
-                                color: AppTheme.accent,
-                                shape: BoxShape.circle,
+                Row(
+                  children: [
+                    Consumer<SearchFilterProvider>(
+                      builder: (context, provider, child) {
+                        return Stack(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                color: AppTheme.card,
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                              child: Text(
-                                '${provider.activeFilterCount}',
-                                style: const TextStyle(
-                                  fontSize: 9,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                              child: IconButton(
+                                onPressed: _showFilterBottomSheet,
+                                icon: const Icon(Icons.tune, color: AppTheme.textDark, size: 24),
                               ),
                             ),
-                          ),
-                      ],
-                    );
-                  },
+                            if (provider.activeFilterCount > 0)
+                              Positioned(
+                                right: 8,
+                                top: 8,
+                                child: Container(
+                                  padding: const EdgeInsets.all(3),
+                                  decoration: const BoxDecoration(
+                                    color: AppTheme.accent,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(
+                                    '${provider.activeFilterCount}',
+                                    style: const TextStyle(
+                                      fontSize: 9,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    const NotificationBadge(iconColor: AppTheme.textDark),
+                  ],
                 ),
               ],
             ),

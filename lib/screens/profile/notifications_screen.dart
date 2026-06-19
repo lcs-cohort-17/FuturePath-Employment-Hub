@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../services/notification_service.dart';
 
 class NotificationsScreen extends StatefulWidget {
   final List<Map<String, dynamic>> notifications;
@@ -10,71 +11,81 @@ class NotificationsScreen extends StatefulWidget {
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
   final Set<String> _expandedIds = {};
-  late List<Map<String, dynamic>> _localNotifications;
-
-  @override
-  void initState() {
-    super.initState();
-    _localNotifications = List<Map<String, dynamic>>.from(widget.notifications);
-  }
+  final notificationService = NotificationService();
 
   void _toggleRead(Map<String, dynamic> item, {bool all = false}) {
-    setState(() {
-      if (all) {
-        for (var n in _localNotifications) { n['isRead'] = true; }
-      } else {
-        item['isRead'] = true;
+    if (all) {
+      notificationService.markAllAsRead();
+    } else {
+      final index = notificationService.notifications.indexOf(item);
+      if (index != -1) {
+        notificationService.markAsRead(index);
       }
-    });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final unread = _localNotifications.where((n) => !n['isRead']).toList();
-    final read = _localNotifications.where((n) => n['isRead']).toList();
+    return ListenableBuilder(
+      listenable: notificationService,
+      builder: (context, _) {
+        final notifications = notificationService.notifications;
+        final unread = notifications.where((n) => !n['isRead']).toList();
+        final read = notifications.where((n) => n['isRead']).toList();
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        toolbarHeight: 85,
-        leading: IconButton(icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1A365D)), onPressed: () => Navigator.pop(context)),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+        return Scaffold(
+          backgroundColor: const Color(0xFFF8FAFC),
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            toolbarHeight: 85,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1A365D)),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Notifications', style: TextStyle(color: Color(0xFF1A365D), fontWeight: FontWeight.bold, fontSize: 22)),
-                if (unread.isNotEmpty) ...[
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(color: const Color(0xFF1A365D), borderRadius: BorderRadius.circular(12)),
-                    child: Text('${unread.length} NEW', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800)),
-                  ),
-                ]
+                Row(
+                  children: [
+                    const Text('Notifications', style: TextStyle(color: Color(0xFF1A365D), fontWeight: FontWeight.bold, fontSize: 22)),
+                    if (unread.isNotEmpty) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(color: const Color(0xFF1A365D), borderRadius: BorderRadius.circular(12)),
+                        child: Text('${unread.length} NEW', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800)),
+                      ),
+                    ]
+                  ],
+                ),
+                const Text('Stay updated with your active alerts.', style: TextStyle(color: Color(0xFF64748B), fontSize: 13)),
               ],
             ),
-            const Text('Stay updated with your active alerts.', style: TextStyle(color: Color(0xFF64748B), fontSize: 13)),
-          ],
-        ),
-        actions: [
-          if (unread.isNotEmpty)
-            TextButton(onPressed: () => _toggleRead({}, all: true), child: const Text('Mark all read', style: TextStyle(color: Color(0xFF008080), fontWeight: FontWeight.bold))),
-        ],
-        bottom: PreferredSize(preferredSize: const Size.fromHeight(1), child: Container(color: const Color(0xFFE2E8F0), height: 1)),
-      ),
-      body: _localNotifications.isEmpty
-          ? _buildEmptyState()
-          : ListView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.only(bottom: 40),
-              children: [
-                if (unread.isNotEmpty) ...[_buildHeader('NEW ALERTS', const Color(0xFF008080)), _buildList(unread, 'un')],
-                if (read.isNotEmpty) ...[_buildHeader('EARLIER', const Color(0xFF64748B)), _buildList(read, 'r')],
-              ],
+            actions: [
+              if (unread.isNotEmpty)
+                TextButton(
+                  onPressed: () => _toggleRead({}, all: true),
+                  child: const Text('Mark all read', style: TextStyle(color: Color(0xFF008080), fontWeight: FontWeight.bold)),
+                ),
+            ],
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(1),
+              child: Container(color: const Color(0xFFE2E8F0), height: 1),
             ),
+          ),
+          body: notifications.isEmpty
+              ? _buildEmptyState()
+              : ListView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.only(bottom: 40),
+                  children: [
+                    if (unread.isNotEmpty) ...[_buildHeader('NEW ALERTS', const Color(0xFF008080)), _buildList(unread, 'un')],
+                    if (read.isNotEmpty) ...[_buildHeader('EARLIER', const Color(0xFF64748B)), _buildList(read, 'r')],
+                  ],
+                ),
+        );
+      },
     );
   }
 
@@ -121,24 +132,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           ],
                         ),
                         const SizedBox(height: 4),
-
-                        // TRANSFORMAED TEXT CONTAINER BLOCK: Surface legible navigation text labels
-                        GestureDetector(
-                          onTap: () => setState(() => isExpanded ? _expandedIds.remove(id) : _expandedIds.add(id)),
-                          child: RichText(
-                            text: TextSpan(
-                              style: const TextStyle(color: Color(0xFF64748B), fontSize: 13, height: 1.4, fontFamily: 'Roboto'),
-                              children: [
-                                TextSpan(text: item['body'] ?? ''),
-                                TextSpan(
-                                  text: isExpanded ? '  Show Less' : ' ... Show More',
-                                  style: const TextStyle(color: Color(0xFF008080), fontWeight: FontWeight.bold, fontSize: 12),
-                                ),
-                              ],
-                            ),
-                            maxLines: isExpanded ? null : 2,
-                            overflow: isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
-                          ),
+                        _ExpandableBody(
+                          body: item['body'] ?? '',
+                          isExpanded: isExpanded,
+                          onToggle: () {
+                            setState(() {
+                              if (isExpanded) {
+                                _expandedIds.remove(id);
+                              } else {
+                                _expandedIds.add(id);
+                              }
+                            });
+                          },
                         ),
                         const SizedBox(height: 6),
                         Text(item['timestamp'] ?? '', style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11)),
@@ -162,4 +167,54 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Widget _buildEmptyState() => Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: const [Icon(Icons.notifications_none_rounded, size: 48, color: Color(0xFF94A3B8)), SizedBox(height: 12), Text('All Caught Up!', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1A365D)))]));
+}
+
+class _ExpandableBody extends StatelessWidget {
+  final String body;
+  final bool isExpanded;
+  final VoidCallback onToggle;
+
+  const _ExpandableBody({
+    required this.body,
+    required this.isExpanded,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const textStyle = TextStyle(color: Color(0xFF64748B), fontSize: 13, height: 1.4, fontFamily: 'Roboto');
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final span = TextSpan(text: body, style: textStyle);
+        final tp = TextPainter(
+          text: span,
+          maxLines: 2,
+          textDirection: TextDirection.ltr,
+        );
+        tp.layout(maxWidth: constraints.maxWidth);
+
+        final bool isTruncated = tp.didExceedMaxLines;
+
+        return GestureDetector(
+          onTap: isTruncated ? onToggle : null,
+          child: RichText(
+            text: TextSpan(
+              style: textStyle,
+              children: [
+                TextSpan(text: body),
+                if (isTruncated || isExpanded)
+                  TextSpan(
+                    text: isExpanded ? '  Show Less' : ' ... Show More',
+                    style: const TextStyle(color: Color(0xFF008080), fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
+              ],
+            ),
+            maxLines: isExpanded ? null : 2,
+            overflow: isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+          ),
+        );
+      },
+    );
+  }
 }

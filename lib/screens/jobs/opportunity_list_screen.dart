@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/core/widgets/skill_chip.dart';
+import 'package:futurepath_employment_hub/core/widgets/notification_badge.dart';
 import 'package:futurepath_employment_hub/providers/search_filter_provider.dart';
 import 'package:provider/provider.dart';
 import 'opportunity_detail_screen.dart';
@@ -499,32 +500,7 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
                   );
                 },
               ),
-              Stack(
-                children: [
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(Icons.notifications_outlined, color: AppTheme.textDark, size: 28),
-                  ),
-                  Positioned(
-                    right: 8,
-                    top: 8,
-                    child: Container(
-                      width: 16,
-                      height: 16,
-                      decoration: const BoxDecoration(
-                        color: AppTheme.accent,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Center(
-                        child: Text(
-                          '4',
-                          style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w700),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              const NotificationBadge(iconColor: AppTheme.textDark),
             ],
           ),
         ],
