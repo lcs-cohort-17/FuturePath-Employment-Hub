@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'screens/shell/main_shell.dart';
 import 'screens/jobs/job_apply_screen.dart';
 import 'screens/jobs/job_apply_success_screen.dart';
 import 'screens/jobs/opportunity_detail_screen.dart';
@@ -10,10 +11,14 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: MainShell(key: MainShell.shellKey),
+    );
+  }
+}
       title: 'Flutter Demo',
       theme: ThemeData(
         // This is the theme of your application.
