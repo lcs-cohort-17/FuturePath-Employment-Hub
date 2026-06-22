@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 import '../../services/auth_services.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/widgets/loading_indicator.dart';
 import '../../core/widgets/error_message.dart';
 
@@ -8,10 +9,10 @@ class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  State<ForgotPasswordScreen> createState() => _ForgotPasswordFormState();
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordFormState extends State<ForgotPasswordScreen> {
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final AuthService _authService = AuthService();
@@ -26,13 +27,8 @@ class _ForgotPasswordFormState extends State<ForgotPasswordScreen> {
     super.dispose();
   }
 
-  /// Validates the email, requests a password reset via [AuthService], and
-  /// shows a neutral confirmation message regardless of whether the account
-  /// exists (avoids leaking which emails are registered).
   Future<void> _handleForgotPassword() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     setState(() {
       _isLoading = true;
@@ -45,102 +41,116 @@ class _ForgotPasswordFormState extends State<ForgotPasswordScreen> {
         redirectTo: 'io.futurepath://reset-password',
       );
 
-      if (mounted) {
-        setState(() {
-          _isSuccess = true;
-        });
-      }
+      if (mounted) setState(() => _isSuccess = true);
     } on AuthException catch (e) {
-      if (mounted) {
-        setState(() {
-          _errorMessage = e.message;
-        });
-      }
+      if (mounted) setState(() => _errorMessage = e.message);
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _errorMessage = 'Something went wrong. Please try again.';
-        });
-      }
+      if (mounted) setState(() => _errorMessage = 'Something went wrong. Please try again.');
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isSuccess) {
-      return _buildSuccessView();
-    }
-
-    return Form(
-      key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          TextFormField(
-            controller: _emailController,
-            keyboardType: TextInputType.emailAddress,
-            textInputAction: TextInputAction.done,
-            decoration: InputDecoration(
-              labelText: 'Email Address',
-              hintText: 'Enter your email',
-              prefixIcon: const Icon(Icons.email_outlined),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey[300]!),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Colors.blue, width: 2),
-              ),
-            ),
-            validator: (value) {
-              if (value == null || value.trim().isEmpty) {
-                return 'Please enter your email address';
-              }
-              final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
-              if (!emailRegex.hasMatch(value.trim())) {
-                return 'Please enter a valid email address';
-              }
-              return null;
-            },
-            onFieldSubmitted: (_) => _handleForgotPassword(),
-          ),
-          if (_errorMessage != null) ...[
-            const SizedBox(height: 16),
-            ErrorMessage(message: _errorMessage!),
-          ],
-          const SizedBox(height: 24),
-          SizedBox(
-            height: 50,
-            child: ElevatedButton(
-              onPressed: _isLoading ? null : _handleForgotPassword,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 0,
-              ),
-              child: _isLoading
-                  ? LoadingIndicator(color: Colors.white)
-                  : const Text(
-                'Send Reset Link',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-        ],
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: AppTheme.textDark),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: _isSuccess ? _buildSuccessView() : _buildForm(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildForm() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 20),
+        Text(
+          'Forgot Password?',
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: AppTheme.primary,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Enter your email address and we\'ll send you a link to reset your password.',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: AppTheme.mutedText,
+          ),
+        ),
+        const SizedBox(height: 40),
+        Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextFormField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.done,
+                decoration: InputDecoration(
+                  labelText: 'Email Address',
+                  hintText: 'Enter your email',
+                  prefixIcon: const Icon(Icons.email_outlined),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[300]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Colors.blue, width: 2),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter your email address';
+                  }
+                  final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+                  if (!emailRegex.hasMatch(value.trim())) {
+                    return 'Please enter a valid email address';
+                  }
+                  return null;
+                },
+                onFieldSubmitted: (_) => _handleForgotPassword(),
+              ),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 16),
+                ErrorMessage(message: _errorMessage!),
+              ],
+              const SizedBox(height: 24),
+              SizedBox(
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _handleForgotPassword,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
+                  ),
+                  child: _isLoading
+                      ? LoadingIndicator(color: Colors.white)
+                      : const Text('Send Reset Link', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -148,43 +158,31 @@ class _ForgotPasswordFormState extends State<ForgotPasswordScreen> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(
-          Icons.check_circle_outline,
-          size: 80,
-          color: Colors.green[400],
-        ),
+        Icon(Icons.check_circle_outline, size: 80, color: Colors.green[400]),
         const SizedBox(height: 24),
         Text(
           'Check Your Email',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 12),
         Text(
           'If an account exists for ${_emailController.text}, '
               'we\'ve sent a password reset link to that address.',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Colors.grey[600],
-          ),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 32),
         Text(
           'Didn\'t receive the email?',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.grey[500],
-          ),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
         ),
         const SizedBox(height: 8),
         TextButton(
-          onPressed: () {
-            setState(() {
-              _isSuccess = false;
-              _errorMessage = null;
-            });
-          },
+          onPressed: () => setState(() {
+            _isSuccess = false;
+            _errorMessage = null;
+          }),
           child: const Text('Try again'),
         ),
         const SizedBox(height: 16),

@@ -1,4 +1,3 @@
-
 class SearchFilterService {
   static List<dynamic> searchAll({
     required String query,

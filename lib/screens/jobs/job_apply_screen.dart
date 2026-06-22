@@ -1,13 +1,3 @@
-// =============================================================================
-// PARAMETER CONTRACT
-// =============================================================================
-// opportunity   Opportunity   required   Injected by OpportunityListScreen when card is tapped.
-//                                        The Opportunity model (including relatedProgrammes)
-//                                        is owned by INT-003; full typed object passed here.
-// onApply       VoidCallback  optional   Injected by NAV-003 when real application form is ready.
-//                                        Defaults to placeholder navigation.
-// =============================================================================
-
 import 'package:flutter/material.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/core/widgets/skill_chip.dart';
