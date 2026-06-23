@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/notification_service.dart';
+import '../../router/app_router.dart';
 
 class NotificationsScreen extends StatefulWidget {
   final List<Map<String, dynamic>> notifications;
@@ -108,7 +109,33 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           final bool isExpanded = _expandedIds.contains(id);
 
           return InkWell(
-            onTap: isUnread ? () => _toggleRead(item) : null,
+            onTap: () {
+              if (isUnread) _toggleRead(item);
+              
+              // Lead to tracking applications screen with mock data
+              Navigator.pushNamed(
+                context,
+                AppRouter.trackApplications,
+                arguments: [
+                  {
+                    'title': 'Junior Mobile Developer',
+                    'company': 'Khanya Tech Labs',
+                    'status': 'Accepted',
+                    'appliedDate': '12 June 2026',
+                    'type': 'Full-time',
+                    'progress': 100,
+                  },
+                  {
+                    'title': 'UI/UX Design Apprentice',
+                    'company': 'Siyakha Media House',
+                    'status': 'Pending',
+                    'appliedDate': '16 June 2026',
+                    'type': 'Internship',
+                    'progress': 15,
+                  }
+                ],
+              );
+            },
             child: Padding(
               padding: const EdgeInsets.all(14.0),
               child: Row(

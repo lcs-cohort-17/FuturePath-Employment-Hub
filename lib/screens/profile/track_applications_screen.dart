@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/widgets/status_chip.dart';
 
 class TrackApplicationsScreen extends StatefulWidget {
   final List<Map<String, dynamic>> applications;
@@ -108,12 +109,7 @@ class _TrackApplicationsScreenState extends State<TrackApplicationsScreen> {
                       ],
                     ),
                   ),
-                  // FIXED: Replaced StatusChip with a simple Chip widget
-                  Chip(
-                    label: Text(status, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
-                    backgroundColor: statusColor.withValues(alpha: 0.1),
-                    side: BorderSide(color: statusColor),
-                  ),
+                  StatusChip(status: status),
                   const SizedBox(width: 8),
                   Icon(isExpanded ? Icons.expand_more_rounded : Icons.chevron_right_rounded, color: const Color(0xFF64748B), size: 20),
                 ],
