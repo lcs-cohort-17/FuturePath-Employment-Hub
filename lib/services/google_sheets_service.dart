@@ -14,7 +14,7 @@ class GoogleSheetsService {
 
   late sheets.SheetsApi _sheetsApi;
 
-  static late final String _spreadsheetId = dotenv.env['SPREADSHEET'] ?? '';
+  static final String _spreadsheetId = dotenv.env['SPREADSHEET'] ?? '';
 
   bool _isInitialized = false;
 
@@ -101,4 +101,54 @@ class GoogleSheetsService {
     );
     }).toList(); // <-- .toList() converts Iterable to List
   }
+
+  Future<List<List<dynamic>>> getRawRows(String sheetName) async {
+    await _init();
+
+    final range = "'$sheetName'!A2:K";
+
+    final response =
+    await _sheetsApi.spreadsheets.values.get(
+      _spreadsheetId,
+      range,
+    );
+
+    return response.values ?? [];
+  }
+
+  Future<void> appendRawRow(
+      String sheetName,
+      List<dynamic> row,
+      ) async {
+    await _init();
+
+    final range = "'$sheetName'!A:K";
+
+    await _sheetsApi.spreadsheets.values.append(
+      sheets.ValueRange(values: [row]),
+      _spreadsheetId,
+      range,
+      valueInputOption: 'USER_ENTERED',
+    );
+  }
+
+  Future<void> updateRawRow(
+      String sheetName,
+      int rowNumber,
+      List<dynamic> row,
+      ) async {
+    await _init();
+
+    final range = "'$sheetName'!A$rowNumber:K$rowNumber";
+
+    await _sheetsApi.spreadsheets.values.update(
+      sheets.ValueRange(values: [row]),
+      _spreadsheetId,
+      range,
+      valueInputOption: 'USER_ENTERED',
+    );
+  }
+
+
+
 }
