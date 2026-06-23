@@ -15,8 +15,12 @@ class MyApp extends StatelessWidget {
       title: 'FuturePath Employment Hub',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      initialRoute: AppRouter.login, // Start with Login screen
-      onGenerateRoute: AppRouter.generateRoute, // Use your router
+
+      // Start app with Splash Screen
+      initialRoute: AppRouter.splash,
+
+      // Handle navigation through AppRouter
+      onGenerateRoute: AppRouter.generateRoute,
     );
   }
 }
