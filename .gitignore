@@ -25,6 +25,19 @@ extracted_berbix_inline_activity.txt
 *.keystore
 .cxx/
 
+
+# ✅ ADD THESE:
+.gradle/
+app/
+gradle/
+gradlew
+gradlew.bat
+build.gradle.kts
+gradle.properties
+local.properties
+settings.gradle.kts
+**/android/app/**/*.iml
+
 # -------------------------------------------------------------------------
 # IOS NATIVE BLOAT
 # -------------------------------------------------------------------------
