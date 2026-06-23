@@ -33,7 +33,7 @@ class GoogleSheetsService {
     _sheetsApi = sheets.SheetsApi(authClient);
     _isInitialized = true;
   }
-
+//fetch from programmes enrollment table- this table is already made by salesforce//
   Future<List<Programme>> fetchProgrammes() async {
     await _init();
     // Range: sheet name "Programmes", columns A through I (9 columns)
@@ -57,6 +57,7 @@ class GoogleSheetsService {
     }).toList(); // <-- .toList() converts Iterable to List
   }
 
+  //salesforce also has a table called called job applications
   Future<List<Opportunity>> fetchOpportunities() async {
     await _init();
     // Range: sheet name "Programmes", columns A through I (9 columns)
@@ -80,6 +81,7 @@ class GoogleSheetsService {
     );
     }).toList(); // <-- .toList() converts Iterable to List
   }
+
 
   Future<List<Employer>> fetchEmployers() async {
     await _init();
