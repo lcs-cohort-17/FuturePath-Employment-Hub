@@ -1,4 +1,4 @@
-class Opportunity {
+class EmploymentOpportunities {
     final int id;
     final String positionTitle;
     final int employerId; // or String if employerId is text
@@ -10,7 +10,7 @@ class Opportunity {
     final String description;
     final int availablePositions;
 
-    Opportunity({
+    EmploymentOpportunities({
       required this.id,
       required this.positionTitle,
       required this.employerId,
@@ -23,8 +23,8 @@ class Opportunity {
       required this.availablePositions,
     });
 
-    factory Opportunity.fromRow(List<dynamic> row) {
-      return Opportunity(
+    factory EmploymentOpportunities.fromRow(List<dynamic> row) {
+      return EmploymentOpportunities(
       id: int.parse(row[0].toString()),
       positionTitle: row[1].toString(),
       employerId: int.parse(row[2].toString()), // or row[2].toString() if text

@@ -14,14 +14,14 @@ final googleSheetsServiceProvider = Provider<GoogleSheetsService>((ref) {
 // ---------- READ PROVIDERS (FUTURE PROVIDERS) ----------
 // Each fetches data from the service and caches it until invalidated.
 
-final programmesProvider = FutureProvider<List<Programme>>((ref) async {
+final trainingProgrammesProvider = FutureProvider<List<TrainingProgramme>>((ref) async {
   final service = ref.read(googleSheetsServiceProvider);
-  return await service.fetchProgrammes();
+  return await service.fetchTrainingProgrammes();
 });
 
-final opportunitiesProvider = FutureProvider<List<Opportunity>>((ref) async {
+final employmentOpportunitiesProvider = FutureProvider<List<EmploymentOpportunities>>((ref) async {
   final service = ref.read(googleSheetsServiceProvider);
-  return await service.fetchOpportunities();
+  return await service.fetchEmploymentOpportunities();
 });
 
 final employersProvider = FutureProvider<List<Employer>>((ref) async {
@@ -33,8 +33,8 @@ final employersProvider = FutureProvider<List<Employer>>((ref) async {
 // Call these after any Create/Update/Delete operation to reload the data.
 // They invalidate the provider, so the next watch will trigger a new fetch.
 
-void refreshProgrammes(WidgetRef ref) => ref.invalidate(programmesProvider);
-void refreshOpportunities(WidgetRef ref) => ref.invalidate(opportunitiesProvider);
+void refreshProgrammes(WidgetRef ref) => ref.invalidate(trainingProgrammesProvider);
+void refreshOpportunities(WidgetRef ref) => ref.invalidate(employmentOpportunitiesProvider);
 void refreshEmployers(WidgetRef ref) => ref.invalidate(employersProvider);
 
 // Optional: refresh all at once

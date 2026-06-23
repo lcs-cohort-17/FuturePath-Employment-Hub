@@ -34,7 +34,7 @@ class GoogleSheetsService {
     _isInitialized = true;
   }
 //fetch from programmes enrollment table- this table is already made by salesforce//
-  Future<List<Programme>> fetchProgrammes() async {
+  Future<List<TrainingProgramme>> fetchTrainingProgrammes() async {
     await _init();
     // Range: sheet name "Programmes", columns A through I (9 columns)
     final range = "'programmesSheet'!A2:I";
@@ -43,7 +43,7 @@ class GoogleSheetsService {
     if (rows == null || rows.isEmpty) return [];
 
     return rows.map((row) {
-    return Programme(
+    return TrainingProgramme(
       id: int.tryParse(row[0].toString()) ?? 0,
       name: row[1].toString(),
       description: row[2].toString(),
@@ -58,7 +58,7 @@ class GoogleSheetsService {
   }
 
   //salesforce also has a table called called job applications
-  Future<List<Opportunity>> fetchOpportunities() async {
+  Future<List<EmploymentOpportunities>> fetchEmploymentOpportunities() async {
     await _init();
     // Range: sheet name "Programmes", columns A through I (9 columns)
     final range = "'opportunitiesSheet'!A2:J";
@@ -67,7 +67,7 @@ class GoogleSheetsService {
     if (rows == null || rows.isEmpty) return [];
 
     return rows.map((row) {
-    return Opportunity(
+    return EmploymentOpportunities(
       id: int.tryParse(row[0].toString()) ?? 0,
       positionTitle: row[1].toString(),
       employerId: int.tryParse(row[2].toString()) ?? 0,

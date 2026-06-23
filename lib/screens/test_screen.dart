@@ -8,8 +8,8 @@ class TestScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final programmesAsync = ref.watch(programmesProvider);
-    final opportunitiesAsync = ref.watch(opportunitiesProvider);
+    final programmesAsync = ref.watch(trainingProgrammesProvider);
+    final opportunitiesAsync = ref.watch(employmentOpportunitiesProvider);
     final employersAsync = ref.watch(employersProvider);
 
     return Scaffold(

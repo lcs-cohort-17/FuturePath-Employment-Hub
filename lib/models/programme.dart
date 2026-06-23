@@ -1,4 +1,4 @@
-class Programme {
+class TrainingProgramme {
   final int id;
   final String name;
   final String description;
@@ -9,7 +9,7 @@ class Programme {
   final List<String> skills;
   final String category;
 
-  Programme({
+  TrainingProgramme({
     required this.id,
     required this.name,
     required this.description,
@@ -21,9 +21,9 @@ class Programme {
     required this.category,
   });
 
-  // Convert a row (List<dynamic>) from the sheet to a Programme object.
-  factory Programme.fromRow(List<dynamic> row) {
-  return Programme(
+  // Convert a row (List<dynamic>) from the sheet to a Training_Programme object.
+  factory TrainingProgramme.fromRow(List<dynamic> row) {
+  return TrainingProgramme(
     id: int.parse(row[0].toString()),
     name: row[1].toString(),
     description: row[2].toString(),
