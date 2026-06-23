@@ -1,23 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:futurepath/core/theme.dart';
+import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 
-typedef DashboardFetcher = Future<HomeDashboardData> Function();
+class HomeOverviewStats {
+  final int programmesCount;
+  final int openJobsCount;
+  final int employersCount;
 
-class JobSummary {
+  const HomeOverviewStats({
+    required this.programmesCount,
+    required this.openJobsCount,
+    required this.employersCount,
+  });
+}
+
+class JobListing {
   final String id;
   final String title;
   final String company;
   final String companyInitials;
+  final String location;
   final List<String> skills;
   final String employmentType;
   final String closingLabel;
   final bool isOpen;
 
-  const JobSummary({
+  const JobListing({
     required this.id,
     required this.title,
     required this.company,
     required this.companyInitials,
+    required this.location,
     required this.skills,
     required this.employmentType,
     required this.closingLabel,
@@ -25,160 +37,190 @@ class JobSummary {
   });
 }
 
-enum ProgrammeStatus { open, startingSoon, closed }
-
-/// Lightweight stand-in for the real programme model until INT-003 ships one.
-class ProgrammeSummary {
+class ProgrammeListing {
   final String id;
   final String title;
-  final String provider;
-  final String? imageUrl;
-  final String duration;
-  final String level;
+  final String organization;
+  final String durationLabel;
+  final String levelLabel;
+  final String statusLabel;
+  final bool isOpen;
   final int enrolled;
   final int capacity;
-  final ProgrammeStatus status;
+  final IconData bannerIcon;
+  final String bannerImageUrl;
 
-  const ProgrammeSummary({
+  const ProgrammeListing({
     required this.id,
     required this.title,
-    required this.provider,
-    this.imageUrl,
-    required this.duration,
-    required this.level,
+    required this.organization,
+    required this.durationLabel,
+    required this.levelLabel,
+    required this.statusLabel,
+    required this.isOpen,
     required this.enrolled,
     required this.capacity,
-    this.status = ProgrammeStatus.open,
+    required this.bannerIcon,
+    required this.bannerImageUrl,
   });
+
+  double get progress => capacity == 0 ? 0 : (enrolled / capacity).clamp(0, 1);
 }
 
-/// Bundles everything the Home screen needs from the data layer in one
-/// fetch, so a single FutureBuilder can drive the whole dashboard body.
 class HomeDashboardData {
-  final int programmesCount;
-  final int openJobsCount;
-  final int employersCount;
-  final List<JobSummary> recommendedJobs;
-  final List<ProgrammeSummary> featuredProgrammes;
+  final HomeOverviewStats stats;
+  final List<JobListing> recommendedJobs;
+  final List<ProgrammeListing> featuredProgrammes;
 
   const HomeDashboardData({
-    required this.programmesCount,
-    required this.openJobsCount,
-    required this.employersCount,
+    required this.stats,
     required this.recommendedJobs,
     required this.featuredProgrammes,
   });
 }
 
 class HomeScreen extends StatefulWidget {
-const HomeScreen({
-super.key,
-required this.userName,
-this.userInitials = 'U',
-this.notificationCount = 0,
-this.fetchDashboardData = _mockFetchDashboardData,
-this.onSearch,
-this.onSeeAllJobs,
-this.onSeeAllProgrammes,
-this.onJobTap,
-this.onProgrammeTap,
-this.onNotificationsTap,
-});
+  final String userName;
+  final String? avatarInitials;
+  final int notificationCount;
+  final Future<HomeDashboardData> Function() dataLoader;
+  final ValueChanged<String> onSearchSubmitted;
+  final VoidCallback onSeeAllJobs;
+  final VoidCallback onSeeAllProgrammes;
+  final ValueChanged<JobListing> onJobTap;
+  final ValueChanged<ProgrammeListing> onProgrammeTap;
 
-final String userName;
-final String userInitials;
-final int notificationCount;
-final DashboardFetcher fetchDashboardData;
-final ValueChanged<String>? onSearch;
-final VoidCallback? onSeeAllJobs;
-final VoidCallback? onSeeAllProgrammes;
-final ValueChanged<JobSummary>? onJobTap;
-final ValueChanged<ProgrammeSummary>? onProgrammeTap;
-final VoidCallback? onNotificationsTap;
+  const HomeScreen({
+    super.key,
+    this.userName = 'Sipho',
+    this.avatarInitials,
+    this.notificationCount = 0,
+    Future<HomeDashboardData> Function()? dataLoader,
+    required this.onSearchSubmitted,
+    required this.onSeeAllJobs,
+    required this.onSeeAllProgrammes,
+    required this.onJobTap,
+    required this.onProgrammeTap,
+  }) : dataLoader = dataLoader ?? _mockDataLoader;
 
-static Future<HomeDashboardData> _mockFetchDashboardData() async {
-  await Future.delayed(const Duration(milliseconds: 600));
-  return const HomeDashboardData(
-    programmesCount: 6,
-    openJobsCount: 12,
-    employersCount: 4,
-    recommendedJobs: [
-      JobSummary(
-        id: 'job-tn-flutter',
-        title: 'Junior Flutter Developer',
-        company: 'TechNova Solutions',
-        companyInitials: 'TN',
-        skills: ['Flutter', 'Dart', 'Firebase'],
-        employmentType: 'Full-time',
-        closingLabel: 'Closes 31 Jul',
+  static Future<HomeDashboardData> _mockDataLoader() async {
+    await Future.delayed(const Duration(milliseconds: 600));
+    return const HomeDashboardData(
+      stats: HomeOverviewStats(
+        programmesCount: 6,
+        openJobsCount: 12,
+        employersCount: 4,
       ),
-      JobSummary(
-        id: 'job-dgh-marketing',
-        title: 'Digital Marketing Assistant',
-        company: 'Digital Growth Hub',
-        companyInitials: 'DG',
-        skills: ['SEO', 'Social Media', 'Content Creation'],
-        employmentType: 'Full-time',
-        closingLabel: 'Closes 20 Jul',
-      ),
-    ],
-    featuredProgrammes: [
-      ProgrammeSummary(
-        id: 'prog-flutter-dev',
-        title: 'Flutter Mobile Development',
-        provider: 'TechNova Solutions',
-        duration: '3 months',
-        level: 'Beginner–Intermediate',
-        enrolled: 24,
-        capacity: 30,
-      ),
-      ProgrammeSummary(
-        id: 'prog-salesforce',
-        title: 'Salesforce Administration',
-        provider: 'FutureTech Africa',
-        duration: '3 months',
-        level: 'Beginner',
-        enrolled: 20,
-        capacity: 25,
-      ),
-      ProgrammeSummary(
-        id: 'prog-digital-marketing',
-        title: 'Digital Marketing Fundamentals',
-        provider: 'Digital Growth Hub',
-        duration: '2 months',
-        level: 'Beginner',
-        enrolled: 38,
-        capacity: 40,
-        status: ProgrammeStatus.startingSoon,
-      ),
-    ],
-  );
-}
+      recommendedJobs: [
+        JobListing(
+          id: 'job-1',
+          title: 'Junior Flutter Developer',
+          company: 'TechNova Solutions',
+          companyInitials: 'TN',
+          location: 'Cape Town',
+          skills: ['Flutter', 'Dart', 'Firebase'],
+          employmentType: 'Full-time',
+          closingLabel: 'Closes 31 Jul',
+        ),
+        JobListing(
+          id: 'job-2',
+          title: 'Digital Marketing Assistant',
+          company: 'Digital Growth Hub',
+          companyInitials: 'DG',
+          location: 'Remote (SA-based)',
+          skills: ['SEO', 'Social Media', 'Content Creation'],
+          employmentType: 'Full-time',
+          closingLabel: 'Closes 20 Jul',
+        ),
+        JobListing(
+          id: 'job-3',
+          title: 'Salesforce Administrator Intern',
+          company: 'FutureTech Africa',
+          companyInitials: 'FT',
+          location: 'Johannesburg',
+          skills: ['Salesforce', 'CRM', 'Support'],
+          employmentType: 'Internship',
+          closingLabel: 'Closes 15 Aug',
+        ),
+        JobListing(
+          id: 'job-4',
+          title: 'Data Analyst Trainee',
+          company: 'Innovate SA',
+          companyInitials: 'IS',
+          location: 'Durban',
+          skills: ['Excel', 'SQL', 'Data Analysis'],
+          employmentType: 'Full-time',
+          closingLabel: 'Closes 5 Aug',
+        ),
+      ],
+      featuredProgrammes: [
+        ProgrammeListing(
+          id: 'prog-1',
+          title: 'Flutter Mobile Development',
+          organization: 'TechNova Solutions',
+          durationLabel: '3 months',
+          levelLabel: 'Beginner–Intermediate',
+          statusLabel: 'Open',
+          isOpen: true,
+          enrolled: 24,
+          capacity: 30,
+          bannerIcon: Icons.smartphone_rounded,
+          bannerImageUrl:
+          'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=600&q=80',
+        ),
+        ProgrammeListing(
+          id: 'prog-2',
+          title: 'Salesforce Administration',
+          organization: 'FutureTech Africa',
+          durationLabel: '3 months',
+          levelLabel: 'Beginner',
+          statusLabel: 'Open',
+          isOpen: true,
+          enrolled: 20,
+          capacity: 25,
+          bannerIcon: Icons.bar_chart_rounded,
+          bannerImageUrl:
+          'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80',
+        ),
+        ProgrammeListing(
+          id: 'prog-3',
+          title: 'Digital Marketing Fundamentals',
+          organization: 'Digital Growth Hub',
+          durationLabel: '2 months',
+          levelLabel: 'Beginner',
+          statusLabel: 'Starting Soon',
+          isOpen: false,
+          enrolled: 38,
+          capacity: 40,
+          bannerIcon: Icons.campaign_rounded,
+          bannerImageUrl:
+          'https://images.unsplash.com/photo-1611926653458-09294b3142bf?w=600&q=80',
+        ),
+      ],
+    );
+  }
 
-@override
-State<HomeScreen> createState() => _HomeScreenState();
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late final TextEditingController _searchController;
-  late Future<HomeDashboardData> _dashboardFuture;
+  late Future<HomeDashboardData> _futureData;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    // initState: create the search controller once, and capture the
-    // dashboard Future a single time. Calling widget.fetchDashboardData()
-    // directly inside build() would re-trigger the fetch on every rebuild.
-    _searchController = TextEditingController();
-    _dashboardFuture = widget.fetchDashboardData();
+    _futureData = widget.dataLoader();
   }
 
   @override
   void dispose() {
-    // dispose: release the text controller to avoid leaking resources.
     _searchController.dispose();
     super.dispose();
   }
+
+  void _retry() => setState(() => _futureData = widget.dataLoader());
 
   String get _greeting {
     final hour = DateTime.now().hour;
@@ -187,47 +229,13 @@ class _HomeScreenState extends State<HomeScreen> {
     return 'Good evening';
   }
 
-  void _handleSearchSubmitted(String query) {
-    if (query.trim().isEmpty) return;
-    widget.onSearch?.call(query.trim());
-  }
-
-  void _handleSeeAllJobs() {
-    widget.onSeeAllJobs != null
-        ? widget.onSeeAllJobs!()
-        : _showWiringSnackBar('See all jobs (NAV-003)');
-  }
-
-  void _handleSeeAllProgrammes() {
-    widget.onSeeAllProgrammes != null
-        ? widget.onSeeAllProgrammes!()
-        : _showWiringSnackBar('See all programmes (NAV-002)');
-  }
-
-  void _handleJobTap(JobSummary job) {
-    widget.onJobTap != null
-        ? widget.onJobTap!(job)
-        : _showWiringSnackBar('Open job detail: ${job.title}');
-  }
-
-  void _handleProgrammeTap(ProgrammeSummary programme) {
-    widget.onProgrammeTap != null
-        ? widget.onProgrammeTap!(programme)
-        : _showWiringSnackBar('Open programme detail: ${programme.title}');
-  }
-
-  void _showWiringSnackBar(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('$message — navigation not wired yet')));
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -236,9 +244,9 @@ class _HomeScreenState extends State<HomeScreen> {
               _buildGreeting(),
               const SizedBox(height: 16),
               _buildSearchBar(),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
               FutureBuilder<HomeDashboardData>(
-                future: _dashboardFuture,
+                future: _futureData,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState != ConnectionState.done) {
                     return const Padding(
@@ -249,12 +257,21 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   }
                   if (snapshot.hasError || !snapshot.hasData) {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 48),
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 32),
                       child: Center(
-                        child: Text(
-                          'Could not load your dashboard. Pull to refresh.',
-                          style: TextStyle(color: AppTheme.mutedText),
+                        child: Column(
+                          children: [
+                            const Text(
+                              'Could not load your dashboard.',
+                              style: TextStyle(color: AppTheme.mutedText),
+                            ),
+                            const SizedBox(height: 10),
+                            TextButton(
+                              onPressed: _retry,
+                              child: const Text('Try again'),
+                            ),
+                          ],
                         ),
                       ),
                     );
@@ -263,11 +280,39 @@ class _HomeScreenState extends State<HomeScreen> {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildOverviewSection(data),
+                      _buildOverview(data.stats),
                       const SizedBox(height: 24),
-                      _buildRecommendedSection(data),
-                      const SizedBox(height: 24),
-                      _buildFeaturedSection(data),
+                      _buildSectionHeader(
+                        icon: Icons.star_rounded,
+                        title: 'Recommended for You',
+                        onSeeAll: widget.onSeeAllJobs,
+                      ),
+                      const SizedBox(height: 12),
+                      ...data.recommendedJobs.take(3).map(
+                            (job) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _JobCard(
+                            job: job,
+                            onTap: () => widget.onJobTap(job),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildSectionHeader(
+                        icon: Icons.menu_book_rounded,
+                        title: 'Featured Programmes',
+                        onSeeAll: widget.onSeeAllProgrammes,
+                      ),
+                      const SizedBox(height: 12),
+                      ...data.featuredProgrammes.take(3).map(
+                            (p) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _ProgrammeCard(
+                            programme: p,
+                            onTap: () => widget.onProgrammeTap(p),
+                          ),
+                        ),
+                      ),
                     ],
                   );
                 },
@@ -282,211 +327,431 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildTopBar() {
     return Row(
       children: [
-        const CircleAvatar(
-          radius: 18,
-          backgroundColor: AppTheme.primary,
-          child: Text('FP', style: TextStyle(color: AppTheme.card, fontWeight: FontWeight.bold)),
+        Container(
+          width: 36,
+          height: 36,
+          decoration: const BoxDecoration(
+            color: AppTheme.primary,
+            shape: BoxShape.circle,
+          ),
+          alignment: Alignment.center,
+          child: const Text(
+            'FP',
+            style: TextStyle(
+              color: AppTheme.card,
+              fontWeight: FontWeight.w800,
+              fontSize: 13,
+            ),
+          ),
         ),
         const SizedBox(width: 10),
         const Text(
           'FuturePath',
-          style: TextStyle(color: AppTheme.primary, fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: AppTheme.textDark,
+          ),
         ),
         const Spacer(),
-        Badge(
-          label: Text('${widget.notificationCount}'),
-          backgroundColor: AppTheme.accent,
-          isLabelVisible: widget.notificationCount > 0,
-          child: IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: AppTheme.primary),
-            onPressed: widget.onNotificationsTap,
-          ),
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            const Icon(
+              Icons.notifications_none_rounded,
+              color: AppTheme.textDark,
+              size: 26,
+            ),
+            if (widget.notificationCount > 0)
+              Positioned(
+                right: -2,
+                top: -2,
+                child: Container(
+                  padding: const EdgeInsets.all(3),
+                  constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                  decoration: const BoxDecoration(
+                    color: AppTheme.accent,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    '${widget.notificationCount}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: AppTheme.card,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
       ],
     );
   }
 
   Widget _buildGreeting() {
+    final initials = widget.avatarInitials ??
+        (widget.userName.isNotEmpty
+            ? widget.userName[0].toUpperCase()
+            : '?');
     return Row(
       children: [
         CircleAvatar(
           radius: 22,
           backgroundColor: AppTheme.secondary,
-          child: Text(widget.userInitials,
-              style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold)),
+          child: Text(
+            initials,
+            style: const TextStyle(
+              color: AppTheme.primary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('$_greeting 👋', style: const TextStyle(color: AppTheme.mutedText, fontSize: 13)),
-              Text(widget.userName,
-                  style: const TextStyle(
-                      color: AppTheme.textDark, fontSize: 20, fontWeight: FontWeight.bold)),
+              Text(
+                '$_greeting 👋',
+                style: const TextStyle(fontSize: 13, color: AppTheme.mutedText),
+              ),
+              Text(
+                widget.userName,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.textDark,
+                ),
+              ),
             ],
           ),
         ),
-        // Decorative time-of-day icon to mirror the design reference.
-        // Not wired to an action — safe to repurpose (e.g. settings) later.
-        const Icon(Icons.wb_sunny_outlined, color: AppTheme.mutedText),
       ],
     );
   }
 
   Widget _buildSearchBar() {
-    return TextField(
-      controller: _searchController,
-      onSubmitted: _handleSearchSubmitted,
-      style: const TextStyle(color: AppTheme.textDark),
-      decoration: InputDecoration(
-        hintText: 'Search jobs, programmes, skills...',
-        hintStyle: const TextStyle(color: AppTheme.mutedText),
-        prefixIcon: const Icon(Icons.search, color: AppTheme.mutedText),
-        filled: true,
-        fillColor: AppTheme.card,
-        contentPadding: const EdgeInsets.symmetric(vertical: 14),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.card,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.secondary),
+      ),
+      child: TextField(
+        controller: _searchController,
+        onSubmitted: widget.onSearchSubmitted,
+        style: const TextStyle(color: AppTheme.textDark, fontSize: 14),
+        decoration: const InputDecoration(
+          hintText: 'Search jobs, programmes, skills...',
+          hintStyle: TextStyle(color: AppTheme.mutedText, fontSize: 13.5),
+          prefixIcon: Icon(Icons.search_rounded, color: AppTheme.mutedText, size: 22),
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(vertical: 14),
         ),
       ),
     );
   }
 
-  Widget _sectionHeader({
+  Widget _buildOverview(HomeOverviewStats stats) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: const [
+            Icon(Icons.trending_up_rounded, color: AppTheme.accent, size: 18),
+            SizedBox(width: 6),
+            Text(
+              'Overview',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.textDark,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            _StatCard(
+              icon: Icons.school_rounded,
+              value: stats.programmesCount,
+              label: 'Programmes',
+            ),
+            const SizedBox(width: 10),
+            _StatCard(
+              icon: Icons.work_outline_rounded,
+              value: stats.openJobsCount,
+              label: 'Open Jobs',
+            ),
+            const SizedBox(width: 10),
+            _StatCard(
+              icon: Icons.apartment_rounded,
+              value: stats.employersCount,
+              label: 'Employers',
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionHeader({
     required IconData icon,
-    required Color iconColor,
     required String title,
     required VoidCallback onSeeAll,
   }) {
     return Row(
       children: [
-        Icon(icon, color: iconColor, size: 20),
+        Icon(icon, size: 18, color: AppTheme.accent),
         const SizedBox(width: 6),
-        Expanded(
-          child: Text(title,
-              style: const TextStyle(color: AppTheme.textDark, fontSize: 16, fontWeight: FontWeight.bold)),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: AppTheme.textDark,
+          ),
         ),
-        GestureDetector(
+        const Spacer(),
+        InkWell(
           onTap: onSeeAll,
-          child: const Row(
-            children: [
-              Text('See all', style: TextStyle(color: AppTheme.accent, fontWeight: FontWeight.w600)),
-              Icon(Icons.chevron_right, color: AppTheme.accent, size: 18),
+          child: Row(
+            children: const [
+              Text(
+                'See all',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: AppTheme.accent,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded, size: 18, color: AppTheme.accent),
             ],
           ),
         ),
       ],
     );
   }
+}
 
-  Widget _buildOverviewSection(HomeDashboardData data) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Row(
-          children: [
-            Icon(Icons.trending_up, color: AppTheme.accent, size: 20),
-            SizedBox(width: 6),
-            Text('Overview',
-                style: TextStyle(color: AppTheme.textDark, fontSize: 16, fontWeight: FontWeight.bold)),
+class _StatCard extends StatelessWidget {
+  final IconData icon;
+  final int value;
+  final String label;
+
+  const _StatCard({required this.icon, required this.value, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        decoration: BoxDecoration(
+          color: AppTheme.card,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.primary.withValues(alpha: 0.06),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
           ],
         ),
-        const SizedBox(height: 12),
-        Row(
+        child: Column(
           children: [
-            Expanded(child: _statCard(Icons.school_outlined, '${data.programmesCount}', 'Programmes')),
-            const SizedBox(width: 12),
-            Expanded(child: _statCard(Icons.work_outline, '${data.openJobsCount}', 'Open Jobs')),
-            const SizedBox(width: 12),
-            Expanded(child: _statCard(Icons.apartment_outlined, '${data.employersCount}', 'Employers')),
+            Container(
+              width: 36,
+              height: 36,
+              decoration: const BoxDecoration(
+                color: AppTheme.secondary,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 18, color: AppTheme.accent),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              '$value',
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.textDark,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 11.5, color: AppTheme.mutedText),
+            ),
           ],
         ),
-      ],
+      ),
     );
   }
+}
 
-  Widget _statCard(IconData icon, String value, String label) {
+class _StatusPill extends StatelessWidget {
+  final String label;
+  final bool isOpen;
+
+  const _StatusPill({required this.label, required this.isOpen});
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isClosed = label.toLowerCase() == 'closed';
+    final Color bg = isClosed
+        ? AppTheme.mutedText
+        : (isOpen ? AppTheme.accent : AppTheme.primary);
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(color: AppTheme.secondary, borderRadius: BorderRadius.circular(16)),
-      child: Column(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppTheme.accent, size: 22),
-          const SizedBox(height: 8),
-          Text(value, style: const TextStyle(color: AppTheme.textDark, fontSize: 20, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 2),
-          Text(label, style: const TextStyle(color: AppTheme.mutedText, fontSize: 12)),
+          Container(
+            width: 6,
+            height: 6,
+            decoration: const BoxDecoration(
+              color: AppTheme.card,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11,
+              color: AppTheme.card,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildRecommendedSection(HomeDashboardData data) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _sectionHeader(
-          icon: Icons.star_border_rounded,
-          iconColor: AppTheme.accent,
-          title: 'Recommended for You',
-          onSeeAll: _handleSeeAllJobs,
+class _SkillChip extends StatelessWidget {
+  final String label;
+
+  const _SkillChip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: AppTheme.secondary,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 11.5,
+          color: AppTheme.primary,
+          fontWeight: FontWeight.w600,
         ),
-        const SizedBox(height: 12),
-        // Acceptance criteria allows "first 3 or random" — first 3 keeps
-        // results deterministic and testable.
-        ...data.recommendedJobs.take(3).map(
-              (job) => Padding(padding: const EdgeInsets.only(bottom: 12), child: _jobCard(job)),
-        ),
-      ],
+      ),
     );
   }
+}
 
-  Widget _jobCard(JobSummary job) {
-    return GestureDetector(
-      onTap: () => _handleJobTap(job),
+class _JobCard extends StatelessWidget {
+  final JobListing job;
+  final VoidCallback onTap;
+
+  const _JobCard({required this.job, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: AppTheme.card,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: AppTheme.primary.withOpacity(0.06), blurRadius: 8, offset: const Offset(0, 2))],
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.primary.withValues(alpha: 0.06),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CircleAvatar(
-                  radius: 18,
+                  radius: 20,
                   backgroundColor: AppTheme.secondary,
-                  child: Text(job.companyInitials,
-                      style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold, fontSize: 12)),
+                  child: Text(
+                    job.companyInitials,
+                    style: const TextStyle(
+                      color: AppTheme.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(job.title,
-                          style: const TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.bold, fontSize: 14)),
-                      Text(job.company, style: const TextStyle(color: AppTheme.mutedText, fontSize: 12)),
+                      Text(
+                        job.title,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textDark,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${job.company} · ${job.location}',
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          color: AppTheme.mutedText,
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                _statusPill(label: job.isOpen ? 'Open' : 'Closed', color: job.isOpen ? AppTheme.accent : AppTheme.mutedText),
+                const SizedBox(width: 8),
+                _StatusPill(
+                  label: job.isOpen ? 'Open' : 'Closed',
+                  isOpen: job.isOpen,
+                ),
               ],
             ),
+            if (job.skills.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: job.skills.map((s) => _SkillChip(label: s)).toList(),
+              ),
+            ],
             const SizedBox(height: 10),
-            Wrap(spacing: 6, runSpacing: 6, children: job.skills.map(_skillChip).toList()),
-            const SizedBox(height: 8),
             Row(
               children: [
-                const Icon(Icons.work_outline, size: 14, color: AppTheme.mutedText),
-                const SizedBox(width: 4),
-                Text('${job.employmentType} · ${job.closingLabel}',
-                    style: const TextStyle(color: AppTheme.mutedText, fontSize: 12)),
+                const Icon(Icons.work_outline_rounded,
+                    size: 14, color: AppTheme.mutedText),
+                const SizedBox(width: 5),
+                Text(
+                  '${job.employmentType} · ${job.closingLabel}',
+                  style: const TextStyle(fontSize: 12, color: AppTheme.mutedText),
+                ),
               ],
             ),
           ],
@@ -494,144 +759,117 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
 
-  Widget _skillChip(String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(color: AppTheme.secondary, borderRadius: BorderRadius.circular(20)),
-      child: Text(label, style: const TextStyle(color: AppTheme.primary, fontSize: 11, fontWeight: FontWeight.w600)),
-    );
-  }
+class _ProgrammeCard extends StatelessWidget {
+  final ProgrammeListing programme;
+  final VoidCallback onTap;
 
-  Widget _statusPill({required String label, required Color color}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: AppTheme.secondary, borderRadius: BorderRadius.circular(20)),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(width: 6, height: 6, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-          const SizedBox(width: 4),
-          Text(label, style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600)),
-        ],
-      ),
-    );
-  }
+  const _ProgrammeCard({required this.programme, required this.onTap});
 
-  Widget _buildFeaturedSection(HomeDashboardData data) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _sectionHeader(
-          icon: Icons.rocket_launch_outlined,
-          iconColor: AppTheme.primary,
-          title: 'Featured Programmes',
-          onSeeAll: _handleSeeAllProgrammes,
-        ),
-        const SizedBox(height: 12),
-        ...data.featuredProgrammes.take(3).map(
-              (p) => Padding(padding: const EdgeInsets.only(bottom: 12), child: _programmeCard(p)),
-        ),
-      ],
-    );
-  }
-
-  Widget _programmeCard(ProgrammeSummary programme) {
-    final statusColor = switch (programme.status) {
-      ProgrammeStatus.open => AppTheme.accent,
-      ProgrammeStatus.startingSoon => AppTheme.primary,
-      ProgrammeStatus.closed => AppTheme.mutedText,
-    };
-    final statusLabel = switch (programme.status) {
-      ProgrammeStatus.open => 'Open',
-      ProgrammeStatus.startingSoon => 'Starting Soon',
-      ProgrammeStatus.closed => 'Closed',
-    };
-
-    return GestureDetector(
-      onTap: () => _handleProgrammeTap(programme),
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: onTap,
       child: Container(
-        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: AppTheme.card,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: AppTheme.primary.withOpacity(0.06), blurRadius: 8, offset: const Offset(0, 2))],
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.primary.withValues(alpha: 0.06),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              height: 130,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  // Falls back to a themed placeholder if no URL is given or
-                  // the request fails — important on an offline emulator.
-                  programme.imageUrl != null
-                      ? Image.network(programme.imageUrl!,
-                      fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(color: AppTheme.secondary))
-                      : Container(
-                    color: AppTheme.secondary,
-                    child: const Center(child: Icon(Icons.image_outlined, color: AppTheme.primary, size: 32)),
-                  ),
-                  // Scrim for text legibility, built from the theme's own
-                  // navy rather than introducing a new colour.
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [AppTheme.primary.withOpacity(0.0), AppTheme.primary.withOpacity(0.75)],
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(16)),
+                  child: Image.network(
+                    programme.bannerImageUrl,
+                    height: 110,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      height: 110,
+                      color: AppTheme.secondary,
+                      child: Center(
+                        child: Icon(
+                          programme.bannerIcon,
+                          size: 40,
+                          color: AppTheme.accent,
+                        ),
                       ),
                     ),
                   ),
-                  Positioned(top: 10, right: 10, child: _statusPill(label: statusLabel, color: statusColor)),
-                  Positioned(
-                    left: 12,
-                    right: 12,
-                    bottom: 10,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(programme.title,
-                            style: const TextStyle(color: AppTheme.card, fontWeight: FontWeight.bold, fontSize: 15)),
-                        Text(programme.provider, style: TextStyle(color: AppTheme.card.withOpacity(0.85), fontSize: 12)),
-                      ],
-                    ),
+                ),
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: _StatusPill(
+                    label: programme.statusLabel,
+                    isOpen: programme.isOpen,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.timer_outlined, size: 14, color: AppTheme.mutedText),
-                      const SizedBox(width: 4),
-                      Text('${programme.duration} · ${programme.level}',
-                          style: const TextStyle(color: AppTheme.mutedText, fontSize: 12)),
-                    ],
+                  Text(
+                    programme.title,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textDark,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    programme.organization,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppTheme.mutedText,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    '${programme.durationLabel} • ${programme.levelLabel}',
+                    style: const TextStyle(fontSize: 12, color: AppTheme.mutedText),
                   ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
                       Expanded(
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(6),
                           child: LinearProgressIndicator(
-                            value: programme.capacity == 0 ? 0 : programme.enrolled / programme.capacity,
+                            value: programme.progress,
                             minHeight: 6,
                             backgroundColor: AppTheme.secondary,
-                            color: AppTheme.accent,
+                            valueColor:
+                            const AlwaysStoppedAnimation(AppTheme.accent),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Text('${programme.enrolled}/${programme.capacity}',
-                          style: const TextStyle(color: AppTheme.mutedText, fontSize: 12)),
+                      const SizedBox(width: 10),
+                      Text(
+                        '${programme.enrolled}/${programme.capacity}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.mutedText,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ],
                   ),
                 ],
