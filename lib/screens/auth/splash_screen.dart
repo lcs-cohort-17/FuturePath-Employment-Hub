@@ -96,10 +96,8 @@ class _SplashScreenState extends State<SplashScreen>
       Duration(milliseconds: widget.minimumSplashMs),
     );
 
-    // ── MOCK session check ────────────────────────────────────
-    // Auth team: replace the line below with the real async check.
-    final bool hasSession = await _mockSessionCheck();
-    // ─────────────────────────────────────────────────────────
+    // Use the real Supabase session check from AuthService
+    final bool hasSession = AuthService().isLoggedIn;
 
     // Ensure minimum splash time has elapsed regardless of check speed.
     await minimumWait;
@@ -111,13 +109,6 @@ class _SplashScreenState extends State<SplashScreen>
     } else {
       widget.onNavigateLogin();
     }
-  }
-
-  /// MOCK — remove when Auth team supplies real implementation.
-  /// Returns widget.isLoggedIn after a simulated 200 ms network delay.
-  Future<bool> _mockSessionCheck() async {
-    await Future<void>.delayed(const Duration(milliseconds: 200));
-    return widget.isLoggedIn;
   }
 
   @override

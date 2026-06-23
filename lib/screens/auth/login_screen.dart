@@ -1,8 +1,7 @@
-//login screen.dart
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 import '../../core/theme/app_theme.dart';
 import '../../services/auth_services.dart';
-import '../../services/registration_service.dart';
 import '../../router/app_router.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -13,48 +12,20 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  bool _isLoginTab = true;
+  final AuthService _authService = AuthService();
 
   final _loginFormKey = GlobalKey<FormState>();
   final _loginEmailCtrl = TextEditingController(text: 'sipho.dlamini@gmail.com');
   final _loginPasswordCtrl = TextEditingController();
   bool _loginObscure = true;
-  final _signupFormKey = GlobalKey<FormState>();
-  final _signupEmailCtrl = TextEditingController();
-  final _signupPasswordCtrl = TextEditingController();
-  final _signupConfirmCtrl = TextEditingController();
-  final _signupFirstNameCtrl = TextEditingController();
-  final _signupLastNameCtrl = TextEditingController();
-  final _signupDobCtrl = TextEditingController();
-  final _signupGenderCtrl = TextEditingController();
-  final _signupPhoneCtrl = TextEditingController();
-  final _signupIdCtrl = TextEditingController();
-  final _signupAreaCtrl = TextEditingController();
-  final _signupQualificationCtrl = TextEditingController();
-  final _signupEmploymentCtrl = TextEditingController();
-  final _signupSkillsCtrl = <String>[];
-
-  bool _signupObscure = true;
-  bool _signupConfirmObscure = true;
 
   bool _isLoading = false;
+  String? _loginErrorMessage;
 
   @override
   void dispose() {
     _loginEmailCtrl.dispose();
     _loginPasswordCtrl.dispose();
-    _signupEmailCtrl.dispose();
-    _signupPasswordCtrl.dispose();
-    _signupConfirmCtrl.dispose();
-    _signupFirstNameCtrl.dispose();
-    _signupLastNameCtrl.dispose();
-    _signupDobCtrl.dispose();
-    _signupGenderCtrl.dispose();
-    _signupPhoneCtrl.dispose();
-    _signupIdCtrl.dispose();
-    _signupAreaCtrl.dispose();
-    _signupQualificationCtrl.dispose();
-    _signupEmploymentCtrl.dispose();
     super.dispose();
   }
 
@@ -71,78 +42,42 @@ class _LoginScreenState extends State<LoginScreen> {
     return null;
   }
 
-  String? _validateConfirmPassword(String? v) {
-    if (v == null || v.isEmpty) return 'Please confirm your password';
-    if (v != _signupPasswordCtrl.text) return 'Passwords do not match';
-    return null;
-  }
-
-  Future<void> _login() async {
+  /// Validates the login form, signs in via [AuthService], and routes to
+  /// Home on success. Clears the navigation stack so the back button cannot
+  /// return to Login. Shows a readable error message on failure rather than
+  /// crashing.
+  Future<void> _handleLogin() async {
     if (!_loginFormKey.currentState!.validate()) return;
 
-    const validEmail = 'sipho.dlamini@gmail.com';
-    const validPassword = 'password123';
+    setState(() {
+      _isLoading = true;
+      _loginErrorMessage = null;
+    });
 
-    if (_loginEmailCtrl.text.trim() != validEmail ||
-        _loginPasswordCtrl.text != validPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Invalid email or password. Please try again.'),
-          backgroundColor: Colors.redAccent,
-        ),
+    try {
+      await _authService.signIn(
+        email: _loginEmailCtrl.text.trim(),
+        password: _loginPasswordCtrl.text,
       );
-      return;
-    }
 
-    setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 800));
-    await AuthService.saveSession(_loginEmailCtrl.text.trim());
-    if (!mounted) return;
-    setState(() => _isLoading = false);
+      if (!mounted) return;
 
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      AppRouter.home,
-          (route) => false,
-    );
-  }
+      // TODO(INT-007): pass _loginEmailCtrl.text.trim() to load the user's
+      // Google Sheets profile once that integration is wired up.
 
-  Future<void> _signup() async {
-    if (!_signupFormKey.currentState!.validate()) return;
-    if (_signupSkillsCtrl.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select at least one skill.'),
-          backgroundColor: Colors.redAccent,
-        ),
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        AppRouter.home,
+            (route) => false,
       );
-      return;
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      setState(() => _loginErrorMessage = e.message);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _loginErrorMessage = 'Something went wrong. Please try again.');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
-
-    setState(() => _isLoading = true);
-
-    await RegistrationService.saveApplicant(
-      firstName: _signupFirstNameCtrl.text.trim(),
-      lastName: _signupLastNameCtrl.text.trim(),
-      idNumber: _signupIdCtrl.text.trim(),
-      dateOfBirth: _signupDobCtrl.text.trim(),
-      gender: _signupGenderCtrl.text.trim(),
-      contactNumber: _signupPhoneCtrl.text.trim(),
-      email: _signupEmailCtrl.text.trim(),
-      residentialArea: _signupAreaCtrl.text.trim(),
-      highestQualification: _signupQualificationCtrl.text.trim(),
-      employmentStatus: _signupEmploymentCtrl.text.trim(),
-      skills: _signupSkillsCtrl,
-    );
-
-    await AuthService.saveSession(_signupEmailCtrl.text.trim());
-
-    if (!mounted) return;
-    setState(() => _isLoading = false);
-
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      AppRouter.home,
-          (route) => false,
-    );
   }
 
   @override
@@ -158,12 +93,13 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildTabToggle(),
-                  const SizedBox(height: 28),
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 220),
-                    child: _isLoginTab ? _buildLoginForm() : _buildSignupForm(),
+                  const Text(
+                    'Welcome back',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.textDark),
                   ),
+                  const SizedBox(height: 28),
+                  _buildLoginForm(),
                 ],
               ),
             ),
@@ -184,7 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
             width: 72,
             height: 72,
             decoration: BoxDecoration(
-              color: Colors.white.withAlpha(38),
+              color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(18),
             ),
             child: const Icon(Icons.work_outline_rounded, size: 38, color: Colors.white),
@@ -197,53 +133,9 @@ class _LoginScreenState extends State<LoginScreen> {
           const SizedBox(height: 4),
           Text(
             'Employment Hub',
-            style: TextStyle(color: Colors.white.withAlpha(178), fontSize: 14),
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 14),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildTabToggle() {
-    return Container(
-      height: 52,
-      decoration: BoxDecoration(
-        color: const Color(0xFFE8EDF5),
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Row(
-        children: [
-          _tabOption('Log In', isActive: _isLoginTab, onTap: () => setState(() => _isLoginTab = true)),
-          _tabOption('Sign Up', isActive: !_isLoginTab, onTap: () => setState(() => _isLoginTab = false)),
-        ],
-      ),
-    );
-  }
-
-  Widget _tabOption(String label, {required bool isActive, required VoidCallback onTap}) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          margin: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: isActive ? Colors.white : Colors.transparent,
-            borderRadius: BorderRadius.circular(26),
-            boxShadow: isActive
-                ? [BoxShadow(color: Colors.black.withAlpha(20), blurRadius: 8, offset: const Offset(0, 2))]
-                : [],
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            label,
-            style: TextStyle(
-              fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-              fontSize: 15,
-              color: isActive ? AppTheme.textDark : AppTheme.mutedText,
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -252,7 +144,6 @@ class _LoginScreenState extends State<LoginScreen> {
     return Form(
       key: _loginFormKey,
       child: Column(
-        key: const ValueKey('login'),
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _fieldLabel('Email Address'),
@@ -266,6 +157,10 @@ class _LoginScreenState extends State<LoginScreen> {
             obscure: _loginObscure,
             onToggle: () => setState(() => _loginObscure = !_loginObscure),
           ),
+          if (_loginErrorMessage != null) ...[
+            const SizedBox(height: 12),
+            _errorBanner(_loginErrorMessage!),
+          ],
           const SizedBox(height: 6),
           Align(
             alignment: Alignment.centerRight,
@@ -280,242 +175,37 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          _primaryButton(label: 'Log In', isLoading: _isLoading, onPressed: _login),
+          _primaryButton(label: 'Log In', isLoading: _isLoading, onPressed: _handleLogin),
           const SizedBox(height: 20),
           _orDivider(),
           const SizedBox(height: 16),
           _googleButton(),
           const SizedBox(height: 20),
-          _switchTabPrompt(
-            question: "Don't have an account?",
-            action: 'Sign Up Free',
-            onTap: () => setState(() => _isLoginTab = false),
-          ),
+          _switchToSignupPrompt(),
         ],
       ),
     );
   }
 
-  Widget _buildSignupForm() {
-    final genderOptions = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
-    final qualificationOptions = [
-      'No Formal Education',
-      'Primary School',
-      'High School (Grade 9)',
-      'Matric (Grade 12)',
-      'Certificate',
-      'Diploma',
-      'Bachelor\'s Degree',
-      'Honours Degree',
-      'Master\'s Degree',
-      'Doctoral Degree',
-    ];
-
-    return Form(
-      key: _signupFormKey,
-      child: Column(
-        key: const ValueKey('signup'),
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _fieldLabel('First Name'),
-          const SizedBox(height: 6),
-          _textField(
-            controller: _signupFirstNameCtrl,
-            hint: 'Your first name',
-            validator: (v) => _validateRequired(v, 'First name'),
-          ),
-          const SizedBox(height: 16),
-          _fieldLabel('Last Name'),
-          const SizedBox(height: 6),
-          _textField(
-            controller: _signupLastNameCtrl,
-            hint: 'Your last name',
-            validator: (v) => _validateRequired(v, 'Last name'),
-          ),
-          const SizedBox(height: 16),
-          _fieldLabel('ID Number'),
-          const SizedBox(height: 6),
-          _textField(
-            controller: _signupIdCtrl,
-            hint: '13-digit SA ID number',
-            validator: (v) {
-              if (v == null || v.trim().isEmpty) return 'ID number is required';
-              if (v.trim().length != 13) return 'ID number must be 13 digits';
-              if (!RegExp(r'^\d{13}$').hasMatch(v.trim())) return 'ID number must contain only digits';
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-          _fieldLabel('Date of Birth'),
-          const SizedBox(height: 6),
-          TextFormField(
-            controller: _signupDobCtrl,
-            readOnly: true,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            validator: (v) => _validateRequired(v, 'Date of birth'),
-            onTap: () async {
-              final picked = await showDatePicker(
-                context: context,
-                initialDate: DateTime(2000),
-                firstDate: DateTime(1940),
-                lastDate: DateTime.now(),
-              );
-              if (picked != null) {
-                _signupDobCtrl.text =
-                '${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}';
-              }
-            },
-            decoration: _fieldDecoration(
-              hint: 'DD/MM/YYYY',
-              prefix: const Icon(Icons.calendar_today_outlined, color: AppTheme.mutedText, size: 20),
-            ),
-          ),
-          const SizedBox(height: 16),
-          _fieldLabel('Gender'),
-          const SizedBox(height: 6),
-          DropdownButtonFormField<String>(
-            initialValue: _signupGenderCtrl.text.isEmpty ? null : _signupGenderCtrl.text,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            validator: (v) => v == null ? 'Gender is required' : null,
-            decoration: _fieldDecoration(hint: 'Select gender'),
-            items: genderOptions
-                .map((g) => DropdownMenuItem(value: g, child: Text(g)))
-                .toList(),
-            onChanged: (v) => setState(() => _signupGenderCtrl.text = v ?? ''),
-          ),
-          const SizedBox(height: 16),
-          _fieldLabel('Contact Number'),
-          const SizedBox(height: 6),
-          TextFormField(
-            controller: _signupPhoneCtrl,
-            keyboardType: TextInputType.phone,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            validator: (v) {
-              if (v == null || v.trim().isEmpty) return 'Contact number is required';
-              if (!RegExp(r'^\+?[\d\s]{10,15}$').hasMatch(v.trim())) return 'Enter a valid contact number';
-              return null;
-            },
-            decoration: _fieldDecoration(
-              hint: '071 234 5678',
-              prefix: const Icon(Icons.phone_outlined, color: AppTheme.mutedText, size: 20),
-            ),
-          ),
-          const SizedBox(height: 16),
-          _fieldLabel('Email Address'),
-          const SizedBox(height: 6),
-          _emailField(_signupEmailCtrl),
-          const SizedBox(height: 16),
-          _fieldLabel('Residential Area'),
-          const SizedBox(height: 6),
-          _textField(
-            controller: _signupAreaCtrl,
-            hint: 'e.g. Soweto, Johannesburg',
-            validator: (v) => _validateRequired(v, 'Residential area'),
-          ),
-          const SizedBox(height: 16),
-          _fieldLabel('Highest Qualification'),
-          const SizedBox(height: 6),
-          DropdownButtonFormField<String>(
-            initialValue: _signupQualificationCtrl.text.isEmpty ? null : _signupQualificationCtrl.text,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            validator: (v) => v == null ? 'Qualification is required' : null,
-            decoration: _fieldDecoration(hint: 'Select qualification'),
-            items: qualificationOptions
-                .map((q) => DropdownMenuItem(value: q, child: Text(q)))
-                .toList(),
-            onChanged: (v) => setState(() => _signupQualificationCtrl.text = v ?? ''),
-          ),
-          const SizedBox(height: 16),
-          _fieldLabel('Current Employment Status'),
-          const SizedBox(height: 6),
-          DropdownButtonFormField<String>(
-            initialValue: _signupEmploymentCtrl.text.isEmpty ? null : _signupEmploymentCtrl.text,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            validator: (v) => v == null ? 'Employment status is required' : null,
-            decoration: _fieldDecoration(hint: 'Select employment status'),
-            items: [
-              'Employed (Full-time)',
-              'Employed (Part-time)',
-              'Self-employed',
-              'Unemployed',
-              'Student',
-            ].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
-            onChanged: (v) => setState(() => _signupEmploymentCtrl.text = v ?? ''),
-          ),
-          const SizedBox(height: 16),
-          _fieldLabel('Skills'),
-          const SizedBox(height: 6),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              'Communication',
-              'Leadership',
-              'Problem Solving',
-              'Teamwork',
-              'Computer Literacy',
-              'Customer Service',
-              'Project Management',
-              'Data Analysis',
-              'Marketing',
-              'Sales',
-            ].map((skill) {
-              final selected = _signupSkillsCtrl.contains(skill);
-              return FilterChip(
-                label: Text(skill),
-                selected: selected,
-                onSelected: (val) {
-                  setState(() {
-                    if (val) {
-                      _signupSkillsCtrl.add(skill);
-                    } else {
-                      _signupSkillsCtrl.remove(skill);
-                    }
-                  });
-                },
-                selectedColor: AppTheme.primary.withAlpha(38),
-                checkmarkColor: AppTheme.primary,
-                labelStyle: TextStyle(
-                  color: selected ? AppTheme.primary : AppTheme.mutedText,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-                ),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 16),
-          _fieldLabel('Password'),
-          const SizedBox(height: 6),
-          _passwordField(
-            controller: _signupPasswordCtrl,
-            obscure: _signupObscure,
-            onToggle: () => setState(() => _signupObscure = !_signupObscure),
-          ),
-          const SizedBox(height: 16),
-          _fieldLabel('Confirm Password'),
-          const SizedBox(height: 6),
-          _passwordField(
-            controller: _signupConfirmCtrl,
-            hint: 'Confirm password',
-            obscure: _signupConfirmObscure,
-            onToggle: () => setState(() => _signupConfirmObscure = !_signupConfirmObscure),
-            validator: _validateConfirmPassword,
-          ),
-          const SizedBox(height: 24),
-          _primaryButton(label: 'Create Account', isLoading: _isLoading, onPressed: _signup),
-          const SizedBox(height: 20),
-          _orDivider(),
-          const SizedBox(height: 16),
-          _googleButton(),
-          const SizedBox(height: 20),
-          _switchTabPrompt(
-            question: 'Already have an account?',
-            action: 'Log In',
-            onTap: () => setState(() => _isLoginTab = true),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _errorBanner(String message) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    decoration: BoxDecoration(
+      color: Colors.redAccent.withValues(alpha: 0.08),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+    ),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Icon(Icons.error_outline, color: Colors.redAccent, size: 18),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(message, style: const TextStyle(color: Colors.redAccent, fontSize: 13, fontWeight: FontWeight.w500)),
+        ),
+      ],
+    ),
+  );
 
   Widget _fieldLabel(String text) => Text(
     text,
@@ -533,7 +223,7 @@ class _LoginScreenState extends State<LoginScreen> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
         errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Colors.redAccent)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: AppTheme.primary.withAlpha(153), width: 1.5)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: AppTheme.primary.withValues(alpha: 0.6), width: 1.5)),
         focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Colors.redAccent, width: 1.5)),
       );
 
@@ -547,14 +237,6 @@ class _LoginScreenState extends State<LoginScreen> {
       prefix: const Icon(Icons.email_outlined, color: AppTheme.mutedText, size: 20),
     ),
   );
-
-  Widget _textField({required TextEditingController controller, required String hint, String? Function(String?)? validator}) =>
-      TextFormField(
-        controller: controller,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
-        validator: validator,
-        decoration: _fieldDecoration(hint: hint),
-      );
 
   Widget _passwordField({
     required TextEditingController controller,
@@ -622,16 +304,15 @@ class _LoginScreenState extends State<LoginScreen> {
     ),
   );
 
-  Widget _switchTabPrompt({required String question, required String action, required VoidCallback onTap}) =>
-      Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(question, style: const TextStyle(color: AppTheme.mutedText)),
-          const SizedBox(width: 4),
-          GestureDetector(
-            onTap: onTap,
-            child: Text(action, style: const TextStyle(color: AppTheme.accent, fontWeight: FontWeight.w700)),
-          ),
-        ],
-      );
+  Widget _switchToSignupPrompt() => Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      const Text("Don't have an account?", style: TextStyle(color: AppTheme.mutedText)),
+      const SizedBox(width: 4),
+      GestureDetector(
+        onTap: () => Navigator.of(context).pushNamed(AppRouter.signup),
+        child: const Text('Sign Up Free', style: TextStyle(color: AppTheme.accent, fontWeight: FontWeight.w700)),
+      ),
+    ],
+  );
 }
