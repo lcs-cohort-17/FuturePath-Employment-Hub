@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../router/app_router.dart';
 
 class JobApplySuccessScreen extends StatelessWidget {
   const JobApplySuccessScreen({super.key});
@@ -39,7 +40,7 @@ class JobApplySuccessScreen extends StatelessWidget {
                 //Track Application Button: Navigates using Named Route
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/track_application');
+                    Navigator.pushNamed(context, AppRouter.trackApplications);
                   },
                   child: const Text('Track Application'),
                 ),
