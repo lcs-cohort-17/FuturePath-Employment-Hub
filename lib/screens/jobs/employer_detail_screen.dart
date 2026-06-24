@@ -1,32 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import '../../models/employer.dart';
 
 class EmployerDetailScreen extends StatelessWidget {
   final EmployerModel? employerData;
 
   const EmployerDetailScreen({
-    Key? key,
+    super.key,
     this.employerData,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     final employer = employerData;
 
-    // 1. Automatically derive data status reactively
     final bool isMissingInfo = employer == null ||
-                               employer.bio == null ||
-                               employer.website == null;
+        employer.bio == null ||
+        employer.website == null ||
+        employer.bio!.trim().isEmpty ||
+        employer.website!.trim().isEmpty;
 
-    // 2. Define UI display fallback strings
     final String currentCompanyName = employer?.companyName ?? "Unnamed Enterprise Asset";
     final String currentIndustry = employer?.industry ?? "Sector Unspecified";
     final String currentLocation = employer?.location ?? "Location Not Listed";
     final int currentOpenings = employer?.activeOpeningsCount ?? 0;
     final String currentEmail = employer?.email ?? "support@employerplatform.internal";
 
-    final String? rawBio = isMissingInfo ? null : employer?.bio;
-    final String? rawWebsite = isMissingInfo ? null : employer?.website;
+    final String? rawBio = employer?.bio;
+    final String? rawWebsite = employer?.website;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -76,13 +77,9 @@ class EmployerDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Only shows if data is missing or null
             if (isMissingInfo) _buildIncompleteWarning(),
-
-            // Both mode toggle buttons have been completely stripped out from here!
             const SizedBox(height: 12),
 
-            // HERO IDENTITY CARD
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -95,7 +92,10 @@ class EmployerDetailScreen extends StatelessWidget {
                   Container(
                     width: 54,
                     height: 54,
-                    decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(12)),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     child: const Icon(Icons.business_rounded, color: Color(0xFF1A365D), size: 24),
                   ),
                   const SizedBox(width: 14),
@@ -106,8 +106,13 @@ class EmployerDetailScreen extends StatelessWidget {
                         Row(
                           children: [
                             Expanded(
-                              child: Text(currentCompanyName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)), overflow: TextOverflow.ellipsis),
+                              child: Text(
+                                currentCompanyName,
+                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
+                            const SizedBox(width: 4),
                             const Icon(Icons.verified_rounded, color: Color(0xFF008080), size: 16),
                           ],
                         ),
@@ -118,7 +123,13 @@ class EmployerDetailScreen extends StatelessWidget {
                           children: [
                             const Icon(Icons.location_on_outlined, size: 13, color: Color(0xFF94A3B8)),
                             const SizedBox(width: 4),
-                            Text(currentLocation, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                            Expanded(
+                              child: Text(
+                                currentLocation,
+                                style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -129,7 +140,6 @@ class EmployerDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // ABOUT COMPANY
             const Text('About Company', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1A365D), letterSpacing: 0.3)),
             const SizedBox(height: 8),
             Container(
@@ -148,7 +158,6 @@ class EmployerDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // ADDITIONAL INFORMATION
             const Text('Additional Information', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1A365D), letterSpacing: 0.3)),
             const SizedBox(height: 8),
             Container(
@@ -199,8 +208,8 @@ class EmployerDetailScreen extends StatelessWidget {
   }
 
   Widget _buildMetaRow(IconData icon, String label, String? value, {bool isLink = false, bool isPlaceholder = false}) {
-    final bool isEmpty = value == null || value.isEmpty;
-    final String displayValue = isEmpty ? 'Website Not Listed' : value;
+    final bool isEmpty = value == null || value.trim().isEmpty;
+    final String displayValue = isEmpty ? '$label Not Listed' : value!;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -210,15 +219,19 @@ class EmployerDetailScreen extends StatelessWidget {
           const SizedBox(width: 12),
           Text(label, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
           const Spacer(),
-          Text(
-            displayValue,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: (isEmpty || isPlaceholder) ? FontWeight.normal : FontWeight.bold,
-              color: isLink && !isEmpty
-                  ? const Color(0xFF008080)
-                  : (isEmpty || isPlaceholder ? const Color(0xFF94A3B8) : const Color(0xFF1E293B)),
-              fontStyle: (isEmpty || isPlaceholder) ? FontStyle.italic : FontStyle.normal,
+          Expanded(
+            child: Text(
+              displayValue,
+              textAlign: TextAlign.end,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: (isEmpty || isPlaceholder) ? FontWeight.normal : FontWeight.bold,
+                color: isLink && !isEmpty
+                    ? const Color(0xFF008080)
+                    : (isEmpty || isPlaceholder ? const Color(0xFF94A3B8) : const Color(0xFF1E293B)),
+                fontStyle: (isEmpty || isPlaceholder) ? FontStyle.italic : FontStyle.normal,
+              ),
             ),
           ),
         ],

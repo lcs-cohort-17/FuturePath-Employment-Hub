@@ -3,6 +3,8 @@ import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/core/widgets/skill_chip.dart';
 import 'package:futurepath_employment_hub/core/widgets/notification_badge.dart';
 import 'package:futurepath_employment_hub/providers/search_filter_provider.dart';
+import 'package:futurepath_employment_hub/router/app_router.dart';
+import 'package:futurepath_employment_hub/models/employer.dart';
 import 'package:provider/provider.dart';
 import 'opportunity_detail_screen.dart';
 
@@ -180,7 +182,6 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
       list = list.where((opportunity) => opportunity.jobType == _selectedJobType).toList();
     }
 
-    // Use the provider's selected locations
     if (filterProvider.selectedLocations.isNotEmpty) {
       list = list.where((opportunity) =>
           filterProvider.selectedLocations.contains(opportunity.location)).toList();
@@ -231,7 +232,6 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header with close button
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -250,8 +250,6 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
                     ],
                   ),
                   const SizedBox(height: 24),
-
-                  // Location Section
                   const Text(
                     'Location',
                     style: TextStyle(
@@ -279,8 +277,6 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
                     }).toList(),
                   ),
                   const SizedBox(height: 24),
-
-                  // Job Type Section
                   const Text(
                     'Job Type',
                     style: TextStyle(
@@ -310,8 +306,6 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
                     }).toList(),
                   ),
                   const SizedBox(height: 24),
-
-                  // Skills Section
                   const Text(
                     'Skills',
                     style: TextStyle(
@@ -329,8 +323,6 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
                     ),
                   ),
                   const SizedBox(height: 32),
-
-                  // Action Buttons
                   Row(
                     children: [
                       Expanded(
@@ -429,14 +421,22 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
                               ),
                             ),
                           ),
-                          onCompanyTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const _PlaceholderScreen(
-                                message: 'Employer Detail Screen - coming soon',
+                          onCompanyTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              AppRouter.employerDetail,
+                              arguments: EmployerModel(
+                                id: filtered[index].company.toLowerCase().replaceAll(' ', '_'),
+                                companyName: filtered[index].company,
+                                industry: filtered[index].companyIndustry,
+                                location: filtered[index].location,
+                                activeOpeningsCount: filtered[index].positions,
+                                email: 'careers@${filtered[index].company.toLowerCase().replaceAll(' ', '')}.co.za',
+                                website: 'https://www.${filtered[index].company.toLowerCase().replaceAll(' ', '')}.co.za',
+                                bio: '${filtered[index].company} is actively recruiting talent for projects across South Africa.',
                               ),
-                            ),
-                          ),
+                            );
+                          },
                         ),
                       );
                     },
@@ -467,7 +467,6 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
           ),
           Row(
             children: [
-              // FILTER ICON BUTTON
               Consumer<SearchFilterProvider>(
                 builder: (context, provider, child) {
                   return Stack(

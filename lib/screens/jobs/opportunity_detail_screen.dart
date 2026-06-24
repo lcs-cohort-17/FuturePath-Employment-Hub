@@ -11,8 +11,9 @@
 import 'package:flutter/material.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/core/widgets/skill_chip.dart';
-import 'package:futurepath_employment_hub/screens/jobs/opportunity_list_screen.dart'
-    show Opportunity, RelatedProgramme;
+import 'package:futurepath_employment_hub/screens/jobs/opportunity_list_screen.dart' show Opportunity, RelatedProgramme;
+import 'package:futurepath_employment_hub/router/app_router.dart';
+import 'package:futurepath_employment_hub/models/employer.dart';
 
 class OpportunityDetailScreen extends StatefulWidget {
   /// [opportunity] — full opportunity object passed from the list screen.
@@ -207,12 +208,38 @@ class _OpportunityDetailScreenState extends State<OpportunityDetailScreen> {
                 ),
               ),
               const SizedBox(height: 4),
-              Text(
-                opportunity.company,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: AppTheme.accent,
-                  fontWeight: FontWeight.w600,
+              // Wrap the company text in an InkWell to handle navigation clicks
+              InkWell(
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    AppRouter.employerDetail,
+                    arguments: EmployerModel(
+                      id: opportunity.company.toLowerCase().replaceAll(' ', '_'),
+                      companyName: opportunity.company,
+                      industry: opportunity.companyIndustry,
+                      location: opportunity.location,
+                      activeOpeningsCount: opportunity.positions,
+                      email: 'careers@${opportunity.company.toLowerCase().replaceAll(' ', '')}.co.za',
+                      // Intentionally passing dummy bio/website strings or null
+                      // to populate the fields handled by your EmployerDetailScreen
+                      website: 'https://www.${opportunity.company.toLowerCase().replaceAll(' ', '')}.co.za',
+                      bio: '${opportunity.company} is actively recruiting talent for projects across South Africa.',
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(4),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                  child: Text(
+                    opportunity.company,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppTheme.accent, // Keeping your original beautiful teal branding color
+                      fontWeight: FontWeight.w600,
+                      decoration: TextDecoration.underline, // Subtle hint showing it's an actionable link
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 4),
