@@ -9,14 +9,18 @@ import 'screens/auth/app_gate.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await dotenv.load(fileName: ".env");
+  try {
+    await dotenv.load(fileName: '.env');
 
-  await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL']!,
-    publishableKey: dotenv.env['SUPABASE_ANON_KEY']!,
-  );
+    await Supabase.initialize(
+      url: dotenv.env['SUPABASE_URL']!,
+      publishableKey: dotenv.env['SUPABASE_ANON_KEY']!,
+    );
+  } catch (e) {
+    debugPrint('Error initializing app: $e');
+  }
 
-  runApp(const MyApp()); 
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -26,8 +30,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'FuturePath Employment Hub',
-      theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
+      theme: AppTheme.lightTheme,
       home: const AppGate(),
       onGenerateRoute: AppRouter.generateRoute,
     );
