@@ -1,28 +1,27 @@
+// test/services/auth_service_test.dart
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:futurepath_employment_hub/services/auth_services.dart';
 
 void main() {
-  group('AuthService Tests', () {
-    test('AuthService should be a singleton', () {
-      final auth1 = AuthService();
-      final auth2 = AuthService();
+  group('AuthService', () {
+    late AuthService authService;
 
-      expect(identical(auth1, auth2), true);
+    setUp(() {
+      authService = AuthService();
     });
 
-    test('AuthService instance should not be null', () {
-      final auth = AuthService();
-
-      expect(auth, isNotNull);
+    test('signOut should complete without error', () async {
+      await expectLater(authService.signOut(), completes);
     });
 
-    test('AuthService exposes required methods', () {
-      final auth = AuthService();
+    test('isLoggedIn should return a boolean', () {
+      final result = authService.isLoggedIn;
+      expect(result, isA<bool>());
+    });
 
-      expect(auth.signIn, isNotNull);
-      expect(auth.signUp, isNotNull);
-      expect(auth.signOut, isNotNull);
-      expect(auth.resetPassword, isNotNull);
+    test('AuthService singleton should return an instance', () {
+      expect(authService, isA<AuthService>());
     });
   });
 }

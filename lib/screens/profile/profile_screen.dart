@@ -12,13 +12,13 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userProfile = ref.watch(userProfileProvider);
-    final authService = ref.watch(authServiceProvider);
+    final authService = AuthService();
 
     return ProfileScreenContent(
       userProfile: userProfile,
       onSignOut: () async {
         try {
-          await authService.logout();
+          await authService.signOut();
           if (context.mounted) {
             Navigator.pushReplacementNamed(context, '/login');
           }
@@ -238,15 +238,13 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
         decoration: BoxDecoration(
           color: isSelected ? Colors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
-          boxShadow: isSelected
-              ? [
+          boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4,
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
               offset: const Offset(0, 2),
             ),
-          ]
-              : null,
+          ],
         ),
         child: Text(
           label,
@@ -511,7 +509,7 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
