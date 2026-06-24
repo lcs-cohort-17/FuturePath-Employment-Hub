@@ -16,7 +16,7 @@ Future<void> main() async {
     publishableKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
 
-  runApp(const MyApp());
+  runApp(const MyApp()); 
 }
 
 class MyApp extends StatelessWidget {
