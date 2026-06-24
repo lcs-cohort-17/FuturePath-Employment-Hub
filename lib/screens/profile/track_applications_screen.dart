@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../core/widgets/status_chip.dart';
 
 class TrackApplicationsScreen extends StatefulWidget {
   final List<Map<String, dynamic>> applications;
@@ -87,7 +86,6 @@ class _TrackApplicationsScreenState extends State<TrackApplicationsScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        // FIXED: Replaced withOpacity with withValues
         border: Border.all(color: isExpanded ? statusColor.withValues(alpha: 0.5) : const Color(0xFFE2E8F0)),
       ),
       child: Column(
@@ -109,7 +107,7 @@ class _TrackApplicationsScreenState extends State<TrackApplicationsScreen> {
                       ],
                     ),
                   ),
-                  StatusChip(status: status),
+                  _buildStatusChip(status, statusColor),
                   const SizedBox(width: 8),
                   Icon(isExpanded ? Icons.expand_more_rounded : Icons.chevron_right_rounded, color: const Color(0xFF64748B), size: 20),
                 ],
@@ -137,6 +135,25 @@ class _TrackApplicationsScreenState extends State<TrackApplicationsScreen> {
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildStatusChip(String status, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Text(
+        status,
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
