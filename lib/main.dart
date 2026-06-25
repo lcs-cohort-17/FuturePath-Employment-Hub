@@ -1,45 +1,95 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'core/theme/app_theme.dart';
-import 'router/app_router.dart';
 
-void main() async {
+import 'screens/auth/app_gate.dart';
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load environment variables
   try {
-    await dotenv.load(fileName: ".env");
+    await dotenv.load(fileName: '.env');
 
-    // Initialize Supabase
+    final supabaseUrl = dotenv.env['SUPABASE_URL'];
+    final supabaseKey = dotenv.env['SUPABASE_ANON_KEY'];
+
+    if (supabaseUrl == null || supabaseUrl.trim().isEmpty) {
+      throw StateError('SUPABASE_URL is missing from the .env file.');
+    }
+
+    if (supabaseKey == null || supabaseKey.trim().isEmpty) {
+      throw StateError('SUPABASE_ANON_KEY is missing from the .env file.');
+    }
+
     await Supabase.initialize(
-      url: dotenv.env['SUPABASE_URL']!,
-      anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+      url: supabaseUrl,
+      publishableKey: supabaseKey,
     );
-  } catch (e) {
-    debugPrint('Error initializing app: $e');
-    // In a real app, you might want to show an error screen
-  }
 
-  runApp(
-    const ProviderScope(
-      child: MyApp(),
-    ),
-  );
+    runApp(
+      const ProviderScope(
+        child: AppGate(),
+      ),
+    );
+  } catch (error, stackTrace) {
+    debugPrint('Error initializing app: $error');
+    debugPrintStack(stackTrace: stackTrace);
+
+    runApp(
+      ProviderScope(
+        child: _StartupErrorApp(
+          message: error.toString(),
+        ),
+      ),
+    );
+  }
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class _StartupErrorApp extends StatelessWidget {
+  const _StartupErrorApp({
+    required this.message,
+  });
+
+  final String message;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'FuturePath Employment Hub',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      initialRoute: AppRouter.login,
-      onGenerateRoute: AppRouter.generateRoute,
+      home: Scaffold(
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: Colors.redAccent,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'FuturePath could not start',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    message,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

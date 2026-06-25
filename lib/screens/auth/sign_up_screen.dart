@@ -102,8 +102,8 @@ class _SignupScreenState extends State<SignupScreen> {
 
     try {
       await _authService.signUp(
-        email: _emailCtrl.text.trim(),
-        password: _passwordCtrl.text,
+        _emailCtrl.text.trim(),
+        _passwordCtrl.text,
       );
 
       await RegistrationService.saveApplicant(

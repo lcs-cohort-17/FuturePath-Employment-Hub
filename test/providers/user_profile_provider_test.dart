@@ -1,12 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:futurepath_employment_hub/screens/profile/profile_screen.dart';
 import 'package:futurepath_employment_hub/screens/profile/cv_screen.dart';
 import 'package:futurepath_employment_hub/providers/user_profile_provider.dart';
+import 'package:futurepath_employment_hub/providers/auth_provider.dart';
+import 'package:futurepath_employment_hub/router/app_router.dart';
 import 'package:futurepath_employment_hub/services/auth_services.dart';
 
 void main() {
+  setUpAll(() async {
+    SharedPreferences.setMockInitialValues({});
+
+    await Supabase.initialize(
+      url: 'https://example.supabase.co',
+      publishableKey: 'test-publishable-key',
+    );
+  });
+
   group('Profile Screen Integration Tests', () {
     testWidgets('ProfileScreen should show user info', (tester) async {
       await tester.pumpWidget(
@@ -101,35 +115,39 @@ void main() {
       expect(find.text('CV & Resume'), findsOneWidget);
     });
 
-    testWidgets('Sign Out button should call logout', (tester) async {
-      bool logoutCalled = false;
+    testWidgets('Sign Out button should call signOut', (tester) async {
+      final authService = _MockAuthService();
+
+      when(() => authService.signOut()).thenAnswer((_) async {});
 
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            authServiceProvider.overrideWithValue(
-              _MockAuthService(() => logoutCalled = true),
-            ),
+            authServiceProvider.overrideWithValue(authService),
           ],
-          child: const MaterialApp(
-            home: ProfileScreen(),
+          child: MaterialApp(
+            routes: {
+              AppRouter.login: (_) => const Scaffold(
+                body: Center(
+                  child: Text('Login'),
+                ),
+              ),
+            },
+            home: const ProfileScreen(),
           ),
         ),
       );
 
       await tester.pumpAndSettle();
 
-      // Ensure Sign Out button is visible before tapping
       final signOutButton = find.text('Sign Out');
       await tester.ensureVisible(signOutButton);
       await tester.pumpAndSettle();
 
-      // Tap Sign Out button
       await tester.tap(signOutButton);
       await tester.pumpAndSettle();
 
-      // Verify logout was called
-      expect(logoutCalled, isTrue);
+      verify(() => authService.signOut()).called(1);
     });
   });
 
@@ -179,13 +197,4 @@ void main() {
 }
 
 // Mock AuthService for testing
-class _MockAuthService extends AuthService {
-  final VoidCallback onLogout;
-
-  _MockAuthService(this.onLogout);
-
-  @override
-  Future<void> logout() async {
-    onLogout();
-  }
-}
+class _MockAuthService extends Mock implements AuthService {}

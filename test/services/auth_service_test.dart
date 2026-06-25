@@ -1,37 +1,39 @@
-// test/services/auth_service_test.dart
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import 'package:futurepath_employment_hub/services/auth_services.dart';
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
-
-  setUp(() {
+  setUpAll(() async {
     SharedPreferences.setMockInitialValues({});
+
+    await Supabase.initialize(
+      url: 'https://example.supabase.co',
+      publishableKey: 'test-publishable-key',
+    );
   });
 
-  group('AuthService', () {
-    late AuthService authService;
+  group('AuthService contract', () {
+    test('exposes the AUTH-003 current-user and session state', () {
+      final service = AuthService();
 
-    setUp(() {
-      authService = AuthService();
+      expect(service.currentUser, isNull);
+      expect(service.isLoggedIn, isFalse);
     });
 
-    test('logout should complete without error', () async {
-      // Should not throw
-      await expectLater(authService.logout(), completes);
+    test('exposes both AUTH-003 and AUTH-002 auth streams', () {
+      final service = AuthService();
+
+      expect(service.authStateChange, isA<Stream<AuthState>>());
+      expect(service.authStateChanges, isA<Stream<AuthState>>());
     });
 
-    test('isLoggedIn should return a boolean', () async {
-      final result = await AuthService.isLoggedIn();
-      expect(result, isA<bool>());
-    });
-
-    test('authServiceProvider should provide AuthService', () {
-      final container = ProviderContainer();
-      final service = container.read(authServiceProvider);
-      expect(service, isA<AuthService>());
+    test('uses the NAV-009 password recovery redirect URL', () {
+      expect(
+        AuthService.passwordResetRedirectUrl,
+        'io.futurepath://reset-password',
+      );
     });
   });
 }

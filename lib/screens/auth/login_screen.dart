@@ -3,16 +3,22 @@ import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 import '../../core/theme/app_theme.dart';
 import '../../services/auth_services.dart';
 import '../../router/app_router.dart';
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({
+    super.key,
+    this.authService,
+  });
+
+  final AuthService? authService;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final AuthService _authService = AuthService();
+  late final AuthService _authService;
 
   final _loginFormKey = GlobalKey<FormState>();
   final _loginEmailCtrl = TextEditingController(text: 'sipho.dlamini@gmail.com');
@@ -23,10 +29,30 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _loginErrorMessage;
 
   @override
+  void initState() {
+    super.initState();
+    _authService = widget.authService ?? AuthService();
+  }
+
+  @override
   void dispose() {
     _loginEmailCtrl.dispose();
     _loginPasswordCtrl.dispose();
     super.dispose();
+  }
+
+  void _openForgotPassword() {
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        settings: const RouteSettings(
+          name: AppRouter.forgotPassword,
+        ),
+        builder: (_) => ForgotPasswordScreen(
+          authService: _authService,
+        ),
+      ),
+    );
   }
 
   String? _validateEmail(String? v) {
@@ -43,8 +69,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   /// Validates the login form, signs in via [AuthService], and routes to
-  /// Home on success. Clears the navigation stack so the back button cannot
-  /// return to Login. Shows a readable error message on failure rather than
+  /// Home on success. Replaces Login so the back button cannot return to it.
+  /// Shows a readable error message on failure rather than
   /// crashing.
   Future<void> _handleLogin() async {
     if (!_loginFormKey.currentState!.validate()) return;
@@ -56,8 +82,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       await _authService.signIn(
-        email: _loginEmailCtrl.text.trim(),
-        password: _loginPasswordCtrl.text,
+        _loginEmailCtrl.text.trim(),
+        _loginPasswordCtrl.text,
       );
 
       if (!mounted) return;
@@ -65,9 +91,9 @@ class _LoginScreenState extends State<LoginScreen> {
       // TODO(INT-007): pass _loginEmailCtrl.text.trim() to load the user's
       // Google Sheets profile once that integration is wired up.
 
-      Navigator.of(context).pushNamedAndRemoveUntil(
+      Navigator.pushReplacementNamed(
+        context,
         AppRouter.home,
-            (route) => false,
       );
     } on AuthException catch (e) {
       if (!mounted) return;
@@ -165,7 +191,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
-              onPressed: () => Navigator.of(context).pushNamed(AppRouter.forgotPassword),
+              onPressed: _openForgotPassword,
               style: TextButton.styleFrom(
                 foregroundColor: AppTheme.accent,
                 padding: EdgeInsets.zero,

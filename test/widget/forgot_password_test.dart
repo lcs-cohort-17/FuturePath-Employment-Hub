@@ -1,39 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-// 1. ADD THIS IMPORT FOR SHARED PREFERENCES
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mocktail/mocktail.dart';
 
-import 'package:futurepath_employment_hub/screens/auth/forgot_password_screen.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
+import 'package:futurepath_employment_hub/screens/auth/forgot_password_screen.dart';
+import 'package:futurepath_employment_hub/services/auth_services.dart';
+
+class MockAuthService extends Mock implements AuthService {}
 
 void main() {
-  setUpAll(() async {
-    // 2. MOCK THE SHARED PREFERENCES CHANNEL TO PREVENT THE EXCEPTION
-    SharedPreferences.setMockInitialValues({});
+  late MockAuthService authService;
 
-    await Supabase.initialize(
-      url: 'https://supabase.co',
-      anonKey: 'mock-anon-key-12345',
-    );
+  setUp(() {
+    authService = MockAuthService();
+
+    when(
+      () => authService.resetPassword(any()),
+    ).thenAnswer((_) async {});
   });
 
+  Widget createWidgetUnderTest() {
+    return MaterialApp(
+      theme: AppTheme.lightTheme,
+      home: ForgotPasswordScreen(
+        authService: authService,
+      ),
+    );
+  }
+
   group('UIUX-010: Forgot Password Screen Tests', () {
-
-    Widget createWidgetUnderTest() {
-      return MaterialApp(
-        theme: AppTheme.lightTheme,
-        home: const Scaffold(
-          body: Padding(
-            padding: EdgeInsets.all(16.0),
-            child: ForgotPasswordScreen(),
-          ),
-        ),
-      );
-    }
-
-    group('Screen Rendering', () {
-      testWidgets('displays form elements correctly on load', (WidgetTester tester) async {
+    testWidgets(
+      'displays form elements correctly on load',
+      (tester) async {
         await tester.pumpWidget(createWidgetUnderTest());
 
         expect(find.byType(TextFormField), findsOneWidget);
@@ -41,44 +39,76 @@ void main() {
         expect(find.text('Enter your email'), findsOneWidget);
         expect(find.text('Send Reset Link'), findsOneWidget);
         expect(find.byType(ElevatedButton), findsOneWidget);
-      });
-    });
+        expect(find.text('Cancel'), findsOneWidget);
+      },
+    );
 
-    group('Form Validation', () {
-      testWidgets('shows error message when email is empty', (WidgetTester tester) async {
+    testWidgets(
+      'shows error message when email is empty',
+      (tester) async {
         await tester.pumpWidget(createWidgetUnderTest());
 
-        await tester.tap(find.byType(ElevatedButton));
-        await tester.pumpAndSettle();
-
-        expect(find.text('Please enter your email address'), findsOneWidget);
-      });
-
-      testWidgets('shows error message when email format is invalid', (WidgetTester tester) async {
-        await tester.pumpWidget(createWidgetUnderTest());
-
-        await tester.enterText(find.byType(TextFormField), 'invalid-email-format');
-
-        await tester.tap(find.byType(ElevatedButton));
-        await tester.pumpAndSettle();
-
-        expect(find.text('Please enter a valid email address'), findsOneWidget);
-      });
-
-      testWidgets('clears validation error when valid email is provided', (WidgetTester tester) async {
-        await tester.pumpWidget(createWidgetUnderTest());
-
-        await tester.tap(find.byType(ElevatedButton));
-        await tester.pumpAndSettle();
-        expect(find.text('Please enter your email address'), findsOneWidget);
-
-        await tester.enterText(find.byType(TextFormField), 'test@example.com');
-
-        await tester.tap(find.byType(ElevatedButton));
+        final sendButton = find.byKey(
+          const Key('send_reset_link_button'),
+        );
+        await tester.ensureVisible(sendButton);
+        await tester.tap(sendButton);
         await tester.pump();
 
-        expect(find.text('Please enter your email address'), findsNothing);
-      });
-    });
+        expect(
+          find.text('Please enter your email address'),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets(
+      'shows error message when email format is invalid',
+      (tester) async {
+        await tester.pumpWidget(createWidgetUnderTest());
+
+        await tester.enterText(
+          find.byKey(const Key('forgot_password_email_field')),
+          'invalid-email-format',
+        );
+
+        final sendButton = find.byKey(
+          const Key('send_reset_link_button'),
+        );
+        await tester.ensureVisible(sendButton);
+        await tester.tap(sendButton);
+        await tester.pump();
+
+        expect(
+          find.text('Please enter a valid email address'),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets(
+      'valid email calls AUTH-003 resetPassword',
+      (tester) async {
+        await tester.pumpWidget(createWidgetUnderTest());
+
+        await tester.enterText(
+          find.byKey(const Key('forgot_password_email_field')),
+          'test@example.com',
+        );
+
+        final sendButton = find.byKey(
+          const Key('send_reset_link_button'),
+        );
+        await tester.ensureVisible(sendButton);
+        await tester.tap(sendButton);
+        await tester.pumpAndSettle();
+
+        verify(
+          () => authService.resetPassword('test@example.com'),
+        ).called(1);
+
+        expect(find.text('Reset link sent'), findsOneWidget);
+      },
+    );
   });
 }

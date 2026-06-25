@@ -1,127 +1,147 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:futurepath_employment_hub/screens/auth/login_screen.dart';
+import 'package:mocktail/mocktail.dart';
+
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/router/app_router.dart';
+import 'package:futurepath_employment_hub/screens/auth/forgot_password_screen.dart';
+import 'package:futurepath_employment_hub/screens/auth/login_screen.dart';
+import 'package:futurepath_employment_hub/screens/auth/sign_up_screen.dart';
+import 'package:futurepath_employment_hub/services/auth_services.dart';
+
+class MockAuthService extends Mock implements AuthService {}
 
 void main() {
-  setUpAll(() {
-    SharedPreferences.setMockInitialValues({});
-  });
+  late MockAuthService authService;
 
   setUp(() {
-    SharedPreferences.setMockInitialValues({});
+    authService = MockAuthService();
   });
 
   Widget createLoginScreen() {
     return MaterialApp(
       theme: AppTheme.lightTheme,
       initialRoute: AppRouter.login,
-      onGenerateRoute: AppRouter.generateRoute, // This fixes the Forgot Password navigation!
-      home: const LoginScreen(),
+      onGenerateRoute: (settings) {
+        switch (settings.name) {
+          case AppRouter.login:
+            return MaterialPageRoute<void>(
+              settings: settings,
+              builder: (_) => LoginScreen(authService: authService),
+            );
+
+          case AppRouter.forgotPassword:
+            return MaterialPageRoute<void>(
+              settings: settings,
+              builder: (_) => ForgotPasswordScreen(
+                authService: authService,
+              ),
+            );
+
+          case AppRouter.signup:
+            return MaterialPageRoute<void>(
+              settings: settings,
+              builder: (_) => SignupScreen(
+                authService: authService,
+              ),
+            );
+
+          default:
+            return MaterialPageRoute<void>(
+              settings: settings,
+              builder: (_) => LoginScreen(authService: authService),
+            );
+        }
+      },
     );
   }
 
   group('UIUX-002: Login & Authentication Screens', () {
-    // TEST 1: UI Elements Exist
-    testWidgets('Login screen displays all required UI elements', (WidgetTester tester) async {
+    testWidgets(
+      'Login screen displays all required UI elements',
+      (tester) async {
+        await tester.pumpWidget(createLoginScreen());
+
+        expect(find.text('FuturePath'), findsOneWidget);
+        expect(find.text('Employment Hub'), findsOneWidget);
+        expect(find.text('Log In'), findsWidgets);
+        expect(find.text('Email Address'), findsOneWidget);
+        expect(find.byType(TextFormField), findsNWidgets(2));
+        expect(find.text('Password'), findsOneWidget);
+        expect(find.text('Forgot Password?'), findsOneWidget);
+        expect(find.text('or continue with'), findsOneWidget);
+        expect(find.text('Continue with Google'), findsOneWidget);
+      },
+    );
+
+    testWidgets('Demo credentials are pre-filled', (tester) async {
       await tester.pumpWidget(createLoginScreen());
 
-      expect(find.text('FuturePath'), findsOneWidget);
-      expect(find.text('Employment Hub'), findsOneWidget);
-      expect(find.text('Log In'), findsWidgets);
-      expect(find.text('Sign Up'), findsOneWidget);
-      expect(find.text('Email Address'), findsOneWidget);
-      expect(find.byType(TextFormField), findsNWidgets(2));
-      expect(find.text('Password'), findsOneWidget);
-      expect(find.text('Forgot Password?'), findsOneWidget);
-      expect(find.text('or continue with'), findsOneWidget);
-      expect(find.text('Continue with Google'), findsOneWidget);
-    });
-
-    // TEST 2: Demo Credentials Pre-filled
-    testWidgets('Demo credentials are pre-filled', (WidgetTester tester) async {
-      await tester.pumpWidget(createLoginScreen());
       expect(find.text('sipho.dlamini@gmail.com'), findsOneWidget);
     });
 
-    // TEST 3: Email Validation
-    testWidgets('Email field validates input', (WidgetTester tester) async {
+    testWidgets('Email field validates input', (tester) async {
       await tester.pumpWidget(createLoginScreen());
-      await tester.enterText(find.byType(TextFormField).first, '');
+
+      await tester.enterText(
+        find.byType(TextFormField).first,
+        '',
+      );
+
+      final loginButton = find.widgetWithText(FilledButton, 'Log In');
+      await tester.ensureVisible(loginButton);
+      await tester.tap(loginButton);
       await tester.pump();
 
-      final logInButtons = find.text('Log In');
-      await tester.tap(logInButtons.last, warnIfMissed: false);
-      await tester.pump();
-
-      expect(find.byType(LoginScreen), findsOneWidget);
+      expect(find.text('Email is required'), findsOneWidget);
     });
 
-    // TEST 4: Password Toggle - FIXED!
-    testWidgets('Password field has secure text entry', (WidgetTester tester) async {
+    testWidgets('Password field has secure text entry', (tester) async {
       await tester.pumpWidget(createLoginScreen());
 
       expect(find.text('Enter password'), findsOneWidget);
-
-      // Look for IconButton inside the password field
-      final iconButtons = find.byType(IconButton);
-      expect(iconButtons, findsWidgets);
-
-      // Verify at least one IconButton exists (for visibility toggle)
-      expect(iconButtons.evaluate().length, greaterThan(0));
+      expect(find.byType(IconButton), findsWidgets);
     });
 
-    // TEST 5: Forgot Password Navigation - FIXED!
-    testWidgets('Forgot Password link exists and navigates', (WidgetTester tester) async {
+    testWidgets('Forgot Password link navigates', (tester) async {
       await tester.pumpWidget(createLoginScreen());
 
-      expect(find.text('Forgot Password?'), findsOneWidget);
-
-      await tester.tap(find.text('Forgot Password?'));
+      final forgotButton = find.text('Forgot Password?');
+      await tester.ensureVisible(forgotButton);
+      await tester.tap(forgotButton);
       await tester.pumpAndSettle();
 
-      // Should navigate to Forgot Password screen
-      expect(find.text('Forgot Password?'), findsWidgets);
+      expect(find.byType(ForgotPasswordScreen), findsOneWidget);
     });
 
-    // TEST 6: Sign Up Tab/Link
-    testWidgets('Sign Up tab exists', (WidgetTester tester) async {
+    testWidgets('Sign Up link navigates', (tester) async {
       await tester.pumpWidget(createLoginScreen());
-      expect(find.text('Sign Up'), findsOneWidget);
 
-      await tester.tap(find.text('Sign Up'));
+      final signUpLink = find.text('Sign Up Free');
+      await tester.ensureVisible(signUpLink);
+      await tester.tap(signUpLink);
       await tester.pumpAndSettle();
 
-      expect(find.byType(TextFormField), findsWidgets);
+      expect(find.byType(SignupScreen), findsOneWidget);
     });
 
-    // TEST 7: Successful Login
-    testWidgets('Log In button exists and is tappable', (WidgetTester tester) async {
+    testWidgets('Log In button exists and is tappable', (tester) async {
       await tester.pumpWidget(createLoginScreen());
 
-      final logInButton = find.text('Log In').last;
-      expect(logInButton, findsOneWidget);
+      final loginButton = find.widgetWithText(FilledButton, 'Log In');
+      await tester.ensureVisible(loginButton);
 
-      await tester.tap(logInButton, warnIfMissed: false);
-      await tester.pump();
-
-      expect(find.byType(LoginScreen), findsOneWidget);
+      expect(loginButton, findsOneWidget);
     });
 
-    // TEST 8: Design System Applied
-    testWidgets('Login screen uses design system colors', (WidgetTester tester) async {
+    testWidgets('Login screen uses design system colors', (tester) async {
       await tester.pumpWidget(createLoginScreen());
 
-      final scaffold = find.byType(Scaffold);
-      expect(scaffold, findsOneWidget);
-
+      expect(find.byType(Scaffold), findsOneWidget);
       expect(find.text('FuturePath'), findsOneWidget);
     });
 
-    // TEST 9: Form Fields Are Present
-    testWidgets('All form fields are present and labeled', (WidgetTester tester) async {
+    testWidgets('All form fields are present and labeled', (tester) async {
       await tester.pumpWidget(createLoginScreen());
 
       expect(find.text('Email Address'), findsOneWidget);
@@ -129,8 +149,7 @@ void main() {
       expect(find.byType(TextFormField), findsNWidgets(2));
     });
 
-    // TEST 10: Google Sign-In Option
-    testWidgets('Google sign-in option is displayed', (WidgetTester tester) async {
+    testWidgets('Google sign-in option is displayed', (tester) async {
       await tester.pumpWidget(createLoginScreen());
 
       expect(find.text('or continue with'), findsOneWidget);

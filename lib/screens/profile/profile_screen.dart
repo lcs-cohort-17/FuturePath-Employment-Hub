@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/user_profile_provider.dart';
-import '../../services/auth_services.dart';
+import '../../router/app_router.dart';
+import '../../providers/auth_provider.dart';
 import '../../models/user_profile.dart';
 import 'cv_screen.dart';
 
@@ -18,9 +19,13 @@ class ProfileScreen extends ConsumerWidget {
       userProfile: userProfile,
       onSignOut: () async {
         try {
-          await authService.logout();
+          await authService.signOut();
           if (context.mounted) {
-            Navigator.pushReplacementNamed(context, '/login');
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              AppRouter.login,
+              (route) => false,
+            );
           }
         } catch (e) {
           if (context.mounted) {

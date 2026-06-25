@@ -1,65 +1,71 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// ---
-// ARCHITECTURE NOTE: AuthService is the only file that imports supabase_flutter.
-// Supports dependency injection (for tests) AND a singleton factory (for production).
-// ---
 class AuthService {
-  final GoTrueClient _auth;
+  final SupabaseClient _supabase = Supabase.instance.client;
 
-  // --- 1. Private constructor used for all instance creation
-  AuthService._(this._auth);
+  static const String passwordResetRedirectUrl =
+      'io.futurepath://reset-password';
 
-  // --- 2. Named constructor for dependency injection (tests, custom clients)
-  AuthService.withClient(GoTrueClient auth) : _auth = auth;
-
-  // --- 3. Singleton factory (default, unnamed) – production use
-  static final AuthService _instance = AuthService._(Supabase.instance.client.auth);
-  factory AuthService() => _instance;
-
-  // --- 4. Core streams & getters
-  Stream<AuthState> get authStateChanges => _auth.onAuthStateChange;
-
-  bool get isLoggedIn => _auth.currentSession != null;
-  String? get userEmail => _auth.currentUser?.email;
-  User? get currentUser => _auth.currentUser;
-
-  // --- 5. Authentication methods (using rich return types)
-  Future<AuthResponse> signIn({
-    required String email,
-    required String password,
-  }) async {
-    return await _auth.signInWithPassword(email: email, password: password);
+  // ---- Sign In ----
+  Future<AuthResponse> signIn(String email, String password) async {
+    return await _supabase.auth.signInWithPassword(
+      email: email,
+      password: password,
+    );
   }
 
-  Future<AuthResponse> signUp({
-    required String email,
-    required String password,
-  }) async {
-    return await _auth.signUp(email: email, password: password);
+  // ---- Sign Up ----
+  Future<AuthResponse> signUp(String email, String password) async {
+    return await _supabase.auth.signUp(
+      email: email,
+      password: password,
+    );
   }
 
+  // ---- Sign Out ----
   Future<void> signOut() async {
-    await _auth.signOut();
+    await _supabase.auth.signOut();
   }
 
-  // Same as signOut but for compatibility with existing UI
-  Future<void> logout() async {
-    await signOut();
+  // ---- Forgot Password (reset) ----
+  Future<void> resetPassword(String email) async {
+    await _supabase.auth.resetPasswordForEmail(
+      email,
+      redirectTo: passwordResetRedirectUrl,
+    );
   }
 
-  // --- 6. Password reset (from Ticket 002)
-  Future<void> resetPassword({
-    required String email,
-    required String redirectTo,
-  }) async {
-    await _auth.resetPasswordForEmail(email, redirectTo: redirectTo);
+  // ---- Update Password (after reset) ----
+  Future<void> updatePassword(String newPassword) async {
+    await _supabase.auth.updateUser(
+      UserAttributes(password: newPassword),
+    );
   }
 
-  Future<UserResponse> updatePassword(String newPassword) async {
-    return await _auth.updateUser(UserAttributes(password: newPassword));
+  // ---- Get Current User ----
+  User? get currentUser => _supabase.auth.currentUser;
+
+  // ---- Compatibility getter required by AUTH-002 ----
+  bool get isLoggedIn => _supabase.auth.currentSession != null;
+
+  // ---- Get User Role (from profiles table) ----
+  Future<String?> getUserRole() async {
+    final user = currentUser;
+    if (user == null) return null;
+
+    final response = await _supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle();
+
+    return response?['role'] as String?;
   }
+
+  // ---- Auth State Stream ----
+  Stream<AuthState> get authStateChange =>
+      _supabase.auth.onAuthStateChange;
+
+  // ---- Compatibility alias required by AUTH-002 ----
+  Stream<AuthState> get authStateChanges => authStateChange;
 }
-
-final authServiceProvider = Provider<AuthService>((ref) => AuthService());
