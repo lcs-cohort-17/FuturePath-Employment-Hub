@@ -35,6 +35,11 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => const AppShell(),
           settings: settings,
+        );// marco added the work below
+      case adminEmployers:
+        return MaterialPageRoute(
+          builder: (_) => const AdminEmployersScreen(),
+          settings: settings,
         );
     // marco added the work below
       case adminEmployers:
