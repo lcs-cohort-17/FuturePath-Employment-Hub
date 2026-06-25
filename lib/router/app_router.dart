@@ -40,3 +40,23 @@ class AppRouter {
     }
   }
 }
+
+//Onke/021
+// Add to lib/router/app_router.dart — inside the GoRouter routes list
+// [UIUX-017] — AdminProgrammesScreen will call this route when a programme card is tapped
+
+GoRoute(
+  path: '/admin/enrolments/:programmeId',
+  name: 'adminEnrolments',
+  builder: (context, state) {
+    final programmeId = state.pathParameters['programmeId']!;
+    final programmeName =
+        state.uri.queryParameters['programmeName'] ?? 'Programme';
+    return AdminEnrolmentsScreen(
+      programmeId: programmeId,
+      programmeName: programmeName,
+    );
+  },
+),
+
+//Onke/021 ends here
