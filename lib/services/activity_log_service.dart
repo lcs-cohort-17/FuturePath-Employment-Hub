@@ -1,3 +1,4 @@
+// Antonio ticket 017 starts here
 import '../models/activity_log_event.dart';
 
 /// MOCK service standing in for INT-013 (SupabaseService — Activity Log,
@@ -99,3 +100,4 @@ class ActivityLogService {
     ),
   ];
 }
+// Antonio ticket 017 ends here

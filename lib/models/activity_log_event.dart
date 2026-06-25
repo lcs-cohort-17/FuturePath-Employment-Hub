@@ -1,3 +1,4 @@
+// Antonio ticket 017 starts here
 /// Category of an anonymised activity event shown on the Admin Activity
 /// Log screen. Drives icon + colour selection only — never carries or
 /// implies any personally identifiable information.
@@ -27,3 +28,4 @@ class ActivityLogEvent {
     required this.category,
   });
 }
+// Antonio ticket 017 ends here
