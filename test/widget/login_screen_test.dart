@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:futurepath_employment_hub/screens/auth/login_screen.dart';
-import 'package:futurepath_employment_hub/screens/auth/forgot_password_screen.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/router/app_router.dart';
 

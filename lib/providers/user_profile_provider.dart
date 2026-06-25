@@ -1,4 +1,3 @@
-//user_profile.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_profile.dart';
 import '../models/programme.dart';
@@ -110,11 +109,8 @@ class UserProfileNotifier extends StateNotifier<UserProfile> {
   }
 }
 
-final userProfileProvider = StateNotifierProvider<UserProfileNotifier, UserProfile>((ref) {
+// 👇 THIS IS THE MISSING LINE 👇
+final userProfileProvider =
+StateNotifierProvider<UserProfileNotifier, UserProfile>((ref) {
   return UserProfileNotifier();
-});
-
-// For reading only (no updates)
-final userProfileReadOnlyProvider = Provider<UserProfile>((ref) {
-  return ref.watch(userProfileProvider);
 });

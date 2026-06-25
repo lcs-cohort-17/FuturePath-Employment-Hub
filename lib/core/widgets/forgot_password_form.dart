@@ -37,8 +37,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
 
     try {
       await _authService.resetPassword(
-        email: _emailController.text.trim(),
-        redirectTo: 'io.futurepath://reset-password',
+        _emailController.text.trim(),
       );
 
       if (mounted) {

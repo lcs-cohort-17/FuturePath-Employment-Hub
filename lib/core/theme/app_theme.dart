@@ -1,3 +1,4 @@
+//app.theme
 import 'package:flutter/material.dart';
 
 class AppTheme {
@@ -18,7 +19,6 @@ class AppTheme {
       secondary: secondary,
       surface: card,
       error: error,
-
     ),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       selectedItemColor: accent,

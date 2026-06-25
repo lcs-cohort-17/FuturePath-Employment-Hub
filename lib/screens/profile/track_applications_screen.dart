@@ -1,10 +1,9 @@
+//track profile.dart
 import 'package:flutter/material.dart';
-import '../../core/widgets/status_chip.dart';
 
 class TrackApplicationsScreen extends StatefulWidget {
   final List<Map<String, dynamic>> applications;
 
-  // 💡 FIX: Updated 'key' to use the modern Flutter super parameter format
   const TrackApplicationsScreen({
     super.key,
     required this.applications,
@@ -88,7 +87,7 @@ class _TrackApplicationsScreenState extends State<TrackApplicationsScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        // 💡 FIX: Replaced deprecated .withOpacity() with .withValues(alpha: ...) to clear the info warning
+        // FIXED: Replaced withOpacity with withValues
         border: Border.all(color: isExpanded ? statusColor.withValues(alpha: 0.5) : const Color(0xFFE2E8F0)),
       ),
       child: Column(
@@ -110,10 +109,12 @@ class _TrackApplicationsScreenState extends State<TrackApplicationsScreen> {
                       ],
                     ),
                   ),
-
-                  // 💡 FIX: Using a layout widget replacement if the team changed StatusChip to a constructor method
-                  _buildStatusChipWidget(status, statusColor),
-
+                  // FIXED: Replaced StatusChip with a simple Chip widget
+                  Chip(
+                    label: Text(status, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+                    backgroundColor: statusColor.withValues(alpha: 0.1),
+                    side: BorderSide(color: statusColor),
+                  ),
                   const SizedBox(width: 8),
                   Icon(isExpanded ? Icons.expand_more_rounded : Icons.chevron_right_rounded, color: const Color(0xFF64748B), size: 20),
                 ],
@@ -141,21 +142,6 @@ class _TrackApplicationsScreenState extends State<TrackApplicationsScreen> {
             ),
           ],
         ],
-      ),
-    );
-  }
-
-  // 💡 Safe fallback method constructor to display the chip container if the external class is broken
-  Widget _buildStatusChipWidget(String status, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        status,
-        style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold),
       ),
     );
   }

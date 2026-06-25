@@ -136,8 +136,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
   void initState() {
     super.initState();
     // Auto-fill applicant fields from profile, per acceptance criteria #2.
-    // Fields are editable (not read-only) so the applicant can correct
-    // stale profile data without leaving this screen.
     _fullNameController =
         TextEditingController(text: widget.applicantProfile.fullName);
     _saIdController =
@@ -153,7 +151,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
 
   @override
   void dispose() {
-    // Release all text controllers to avoid leaks.
     _fullNameController.dispose();
     _saIdController.dispose();
     _emailController.dispose();
@@ -206,8 +203,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
       if (widget.onSuccess != null) {
         widget.onSuccess!(data);
       } else {
-        // Fallback navigation if NAV-002 hasn't injected onSuccess yet —
-        // pushes the success screen defined below in this same file.
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => ProgrammeApplicationSuccessScreen(
@@ -316,8 +311,8 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                               color: AppTheme.secondary,
                               borderRadius: BorderRadius.circular(24),
                             ),
-                            child: Row(
-                              children: const [
+                            child: const Row(
+                              children: [
                                 Text('✨', style: TextStyle(fontSize: 14)),
                                 SizedBox(width: 8),
                                 Text(
