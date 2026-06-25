@@ -6,6 +6,7 @@ import '../screens/shell/main_shell.dart';
 import '../screens/admin/admin_employers_screen.dart';
 import '../screens/admin/admin_job_applications_screen.dart';
 import '../screens/admin/admin_applicants_screen.dart';
+import '../screens/admin/admin_enrolments_screen.dart';
 
 class AppRouter {
   static const String login = '/login';
@@ -15,6 +16,7 @@ class AppRouter {
   static const String adminJobApplications = '/admin/job-applications';
   static const String adminEmployers = '/admin/employers';
   static const String adminApplicants = '/admin/applicants';
+  static const String adminEnrolments = '/admin/enrolments';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -60,6 +62,18 @@ class AppRouter {
           settings: settings,
         );
 //Qaasim  ticket ends here.
+
+//Onke/021 — Admin Enrolment Management
+      case adminEnrolments:
+        final args = settings.arguments as Map<String, String>;
+        return MaterialPageRoute(
+          builder: (_) => AdminEnrolmentsScreen(
+            programmeId: args['programmeId']!,
+            programmeName: args['programmeName'] ?? 'Programme',
+          ),
+          settings: settings,
+        );
+//Onke/021 ends here
       default:
         return MaterialPageRoute(
           builder: (_) => const LoginScreen(),
