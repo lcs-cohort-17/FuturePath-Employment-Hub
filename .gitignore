@@ -10,7 +10,6 @@
 build/
 filtered_hashes.txt
 extracted_berbix_inline_activity.txt
-/lib/generated_plugin_registrant.dart
 
 # -------------------------------------------------------------------------
 # ANDROID NATIVE BLOAT (The source of your 2,000 files)
