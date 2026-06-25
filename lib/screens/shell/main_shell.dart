@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../programmes/programme_list_screen.dart';
 import '../jobs/opportunity_list_screen.dart';
+import '../admin/admin_dashboard_screen.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -15,6 +16,7 @@ class _MainShellState extends State<MainShell> {
   final List<Widget> _screens = const [
     OpportunityListScreen(),
     ProgrammeListScreen(),
+    AdminDashboardScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -30,6 +32,7 @@ class _MainShellState extends State<MainShell> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.work_outline),
@@ -40,6 +43,11 @@ class _MainShellState extends State<MainShell> {
             icon: Icon(Icons.school_outlined),
             activeIcon: Icon(Icons.school),
             label: 'Programmes',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.admin_panel_settings_outlined),
+            activeIcon: Icon(Icons.admin_panel_settings),
+            label: 'Admin',
           ),
         ],
       ),
