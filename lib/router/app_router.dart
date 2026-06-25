@@ -5,6 +5,7 @@ import '../screens/auth/forgot_password_screen.dart';
 import '../screens/shell/main_shell.dart';
 import '../screens/admin/admin_employers_screen.dart';
 import '../screens/admin/admin_job_applications_screen.dart';
+import '../screens/admin/admin_applicants_screen.dart';
 
 class AppRouter {
   static const String login = '/login';
@@ -13,6 +14,7 @@ class AppRouter {
   static const String home = '/home';
   static const String adminJobApplications = '/admin/job-applications';
   static const String adminEmployers = '/admin/employers';
+  static const String adminApplicants = '/admin/applicants';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -35,16 +37,16 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => const AppShell(),
           settings: settings,
-        );// marco added the work below
+        ); //marco added the work below
       case adminEmployers:
         return MaterialPageRoute(
           builder: (_) => const AdminEmployersScreen(),
           settings: settings,
         );
-    // marco added the work below
-      case adminEmployers:
+// Sisonke sprint 2 Ticket UIUX-019
+      case adminApplicants:
         return MaterialPageRoute(
-          builder: (_) => const AdminEmployersScreen(),
+          builder: (_) => const AdminApplicantsScreen(),
           settings: settings,
         );
 // Qaasim sprint 2 UIUX ticket 022
