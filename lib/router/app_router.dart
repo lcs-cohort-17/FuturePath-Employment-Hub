@@ -7,6 +7,7 @@ import '../screens/admin/admin_employers_screen.dart';
 import '../screens/admin/admin_job_applications_screen.dart';
 import '../screens/admin/admin_applicants_screen.dart';
 import '../screens/admin/admin_enrolments_screen.dart';
+import '../screens/admin/admin_activity_screen.dart';
 
 class AppRouter {
   static const String login = '/login';
@@ -17,6 +18,7 @@ class AppRouter {
   static const String adminEmployers = '/admin/employers';
   static const String adminApplicants = '/admin/applicants';
   static const String adminEnrolments = '/admin/enrolments';
+  static const String adminActivity = '/admin/activity';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -74,6 +76,14 @@ class AppRouter {
           settings: settings,
         );
 //Onke/021 ends here
+
+// Antonio ticket 017 — Admin Activity Log
+      case adminActivity:
+        return MaterialPageRoute(
+          builder: (_) => const AdminActivityScreen(),
+        );
+// Antonio ticket 017 ends here
+
       default:
         return MaterialPageRoute(
           builder: (_) => const LoginScreen(),
