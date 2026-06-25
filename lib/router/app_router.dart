@@ -34,16 +34,16 @@ class AppRouter {
           builder: (_) => const AppShell(),
           settings: settings,
         );
+      case adminEmployers:
+        return MaterialPageRoute(
+          builder: (_) => const AdminEmployersScreen(),
+          settings: settings,
+        );
       default:
         return MaterialPageRoute(
           builder: (_) => const LoginScreen(),
           settings: settings,
-        );// marco added the work below
-    case adminEmployers:
-    return MaterialPageRoute(
-    builder: (_) => const AdminEmployersScreen(),
-    settings: settings,
-    );
+        ); // marco added the work below
     }
   }
 }

@@ -1,5 +1,5 @@
 import '../models/employer.dart';
-import '../data/employer_data.dart';
+import '../models/employer_data.dart';
 
 /// Service layer for employer CRUD operations.
 ///

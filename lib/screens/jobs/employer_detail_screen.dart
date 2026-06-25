@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/employer.dart';
 
 class EmployerDetailScreen extends StatelessWidget {
-  final EmployerModel? employerData;
+  final Employer? employerData;
 
   const EmployerDetailScreen({
     super.key,
