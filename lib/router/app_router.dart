@@ -3,12 +3,14 @@ import '../screens/auth/login_screen.dart';
 import '../screens/auth/sign_up_screen.dart';
 import '../screens/auth/forgot_password_screen.dart';
 import '../screens/shell/main_shell.dart';
+import '../screens/admin/admin_job_applications_screen.dart';
 
 class AppRouter {
   static const String login = '/login';
   static const String signup = '/signup';
   static const String forgotPassword = '/forgot-password';
   static const String home = '/home';
+  static const String adminJobApplications = '/admin/job-applications';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -32,6 +34,17 @@ class AppRouter {
           builder: (_) => const AppShell(),
           settings: settings,
         );
+// Qaasim sprint 2 UIUX ticket 022
+      case '/admin/job-applications':
+        final args = settings.arguments as Map<String, String>;
+        return MaterialPageRoute(
+          builder: (_) => AdminJobApplicationsScreen(
+            jobId: args['jobId']!,
+            jobTitle: args['jobTitle']!,
+          ),
+          settings: settings,
+        );
+//Qaasim  ticket ends here.
       default:
         return MaterialPageRoute(
           builder: (_) => const LoginScreen(),
