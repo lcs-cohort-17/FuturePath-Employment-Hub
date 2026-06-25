@@ -3,6 +3,7 @@ import '../screens/auth/login_screen.dart';
 import '../screens/auth/sign_up_screen.dart';
 import '../screens/auth/forgot_password_screen.dart';
 import '../screens/shell/main_shell.dart';
+import '../screens/admin/admin_applicants_screen.dart';
 
 class AppRouter {
   static const String login = '/login';
@@ -40,3 +41,12 @@ class AppRouter {
     }
   }
 }
+
+//Sisonke sprint2 Ticket No0019
+
+GoRoute(
+path: '/admin/applicants',
+builder: (context, state) => const AdminApplicantsScreen(),
+),
+
+//Sisonke Ticket ends here
