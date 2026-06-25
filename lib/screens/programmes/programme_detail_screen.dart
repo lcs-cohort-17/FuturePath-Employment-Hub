@@ -33,16 +33,28 @@ class ProgrammeDetailScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Hero image with back button + status badge ──
+              // ── Hero section with gradient overlay ──
               Stack(
                 children: [
                   AspectRatio(
                     aspectRatio: 16 / 10,
                     child: Container(
-                      color: AppTheme.textDark,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            const Color(0xFF1E3A8A),
+                            AppTheme.primary,
+                          ],
+                        ),
+                      ),
                       child: const Center(
-                        child: Icon(Icons.image_outlined,
-                            size: 40, color: Colors.white54),
+                        child: Icon(
+                          Icons.school_outlined,
+                          size: 48,
+                          color: Colors.white54,
+                        ),
                       ),
                     ),
                   ),
@@ -50,7 +62,7 @@ class ProgrammeDetailScreen extends StatelessWidget {
                     top: 12,
                     left: 12,
                     child: _CircleIconButton(
-                      icon: Icons.arrow_back,
+                      icon: Icons.arrow_back_ios_new,
                       onTap: onBack ?? () => Navigator.of(context).pop(),
                     ),
                   ),
@@ -70,15 +82,16 @@ class ProgrammeDetailScreen extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.55),
+                            color: Colors.black.withValues(alpha: 0.5),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
                             programme.category,
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
                             ),
                           ),
                         ),
@@ -104,7 +117,7 @@ class ProgrammeDetailScreen extends StatelessWidget {
                 ],
               ),
 
-              // ── Info grid: start/end date, duration, capacity, level, status ──
+              // ── Info grid ──
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                 child: Column(
@@ -173,7 +186,7 @@ class ProgrammeDetailScreen extends StatelessWidget {
                 ),
               ),
 
-              // ── Enrolment capacity progress bar ──
+              // ── Enrolment capacity ──
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                 child: Column(
@@ -185,7 +198,7 @@ class ProgrammeDetailScreen extends StatelessWidget {
                         const Text(
                           'Enrolment Capacity',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: AppTheme.textDark,
                           ),
@@ -202,10 +215,10 @@ class ProgrammeDetailScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
                         value: progress.clamp(0.0, 1.0),
-                        minHeight: 8,
+                        minHeight: 6,
                         backgroundColor: AppTheme.secondary,
                         valueColor: const AlwaysStoppedAnimation<Color>(
                           AppTheme.primary,
@@ -216,7 +229,7 @@ class ProgrammeDetailScreen extends StatelessWidget {
                 ),
               ),
 
-              // ── About This Programme ──
+              // ── About ──
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
                 child: Column(
@@ -235,7 +248,7 @@ class ProgrammeDetailScreen extends StatelessWidget {
                       programme.description,
                       style: const TextStyle(
                         fontSize: 14,
-                        height: 1.5,
+                        height: 1.6,
                         color: AppTheme.textDark,
                       ),
                     ),
@@ -243,7 +256,7 @@ class ProgrammeDetailScreen extends StatelessWidget {
                 ),
               ),
 
-              // ── Skills You'll Gain ──
+              // ── Skills ──
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
                 child: Column(
@@ -284,16 +297,12 @@ class ProgrammeDetailScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    RichText(
-                      text: TextSpan(
-                        style: const TextStyle(
-                          fontSize: 14,
-                          height: 1.5,
-                          color: AppTheme.textDark,
-                        ),
-                        children: [
-                          TextSpan(text: programme.careerOpportunities),
-                        ],
+                    Text(
+                      programme.careerOpportunities,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        height: 1.6,
+                        color: AppTheme.textDark,
                       ),
                     ),
                   ],
@@ -324,8 +333,8 @@ class ProgrammeDetailScreen extends StatelessWidget {
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(28),
-                      ),
+                          borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
                     ),
                     child: const Text(
                       'Apply Now',
@@ -344,7 +353,6 @@ class ProgrammeDetailScreen extends StatelessWidget {
     );
   }
 }
-
 // ───────────────────────────────────────────────────────────────────────
 // SHARED PRESENTATION WIDGETS
 // ───────────────────────────────────────────────────────────────────────
@@ -366,7 +374,7 @@ class _InfoTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.secondary),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -411,8 +419,9 @@ class _SkillChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: AppTheme.secondary,
+        color: AppTheme.card,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
       ),
       child: Text(
         label,
@@ -439,7 +448,7 @@ class _StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.black.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -484,7 +493,7 @@ class _CircleIconButton extends StatelessWidget {
         customBorder: const CircleBorder(),
         child: Padding(
           padding: const EdgeInsets.all(8),
-          child: Icon(icon, color: Colors.white, size: 20),
+          child: Icon(icon, color: Colors.white, size: 18),
         ),
       ),
     );

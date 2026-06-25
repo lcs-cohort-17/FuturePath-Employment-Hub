@@ -1,118 +1,21 @@
+// ═══════════════════════════════════════════════════════════════════════
+// Lutfeeya-UIUX-004
+// ═══════════════════════════════════════════════════════════════════════
 import 'package:flutter/material.dart';
-
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import '../../services/sheets_service.dart';
 import '../../core/widgets/loading_overlay.dart';
 import '../../core/widgets/error_message.dart';
 import '../../core/widgets/empty_state.dart';
 import 'programme_detail_screen.dart';
-
-/// ─────────────────────────────────────────────────────────────
-/// DATA MODEL
-/// ───────────────────────────────────────────────────────────
-class Programme {
-  final String id;
-  final String title;
-  final String provider;
-  final String category;
-  final String level;
-  final String status;
-  final String description;
-  final String startDate;
-  final String endDate;
-  final String duration;
-  final int enrolledCount;
-  final int capacity;
-  final List<String> skills;
-  final String careerOpportunities;
-  final String imageUrl;
-
-  const Programme({
-    required this.id,
-    required this.title,
-    required this.provider,
-    required this.category,
-    required this.level,
-    required this.status,
-    required this.description,
-    required this.startDate,
-    required this.endDate,
-    required this.duration,
-    required this.enrolledCount,
-    required this.capacity,
-    required this.skills,
-    required this.careerOpportunities,
-    required this.imageUrl,
-  });
-
-  int get spotsRemaining => capacity - enrolledCount;
-}
-// ═══════════════════════════════════════════════════════════════
-// ADD THIS MOCK DATA HERE (after Programme class, before screen)
-// ═══════════════════════════════════════════════════════════════
-const List<Programme> mockProgrammes = [
-  Programme(
-    id: 'prog_001',
-    title: 'Flutter Mobile Development',
-    provider: 'TechNova Solutions',
-    category: 'Technology',
-    level: 'Beginner-Intermediate',
-    status: 'Open',
-    description: 'Build cross-platform mobile apps using Flutter & Dart for iOS and Android.',
-    startDate: '01 Jul 2026',
-    endDate: '01 Oct 2026',
-    duration: '3 months',
-    enrolledCount: 24,
-    capacity: 30,
-    skills: ['Flutter', 'Dart', 'Mobile UI', 'State Management'],
-    careerOpportunities: 'Completing this programme can qualify you for roles such as mobile developer and app engineer.',
-    imageUrl: 'assets/images/programmes/flutter_mobile.jpg',
-  ),
-  Programme(
-    id: 'prog_002',
-    title: 'Salesforce Administration',
-    provider: 'FutureTech Africa',
-    category: 'Business',
-    level: 'Beginner',
-    status: 'Open',
-    description: 'This 3-month programme covers user management, security configuration, data management.',
-    startDate: '15 Jul 2026',
-    endDate: '15 Oct 2026',
-    duration: '3 months',
-    enrolledCount: 20,
-    capacity: 25,
-    skills: ['Salesforce', 'CRM', 'Data Management', 'Automation'],
-    careerOpportunities: 'Completing this programme can qualify you for roles in business.',
-    imageUrl: 'assets/images/programmes/salesforce_admin.jpg',
-  ),
-  Programme(
-    id: 'prog_003',
-    title: 'Digital Marketing Fundamentals',
-    provider: 'GrowthLab Academy',
-    category: 'Marketing',
-    level: 'Beginner',
-    status: 'Open',
-    description: 'Learn SEO, social media marketing, content strategy and paid advertising fundamentals.',
-    startDate: '10 Jul 2026',
-    endDate: '10 Sep 2026',
-    duration: '2 months',
-    enrolledCount: 18,
-    capacity: 20,
-    skills: ['SEO', 'Social Media', 'Content Strategy', 'Google Ads'],
-    careerOpportunities: 'Completing this programme can qualify you for roles such as marketing assistant.',
-    imageUrl: 'assets/images/programmes/digital_marketing.jpg',
-  ),
-];
-
-/// ─────────────────────────────────────────────────────────────
-/// SCREEN
-/// ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// SCREEN
+// ─────────────────────────────────────────────────────────────
 class ProgrammeListScreen extends StatefulWidget {
   const ProgrammeListScreen({super.key});
 
   @override
-  State<ProgrammeListScreen> createState() =>
-      _ProgrammeListScreenState();
+  State<ProgrammeListScreen> createState() => _ProgrammeListScreenState();
 }
 
 class _ProgrammeListScreenState extends State<ProgrammeListScreen> {
@@ -147,22 +50,13 @@ class _ProgrammeListScreenState extends State<ProgrammeListScreen> {
     super.dispose();
   }
 
-  /// ─────────────────────────────────────────────────────────────
-  /// DATA LOADING
-  /// ─────────────────────────────────────────────────────────────
-  /// ─────────────────────────────────────────────────────────────
-  /// DATA LOADING
-  /// ─────────────────────────────────────────────────────────────
   Future<void> loadProgrammes() async {
     setState(() {
       isLoading = true;
       hasError = false;
     });
 
-    // Simulate network delay
     await Future.delayed(const Duration(milliseconds: 500));
-
-    // Use mock data directly
     programmes = mockProgrammes;
     lastUpdated = DateTime.now();
 
@@ -170,13 +64,11 @@ class _ProgrammeListScreenState extends State<ProgrammeListScreen> {
       isLoading = false;
     });
   }
+
   Future<void> _handleRefresh() async {
     await loadProgrammes();
   }
 
-  /// ─────────────────────────────────────────────────────────────
-  /// FILTERING
-  /// ─────────────────────────────────────────────────────────────
   List<Programme> get _filteredProgrammes {
     return programmes.where((programme) {
       final matchesCategory = _selectedCategory == 'All' ||
@@ -191,19 +83,18 @@ class _ProgrammeListScreenState extends State<ProgrammeListScreen> {
     }).toList();
   }
 
-  /// ─────────────────────────────────────────────────────────────
-  /// UI STATES
-  /// ─────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
       return const Scaffold(
+        backgroundColor: AppTheme.background,
         body: LoadingOverlay(),
       );
     }
 
     if (hasError) {
       return Scaffold(
+        backgroundColor: AppTheme.background,
         body: ErrorMessage(
           message: "Failed to load programmes",
           onRetry: loadProgrammes,
@@ -213,6 +104,7 @@ class _ProgrammeListScreenState extends State<ProgrammeListScreen> {
 
     if (programmes.isEmpty) {
       return const Scaffold(
+        backgroundColor: AppTheme.background,
         body: EmptyState(message: "No programmes found"),
       );
     }
@@ -220,73 +112,119 @@ class _ProgrammeListScreenState extends State<ProgrammeListScreen> {
     final filtered = _filteredProgrammes;
 
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text("Programmes"),
+        backgroundColor: AppTheme.background,
+        elevation: 0,
+        title: const Text(
+          "Programmes",
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: AppTheme.textDark,
+          ),
+        ),
+        centerTitle: false,
+        iconTheme: const IconThemeData(color: AppTheme.textDark),
       ),
       body: RefreshIndicator(
+        color: AppTheme.primary,
+        backgroundColor: AppTheme.card,
         onRefresh: _handleRefresh,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (lastUpdated != null)
               Padding(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
                   "Last updated ${DateTime.now().difference(lastUpdated!).inMinutes} min ago",
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppTheme.mutedText,
+                  ),
                 ),
               ),
 
-            /// SEARCH
+            // SEARCH
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
               child: TextField(
                 controller: _searchController,
-                onChanged: (value) =>
-                    setState(() => _searchQuery = value),
+                onChanged: (value) => setState(() => _searchQuery = value),
+                style: const TextStyle(color: AppTheme.textDark, fontSize: 14),
                 decoration: InputDecoration(
                   hintText: "Search programmes...",
-                  prefixIcon: const Icon(Icons.search),
+                  hintStyle: const TextStyle(color: AppTheme.mutedText, fontSize: 14),
+                  prefixIcon: const Icon(Icons.search, color: AppTheme.mutedText, size: 20),
                   filled: true,
-                  fillColor: AppTheme.secondary,
+                  fillColor: AppTheme.card,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(28),
-                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppTheme.primary, width: 1.5),
                   ),
                 ),
               ),
             ),
 
-            /// CATEGORY FILTERS
+            // CATEGORY FILTERS
             SizedBox(
-              height: 40,
+              height: 44,
               child: ListView.separated(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 scrollDirection: Axis.horizontal,
                 itemCount: _categories.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                separatorBuilder: (context, index) => const SizedBox(width: 8),
                 itemBuilder: (context, index) {
                   final category = _categories[index];
                   final selected = category == _selectedCategory;
 
-                  return ChoiceChip(
-                    label: Text(category),
+                  return FilterChip(
+                    label: Text(
+                      category,
+                      style: TextStyle(
+                        color: selected ? Colors.white : AppTheme.mutedText,
+                        fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                        fontSize: 13,
+                      ),
+                    ),
                     selected: selected,
                     onSelected: (_) {
                       setState(() => _selectedCategory = category);
                     },
+                    backgroundColor: AppTheme.card,
+                    selectedColor: AppTheme.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      side: selected
+                          ? BorderSide.none
+                          : const BorderSide(color: Color(0xFFE2E8F0), width: 1),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   );
                 },
               ),
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 "${filtered.length} programmes found",
-                style: const TextStyle(fontSize: 13, color: Colors.grey),
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppTheme.mutedText,
+                ),
               ),
             ),
 
@@ -295,7 +233,7 @@ class _ProgrammeListScreenState extends State<ProgrammeListScreen> {
             /// LIST
             Expanded(
               child: ListView.builder(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                 itemCount: filtered.length,
                 itemBuilder: (context, index) {
                   final programme = filtered[index];
@@ -311,6 +249,7 @@ class _ProgrammeListScreenState extends State<ProgrammeListScreen> {
                         ),
                       );
                     },
+                    borderRadius: BorderRadius.circular(16),
                     child: ProgrammeCard(programme: programme),
                   );
                 },
@@ -322,10 +261,9 @@ class _ProgrammeListScreenState extends State<ProgrammeListScreen> {
     );
   }
 }
-
-/// ─────────────────────────────────────────────────────────────
-/// PROGRAMME CARD
-/// ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// PROGRAMME CARD - Updated to match dark theme
+// ─────────────────────────────────────────────────────────────
 class ProgrammeCard extends StatelessWidget {
   final Programme programme;
 
@@ -341,45 +279,219 @@ class ProgrammeCard extends StatelessWidget {
         ? 0.0
         : programme.enrolledCount / programme.capacity;
 
-    return Card(
+    final isOpen = programme.status.toLowerCase() == 'open';
+
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: AppTheme.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              programme.title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    programme.title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textDark,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isOpen
+                        ? AppTheme.accent.withValues(alpha: 0.15)
+                        : AppTheme.mutedText.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: isOpen ? AppTheme.accent : AppTheme.mutedText,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        programme.status,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: isOpen ? AppTheme.accent : AppTheme.mutedText,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 4),
-
             Text(
               "${programme.provider} • ${programme.level}",
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppTheme.mutedText,
+              ),
             ),
-
-            const SizedBox(height: 8),
-
-            Text(
-              programme.description,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-
             const SizedBox(height: 10),
-
-            LinearProgressIndicator(value: progress),
-
-            const SizedBox(height: 6),
-
-            Text("Spots left: $spotsLeft"),
+            Row(
+              children: programme.skills.take(3).map((skill) {
+                return Container(
+                  margin: const EdgeInsets.only(right: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppTheme.secondary,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    skill,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppTheme.mutedText,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Icon(
+                  Icons.people_outline,
+                  size: 14,
+                  color: AppTheme.mutedText,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  "$spotsLeft spots remaining",
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.accent,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: progress.clamp(0.0, 1.0),
+                minHeight: 4,
+                backgroundColor: AppTheme.secondary,
+                valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primary),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 }
+// ═══════════════════════════════════════════════════════════════════════
+// MODELS
+// ═══════════════════════════════════════════════════════════════════════
+
+class Programme {
+  final String id;
+  final String title;
+  final String provider;
+  final String category;
+  final String level;
+  final String duration;
+  final String startDate;
+  final String endDate;
+  final String description;
+  final String careerOpportunities;
+  final List<String> skills;
+  final int capacity;
+  final int enrolledCount;
+  final String status;
+
+  int get spotsRemaining => capacity - enrolledCount;
+
+  const Programme({
+    required this.id,
+    required this.title,
+    required this.provider,
+    required this.category,
+    required this.level,
+    required this.duration,
+    required this.startDate,
+    required this.endDate,
+    required this.description,
+    required this.careerOpportunities,
+    required this.skills,
+    required this.capacity,
+    required this.enrolledCount,
+    required this.status,
+  });
+}
+
+final List<Programme> mockProgrammes = [
+  const Programme(
+    id: '1',
+    title: 'Software Development Bootcamp',
+    provider: 'FuturePath Academy',
+    category: 'Technology',
+    level: 'Beginner',
+    duration: '6 Months',
+    startDate: '01 March 2024',
+    endDate: '31 August 2024',
+    description: 'Learn the fundamentals of web development, from HTML/CSS to React and Node.js. This intensive bootcamp is designed to take you from zero to job-ready in six months.',
+    careerOpportunities: 'Junior Web Developer, Frontend Developer, Backend Developer, QA Engineer.',
+    skills: ['HTML/CSS', 'JavaScript', 'React', 'Node.js', 'Git'],
+    capacity: 50,
+    enrolledCount: 35,
+    status: 'Open',
+  ),
+  const Programme(
+    id: '2',
+    title: 'Digital Marketing Specialist',
+    provider: 'Marketing Pro',
+    category: 'Marketing',
+    level: 'Intermediate',
+    duration: '3 Months',
+    startDate: '15 April 2024',
+    endDate: '15 July 2024',
+    description: 'Master the art of digital marketing. Learn SEO, SEM, social media strategy, and content marketing to drive business growth in the digital age.',
+    careerOpportunities: 'Social Media Manager, SEO Specialist, Digital Marketer, Content Strategist.',
+    skills: ['SEO', 'SEM', 'Social Media', 'Content Strategy', 'Analytics'],
+    capacity: 40,
+    enrolledCount: 38,
+    status: 'Open',
+  ),
+  const Programme(
+    id: '3',
+    title: 'Data Science Fundamentals',
+    provider: 'Data Insights',
+    category: 'Technology',
+    level: 'Intermediate',
+    duration: '4 Months',
+    startDate: '01 May 2024',
+    endDate: '31 August 2024',
+    description: 'Dive into the world of data. Learn Python, SQL, and machine learning basics to turn data into actionable insights.',
+    careerOpportunities: 'Data Analyst, Junior Data Scientist, Business Intelligence Analyst.',
+    skills: ['Python', 'SQL', 'Statistics', 'Machine Learning', 'Pandas'],
+    capacity: 30,
+    enrolledCount: 30,
+    status: 'Closed',
+  ),
+];
+
+// ═══════════════════════════════════════════════════════════════════════
+// Lutfeeya-UIUX-004
+// ═══════════════════════════════════════════════════════════════════════

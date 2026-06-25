@@ -6,96 +6,6 @@ import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/screens/programmes/programme_list_screen.dart'
     show Programme, mockProgrammes;
 
-// ───────────────────────────────────────────────────────────────────────
-// MODELS
-// ───────────────────────────────────────────────────────────────────────
-
-/// Local typed stand-in for the real applicant profile service.
-/// Replace `mockApplicantProfile` with the real injected profile once
-/// available — the shape (full name, SA ID, email, phone, CV) should
-/// stay stable since application_service.dart will expect these fields.
-class ApplicantProfile {
-  final String fullName;
-  final String saIdNumber;
-  final String email;
-  final String phone;
-  final String? cvFileName; // null if no CV on file yet
-
-  const ApplicantProfile({
-    required this.fullName,
-    required this.saIdNumber,
-    required this.email,
-    required this.phone,
-    this.cvFileName,
-  });
-}
-
-const ApplicantProfile mockApplicantProfile = ApplicantProfile(
-  fullName: 'Sipho Dlamini',
-  saIdNumber: '0001015800083',
-  email: 'sipho.dlamini@gmail.com',
-  phone: '071 234 5678',
-  cvFileName: null,
-);
-
-/// Status values tracked for a programme application, per acceptance
-/// criteria #6. Kept as a simple enum here — application_service.dart's
-/// real backing type should mirror these three states.
-enum ProgrammeApplicationStatus { pending, accepted, completed }
-
-/// Payload submitted to application_service.dart with type: "programme".
-class ProgrammeApplicationData {
-  final String programmeId;
-  final String fullName;
-  final String saIdNumber;
-  final String email;
-  final String phone;
-  final String? cvFileName;
-  final String? motivationStatement; // optional
-  final String? previousExperience; // optional
-  final ProgrammeApplicationStatus status;
-
-  const ProgrammeApplicationData({
-    required this.programmeId,
-    required this.fullName,
-    required this.saIdNumber,
-    required this.email,
-    required this.phone,
-    this.cvFileName,
-    this.motivationStatement,
-    this.previousExperience,
-    this.status = ProgrammeApplicationStatus.pending,
-  });
-
-  // TODO(application_service): map this to the real request body once
-  // application_service.dart exposes its "programme" type schema, e.g.:
-  //   application_service.submit(type: "programme", payload: toJson());
-  Map<String, dynamic> toJson() => {
-    'type': 'programme',
-    'programmeId': programmeId,
-    'fullName': fullName,
-    'saIdNumber': saIdNumber,
-    'email': email,
-    'phone': phone,
-    'cvFileName': cvFileName,
-    'motivationStatement': motivationStatement,
-    'previousExperience': previousExperience,
-    'status': status.name,
-  };
-}
-
-/// Result returned by the (mock or real) submission call.
-class ApplicationResult {
-  final bool success;
-  final String? errorMessage;
-
-  const ApplicationResult.ok() : success = true, errorMessage = null;
-  const ApplicationResult.failure(this.errorMessage) : success = false;
-}
-
-// ───────────────────────────────────────────────────────────────────────
-// SCREEN
-// ───────────────────────────────────────────────────────────────────────
 class ProgrammeApplyScreen extends StatefulWidget {
   final Programme programme;
   final ApplicantProfile applicantProfile;
@@ -135,7 +45,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
   @override
   void initState() {
     super.initState();
-    // Auto-fill applicant fields from profile, per acceptance criteria #2.
     _fullNameController =
         TextEditingController(text: widget.applicantProfile.fullName);
     _saIdController =
@@ -161,13 +70,10 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
   }
 
   Future<void> _handleUploadCv() async {
-    // TODO(file_picker): wire up real file picker (PDF, DOC) once the
-    // file upload service exists. Mocked here so the flow is demoable.
     setState(() => _cvFileName = 'Sipho_Dlamini_CV.pdf');
   }
 
-  Future<ApplicationResult> _mockSubmit(
-      ProgrammeApplicationData data) async {
+  Future<ApplicationResult> _mockSubmit(ProgrammeApplicationData data) async {
     await Future.delayed(const Duration(milliseconds: 900));
     return const ApplicationResult.ok();
   }
@@ -227,7 +133,7 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black.withValues(alpha: 0.0),
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         child: Align(
           alignment: Alignment.bottomCenter,
@@ -236,20 +142,20 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
               maxHeight: MediaQuery.of(context).size.height * 0.92,
             ),
             decoration: const BoxDecoration(
-              color: AppTheme.card,
+              color: AppTheme.background,
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Drag handle, matches Figma reference
+                // Drag handle
                 Padding(
                   padding: const EdgeInsets.only(top: 10, bottom: 4),
                   child: Container(
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppTheme.secondary,
+                      color: AppTheme.mutedText,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -292,7 +198,7 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                     ],
                   ),
                 ),
-                const Divider(height: 1, color: AppTheme.secondary),
+                const Divider(height: 1, color: Color(0xFFE2E8F0)),
                 // Scrollable form body
                 Expanded(
                   child: SingleChildScrollView(
@@ -302,14 +208,17 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Auto-fill banner, per acceptance criteria #2
+                          // Auto-fill banner
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 14, vertical: 12),
                             decoration: BoxDecoration(
-                              color: AppTheme.secondary,
+                              color: AppTheme.primary.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                color: AppTheme.primary.withValues(alpha: 0.2),
+                              ),
                             ),
                             child: const Row(
                               children: [
@@ -431,7 +340,7 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                               const EdgeInsets.symmetric(vertical: 16),
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                  color: AppTheme.mutedText.withValues(alpha: 0.4),
+                                  color: const Color(0xFFE2E8F0),
                                   style: BorderStyle.solid,
                                 ),
                                 borderRadius: BorderRadius.circular(14),
@@ -515,7 +424,7 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                     ),
                   ),
                 ),
-                const Divider(height: 1, color: AppTheme.secondary),
+                const Divider(height: 1, color: Color(0xFFE2E8F0)),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
                   child: SizedBox(
@@ -525,12 +434,10 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primary,
                         foregroundColor: Colors.white,
-                        disabledBackgroundColor:
-                        AppTheme.primary.withValues(alpha: 0.6),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(28),
-                        ),
+                            borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
                       ),
                       child: _isSubmitting
                           ? const SizedBox(
@@ -561,11 +468,9 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
     );
   }
 }
-
 // ───────────────────────────────────────────────────────────────────────
-// SECTION 2: SUCCESS SCREEN
+// SUCCESS SCREEN
 // ───────────────────────────────────────────────────────────────────────
-
 class ProgrammeApplicationSuccessScreen extends StatelessWidget {
   final Programme programme;
   final ProgrammeApplicationData applicationData;
@@ -628,7 +533,7 @@ class ProgrammeApplicationSuccessScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppTheme.card,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppTheme.secondary),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -644,7 +549,7 @@ class ProgrammeApplicationSuccessScreen extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.orange.withValues(alpha: 0.12),
+                        color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Text(
@@ -652,7 +557,7 @@ class ProgrammeApplicationSuccessScreen extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: Colors.orange,
+                          color: Color(0xFFF59E0B),
                         ),
                       ),
                     ),
@@ -671,8 +576,8 @@ class ProgrammeApplicationSuccessScreen extends StatelessWidget {
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
-                    ),
+                        borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
                   ),
                   child: const Text(
                     'View My Programmes',
@@ -690,7 +595,6 @@ class ProgrammeApplicationSuccessScreen extends StatelessWidget {
     );
   }
 }
-
 // ───────────────────────────────────────────────────────────────────────
 // SHARED PRESENTATION WIDGETS
 // ───────────────────────────────────────────────────────────────────────
@@ -766,27 +670,96 @@ class _AppTextField extends StatelessWidget {
       style: const TextStyle(fontSize: 14, color: AppTheme.textDark),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: const TextStyle(color: AppTheme.mutedText, fontSize: 13),
+        hintStyle: const TextStyle(color: AppTheme.mutedText, fontSize: 14),
         filled: true,
-        fillColor: AppTheme.secondary,
-        contentPadding:
-        const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        fillColor: AppTheme.card,
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: maxLines > 1 ? 16 : 0,
+        ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(maxLines > 1 ? 14 : 24),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppTheme.primary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(maxLines > 1 ? 14 : 24),
+          borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppTheme.error),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(maxLines > 1 ? 14 : 24),
-          borderSide: const BorderSide(color: AppTheme.error, width: 1.5),
         ),
       ),
     );
   }
 }
+// ═══════════════════════════════════════════════════════════════════════
+// DATA MODELS
+// ═══════════════════════════════════════════════════════════════════════
+
+enum ProgrammeApplicationStatus { pending, accepted, rejected }
+
+class ProgrammeApplicationData {
+  final String programmeId;
+  final String fullName;
+  final String saIdNumber;
+  final String email;
+  final String phone;
+  final String? cvFileName;
+  final String? motivationStatement;
+  final String? previousExperience;
+  final ProgrammeApplicationStatus status;
+
+  const ProgrammeApplicationData({
+    required this.programmeId,
+    required this.fullName,
+    required this.saIdNumber,
+    required this.email,
+    required this.phone,
+    this.cvFileName,
+    this.motivationStatement,
+    this.previousExperience,
+    required this.status,
+  });
+}
+
+class ApplicationResult {
+  final bool success;
+  final String? errorMessage;
+
+  const ApplicationResult({required this.success, this.errorMessage});
+  const ApplicationResult.ok() : success = true, errorMessage = null;
+  const ApplicationResult.error(this.errorMessage) : success = false;
+}
+
+class ApplicantProfile {
+  final String fullName;
+  final String saIdNumber;
+  final String email;
+  final String phone;
+  final String? cvFileName;
+
+  const ApplicantProfile({
+    required this.fullName,
+    required this.saIdNumber,
+    required this.email,
+    required this.phone,
+    this.cvFileName,
+  });
+}
+
+const ApplicantProfile mockApplicantProfile = ApplicantProfile(
+  fullName: 'Sipho Dlamini',
+  saIdNumber: '9501015800084',
+  email: 'sipho.dlamini@example.com',
+  phone: '071 234 5678',
+  cvFileName: 'Sipho_Dlamini_CV_2023.pdf',
+);
+
 // ═══════════════════════════════════════════════════════════════════════
 // Lutfeeya-UIUX-012
 // ═══════════════════════════════════════════════════════════════════════
