@@ -1,6 +1,5 @@
-import '../../../lib/activity_log/models/raw_event.dart';
-
-// Internal raw event
+/// Internal raw event – can contain PII fields.
+/// This is never exposed to the UI.
 class RawEvent {
   final String id;
   final String type;
@@ -10,18 +9,13 @@ class RawEvent {
   final String? userEmail;
   final String? userId;
 
-  const RawEvent ({
+  const RawEvent({
     required this.id,
     required this.type,
     required this.description,
     required this.timestamp,
     this.userName,
     this.userEmail,
-    thisuserId,
-});
-}
-
-// Repository abstraction for fetching raw events.
-abstract class IEventRepository {
-  Future<List<RawEVent>> getEvents();
+    this.userId,
+  });
 }

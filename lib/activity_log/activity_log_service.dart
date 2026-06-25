@@ -1,8 +1,7 @@
 import '../models/activity_event.dart';
 import '../models/activity_log_filter.dart';
-import '../../../lib/activity_log/models/raw_event.dart';
-import '../../../lib/activity_log/repositories/event_repository.dart';
-import '../activity_log/exceptions/activity_log_exception.dart';
+import '../repositories/event_repository.dart';
+import '../exceptions/activity_log_exception.dart';
 
 class ActivityLogService {
   final IEventRepository _repository;
