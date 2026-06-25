@@ -29,16 +29,31 @@ class AppRouter {
         );
       case home:
         return MaterialPageRoute(
-          builder: (_) => const AppShell(),
+          builder: (_) => AppShell(key: AppShell.globalKey),
           settings: settings,
         );
       case notifications:
         final args = settings.arguments;
-        final List<Map<String, dynamic>> notificationsList = 
-            (args is List<Map<String, dynamic>>) ? args : [];
-            
+        final Map<String, dynamic> notificationsArgs =
+            (args is Map<String, dynamic>) ? args : {};
+
+        final List<Map<String, dynamic>> notificationsList =
+            (notificationsArgs['notifications'] is List<Map<String, dynamic>>)
+                ? List<Map<String, dynamic>>.from(notificationsArgs['notifications'])
+                : (args is List<Map<String, dynamic>>)
+                    ? List<Map<String, dynamic>>.from(args)
+                    : [];
+
+        final int fromTabIndex =
+            (notificationsArgs['fromTabIndex'] is int)
+                ? notificationsArgs['fromTabIndex']
+                : AppShell.homeTabIndex;
+
         return MaterialPageRoute(
-          builder: (_) => NotificationsScreen(notifications: notificationsList),
+          builder: (_) => NotificationsScreen(
+            notifications: notificationsList,
+            fromTabIndex: fromTabIndex,
+          ),
           settings: settings,
         );
       case trackApplications:

@@ -58,7 +58,7 @@ class RelatedProgramme {
   });
 }
 
-final List<Opportunity> _mockOpportunities = [
+const List<Opportunity> mockOpportunities = [
   Opportunity(
     id: '1',
     title: 'Junior Flutter Developer',
@@ -157,7 +157,7 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
   }
 
   List<Opportunity> get _source =>
-      widget.opportunities.isNotEmpty ? widget.opportunities : _mockOpportunities;
+      widget.opportunities.isNotEmpty ? widget.opportunities : mockOpportunities;
 
   List<Opportunity> get _filtered {
     List<Opportunity> list = _source;

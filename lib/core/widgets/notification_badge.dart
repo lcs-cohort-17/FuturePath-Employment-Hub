@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../screens/shell/main_shell.dart';
 import '../../services/notification_service.dart';
 import '../../router/app_router.dart';
 
@@ -33,7 +34,10 @@ class NotificationBadge extends StatelessWidget {
                 Navigator.pushNamed(
                   context,
                   AppRouter.notifications,
-                  arguments: currentNotifications,
+                  arguments: {
+                    'notifications': currentNotifications,
+                    'fromTabIndex': AppShell.currentIndex,
+                  },
                 );
               },
             ),

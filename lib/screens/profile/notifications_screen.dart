@@ -1,10 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:futurepath_employment_hub/screens/jobs/opportunity_detail_screen.dart';
+import 'package:futurepath_employment_hub/screens/jobs/opportunity_list_screen.dart' show Opportunity, mockOpportunities;
+import 'package:futurepath_employment_hub/screens/programmes/programme_detail_screen.dart';
+import 'package:futurepath_employment_hub/screens/programmes/programme_list_screen.dart' show Programme, mockProgrammes;
+import 'package:futurepath_employment_hub/screens/shell/main_shell.dart';
 import '../../services/notification_service.dart';
 import '../../router/app_router.dart';
 
 class NotificationsScreen extends StatefulWidget {
   final List<Map<String, dynamic>> notifications;
-  const NotificationsScreen({Key? key, required this.notifications}) : super(key: key);
+  final int fromTabIndex;
+
+  const NotificationsScreen({
+    Key? key,
+    required this.notifications,
+    required this.fromTabIndex,
+  }) : super(key: key);
 
   @override
   State<NotificationsScreen> createState() => _NotificationsScreenState();
@@ -22,6 +33,92 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       if (index != -1) {
         notificationService.markAsRead(index);
       }
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  @override
+  void dispose() {
+    AppShell.switchTab(widget.fromTabIndex);
+    super.dispose();
+  }
+
+  void _navigateNotification(Map<String, dynamic> item) {
+    final type = (item['type'] as String?)?.toLowerCase() ?? '';
+    final referenceId = item['referenceId'] as String? ?? '';
+
+    switch (type) {
+      case 'programme':
+        Programme? programme;
+        try {
+          programme = mockProgrammes.firstWhere((p) => p.id == referenceId);
+        } catch (_) {
+          programme = null;
+        }
+
+        if (programme == null) {
+          _showError('Referenced programme not found.');
+          return;
+        }
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ProgrammeDetailScreen(programmeId: referenceId),
+          ),
+        );
+        break;
+      case 'job':
+        Opportunity? opportunity;
+        try {
+          opportunity = mockOpportunities.firstWhere((o) => o.id == referenceId);
+        } catch (_) {
+          opportunity = null;
+        }
+
+        if (opportunity == null) {
+          _showError('Referenced job not found.');
+          return;
+        }
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => OpportunityDetailScreen(opportunity: opportunity!),
+          ),
+        );
+        break;
+      case 'application':
+        Navigator.pushNamed(
+          context,
+          AppRouter.trackApplications,
+          arguments: [
+            {
+              'title': 'Junior Mobile Developer',
+              'company': 'Khanya Tech Labs',
+              'status': 'Accepted',
+              'appliedDate': '12 June 2026',
+              'type': 'Full-time',
+              'progress': 100,
+            },
+            {
+              'title': 'UI/UX Design Apprentice',
+              'company': 'Siyakha Media House',
+              'status': 'Pending',
+              'appliedDate': '16 June 2026',
+              'type': 'Internship',
+              'progress': 15,
+            }
+          ],
+        );
+        break;
+      default:
+        _showError('Unable to open this notification.');
     }
   }
 
@@ -111,30 +208,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           return InkWell(
             onTap: () {
               if (isUnread) _toggleRead(item);
-              
-              // Lead to tracking applications screen with mock data
-              Navigator.pushNamed(
-                context,
-                AppRouter.trackApplications,
-                arguments: [
-                  {
-                    'title': 'Junior Mobile Developer',
-                    'company': 'Khanya Tech Labs',
-                    'status': 'Accepted',
-                    'appliedDate': '12 June 2026',
-                    'type': 'Full-time',
-                    'progress': 100,
-                  },
-                  {
-                    'title': 'UI/UX Design Apprentice',
-                    'company': 'Siyakha Media House',
-                    'status': 'Pending',
-                    'appliedDate': '16 June 2026',
-                    'type': 'Internship',
-                    'progress': 15,
-                  }
-                ],
-              );
+              _navigateNotification(item);
             },
             child: Padding(
               padding: const EdgeInsets.all(14.0),
@@ -187,9 +261,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   IconData _getIcon(String type) {
-    if (type.contains('Accepted')) return Icons.verified_rounded;
-    if (type.contains('Update')) return Icons.rate_review_rounded;
-    if (type.contains('Submitted')) return Icons.assignment_turned_in_rounded;
+    final normalized = type.toLowerCase();
+    if (normalized == 'programme') return Icons.menu_book_outlined;
+    if (normalized == 'job') return Icons.work_outline;
+    if (normalized == 'application') return Icons.assignment_turned_in_rounded;
+    if (normalized == 'system') return Icons.shield_outlined;
     return Icons.notifications_rounded;
   }
 

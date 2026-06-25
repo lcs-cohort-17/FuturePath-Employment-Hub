@@ -7,6 +7,20 @@ import '../profile/profile_screen.dart';
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
 
+  static final GlobalKey<_AppShellState> globalKey = GlobalKey<_AppShellState>();
+
+  static const int homeTabIndex = 0;
+  static const int programmesTabIndex = 1;
+  static const int jobsTabIndex = 2;
+  static const int profileTabIndex = 3;
+
+  static int get currentIndex => globalKey.currentState?.currentIndex ?? homeTabIndex;
+
+  static void switchTab(int index, {VoidCallback? onSwitched}) {
+    final currentState = globalKey.currentState;
+    currentState?.switchToTab(index, onSwitched: onSwitched);
+  }
+
   @override
   State<AppShell> createState() => _AppShellState();
 }
@@ -56,5 +70,19 @@ class _AppShellState extends State<AppShell> {
         ],
       ),
     );
+  }
+
+  void switchToTab(int index, {VoidCallback? onSwitched}) {
+    if (!mounted) return;
+
+    setState(() {
+      currentIndex = index;
+    });
+
+    if (onSwitched != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        onSwitched();
+      });
+    }
   }
 }

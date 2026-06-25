@@ -12,7 +12,7 @@ dependencies:
 
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.3.3
-  file_picker: ^8.1.4
+  file_picker: ^11.0.2
 
   # ADD THIS LINE - Provider for state management
   provider: ^6.1.2
