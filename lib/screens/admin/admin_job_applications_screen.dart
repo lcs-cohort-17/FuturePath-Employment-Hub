@@ -38,11 +38,11 @@ extension ApplicationStatusLabel on ApplicationStatus {
   Color get backgroundColour {
     switch (this) {
       case ApplicationStatus.underReview:
-        return AppTheme.warningLow;
+        return AppTheme.warning.withOpacity(0.1);
       case ApplicationStatus.accepted:
-        return AppTheme.successLow;
+        return AppTheme.success.withOpacity(0.1);
       case ApplicationStatus.rejected:
-        return AppTheme.errorLow;
+        return AppTheme.error.withOpacity(0.1);
     }
   }
 
@@ -267,12 +267,12 @@ class _AdminJobApplicationsScreenState
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 20),
                   decoration: BoxDecoration(
-                    color: AppTheme.border2,
+                    color: AppTheme.secondary,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ),
-              Text(
+              const Text(
                 'Update Status',
                 style: TextStyle(
                   fontSize: 15,
@@ -283,7 +283,7 @@ class _AdminJobApplicationsScreenState
               const SizedBox(height: 4),
               Text(
                 application.applicationId,
-                style: TextStyle(fontSize: 11, color: AppTheme.mutedText),
+                style: const TextStyle(fontSize: 11, color: AppTheme.mutedText),
               ),
               const SizedBox(height: 16),
               ...ApplicationStatus.values.map((s) {
@@ -303,8 +303,8 @@ class _AdminJobApplicationsScreenState
                           : AppTheme.secondary,
                       border: Border.all(
                         color: isCurrent
-                            ? s.colour.withAlpha(76)
-                            : AppTheme.border,
+                            ? s.colour.withOpacity(0.3)
+                            : AppTheme.secondary,
                         width: 0.5,
                       ),
                       borderRadius: BorderRadius.circular(10),
@@ -391,7 +391,7 @@ class _AdminJobApplicationsScreenState
       decoration: BoxDecoration(
         color: AppTheme.background,
         border: Border(
-          bottom: BorderSide(color: AppTheme.border, width: 0.5),
+          bottom: BorderSide(color: AppTheme.secondary, width: 0.5),
         ),
       ),
       child: Row(
@@ -403,10 +403,10 @@ class _AdminJobApplicationsScreenState
               height: 34,
               decoration: BoxDecoration(
                 color: AppTheme.card,
-                border: Border.all(color: AppTheme.border2, width: 0.5),
+                border: Border.all(color: AppTheme.secondary, width: 0.5),
                 borderRadius: BorderRadius.circular(9),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.arrow_back_ios_new_rounded,
                 size: 14,
                 color: AppTheme.mutedText,
@@ -418,7 +418,7 @@ class _AdminJobApplicationsScreenState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Applications',
                   style: TextStyle(
                     fontSize: 15,
@@ -430,7 +430,7 @@ class _AdminJobApplicationsScreenState
                 Text(
                   widget.jobTitle,
                   style:
-                  TextStyle(fontSize: 10, color: AppTheme.mutedText),
+                  const TextStyle(fontSize: 10, color: AppTheme.mutedText),
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
@@ -440,14 +440,14 @@ class _AdminJobApplicationsScreenState
             padding:
             const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
-              color: AppTheme.primaryLow,
+              color: AppTheme.primary.withOpacity(0.1),
               border: Border.all(
-                color: AppTheme.primary.withAlpha(51),
+                color: AppTheme.primary.withOpacity(0.2),
                 width: 0.5,
               ),
               borderRadius: BorderRadius.circular(5),
             ),
-            child: Text(
+            child: const Text(
               'ADMIN',
               style: TextStyle(
                 fontSize: 9,
@@ -496,13 +496,13 @@ class _AdminJobApplicationsScreenState
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20, vertical: 10),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryLow,
+                        color: AppTheme.primary.withOpacity(0.1),
                         border: Border.all(
-                            color: AppTheme.primary.withAlpha(51),
+                            color: AppTheme.primary.withOpacity(0.2),
                             width: 0.5),
                         borderRadius: BorderRadius.circular(9),
                       ),
-                      child: Text(
+                      child: const Text(
                         'Retry',
                         style: TextStyle(
                           fontSize: 12,
@@ -568,21 +568,21 @@ class _AdminJobApplicationsScreenState
             label: 'Under Review',
             count: _countFor(ApplicationStatus.underReview),
             colour: AppTheme.warning,
-            bg: AppTheme.warningLow,
+            bg: AppTheme.warning.withOpacity(0.1),
           ),
           const SizedBox(width: 7),
           _summaryChip(
             label: 'Accepted',
             count: _countFor(ApplicationStatus.accepted),
             colour: AppTheme.success,
-            bg: AppTheme.successLow,
+            bg: AppTheme.success.withOpacity(0.1),
           ),
           const SizedBox(width: 7),
           _summaryChip(
             label: 'Rejected',
             count: _countFor(ApplicationStatus.rejected),
             colour: AppTheme.error,
-            bg: AppTheme.errorLow,
+            bg: AppTheme.error.withOpacity(0.1),
           ),
         ],
       ),
@@ -667,7 +667,7 @@ class _AdminJobApplicationsScreenState
         decoration: BoxDecoration(
           color: isActive ? AppTheme.primary : Colors.transparent,
           border: Border.all(
-            color: isActive ? AppTheme.primary : AppTheme.border,
+            color: isActive ? AppTheme.primary : AppTheme.secondary,
             width: isActive ? 1 : 0.5,
           ),
           borderRadius: BorderRadius.circular(18),
@@ -716,7 +716,7 @@ class _AdminJobApplicationsScreenState
       child: Container(
         decoration: BoxDecoration(
           color: AppTheme.card,
-          border: Border.all(color: AppTheme.border, width: 0.5),
+          border: Border.all(color: AppTheme.secondary, width: 0.5),
           borderRadius: BorderRadius.circular(14),
         ),
         padding: const EdgeInsets.all(13),
@@ -732,13 +732,13 @@ class _AdminJobApplicationsScreenState
                     color: AppTheme.secondary,
                     borderRadius: BorderRadius.circular(9),
                     border: Border.all(
-                        color: AppTheme.border2, width: 0.5),
+                        color: AppTheme.secondary, width: 0.5),
                   ),
-                  child: Center(
+                  child: const Center(
                     child: Icon(
                       Icons.person_outline_rounded,
                       size: 18,
-                      color: AppTheme.subtleText,
+                      color: AppTheme.mutedText,
                     ),
                   ),
                 ),
@@ -749,7 +749,7 @@ class _AdminJobApplicationsScreenState
                     children: [
                       Text(
                         application.applicationId,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: AppTheme.textDark,
@@ -758,7 +758,7 @@ class _AdminJobApplicationsScreenState
                       const SizedBox(height: 2),
                       Text(
                         application.qualification,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 10,
                           color: AppTheme.mutedText,
                         ),
@@ -770,8 +770,8 @@ class _AdminJobApplicationsScreenState
               ],
             ),
             const SizedBox(height: 10),
-            Divider(
-                color: AppTheme.border, height: 1, thickness: 0.5),
+            const Divider(
+                color: AppTheme.secondary, height: 1, thickness: 0.5),
             const SizedBox(height: 10),
             Row(
               children: [
@@ -797,14 +797,14 @@ class _AdminJobApplicationsScreenState
                 decoration: BoxDecoration(
                   color: AppTheme.secondary,
                   border:
-                  Border.all(color: AppTheme.border2, width: 0.5),
+                  Border.all(color: AppTheme.secondary, width: 0.5),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     if (isUpdating)
-                      SizedBox(
+                      const SizedBox(
                         width: 12,
                         height: 12,
                         child: CircularProgressIndicator(
@@ -813,7 +813,7 @@ class _AdminJobApplicationsScreenState
                         ),
                       )
                     else
-                      Icon(Icons.swap_vert_rounded,
+                      const Icon(Icons.swap_vert_rounded,
                           size: 14, color: AppTheme.mutedText),
                     const SizedBox(width: 6),
                     Text(
@@ -822,7 +822,7 @@ class _AdminJobApplicationsScreenState
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                         color: isUpdating
-                            ? AppTheme.subtleText
+                            ? AppTheme.mutedText.withOpacity(0.5)
                             : AppTheme.mutedText,
                       ),
                     ),
@@ -847,7 +847,7 @@ class _AdminJobApplicationsScreenState
         decoration: BoxDecoration(
           color: s.backgroundColour,
           border: Border.all(
-              color: s.colour.withAlpha(76), width: 0.5),
+              color: s.colour.withOpacity(0.3), width: 0.5),
           borderRadius: BorderRadius.circular(6),
         ),
         child: Row(
@@ -892,21 +892,21 @@ class _AdminJobApplicationsScreenState
         children: [
           Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 8,
-              color: AppTheme.subtleText,
+              color: AppTheme.mutedText,
               letterSpacing: 0.4,
             ),
           ),
           const SizedBox(height: 3),
           Row(
             children: [
-              Icon(icon, size: 11, color: AppTheme.subtleText),
+              Icon(icon, size: 11, color: AppTheme.mutedText),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
                   value,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 10,
                     color: AppTheme.textDark,
                   ),
@@ -938,12 +938,12 @@ class _AdminJobApplicationsScreenState
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.inbox_outlined,
-                size: 40, color: AppTheme.subtleText),
+            const Icon(Icons.inbox_outlined,
+                size: 40, color: AppTheme.mutedText),
             const SizedBox(height: 14),
             Text(
               label,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.textDark,
@@ -954,7 +954,7 @@ class _AdminJobApplicationsScreenState
             Text(
               sub,
               style:
-              TextStyle(fontSize: 12, color: AppTheme.mutedText),
+              const TextStyle(fontSize: 12, color: AppTheme.mutedText),
               textAlign: TextAlign.center,
             ),
           ],
@@ -972,21 +972,21 @@ class _AdminJobApplicationsScreenState
       padding: const EdgeInsets.fromLTRB(14, 8, 14, 0),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           border:
-          Border(top: BorderSide(color: AppTheme.border, width: 0.5)),
+          Border(top: BorderSide(color: AppTheme.secondary, width: 0.5)),
         ),
-        child: Row(
+        child: const Row(
           children: [
             Icon(Icons.lock_outline_rounded,
-                size: 12, color: AppTheme.subtleText),
-            const SizedBox(width: 6),
+                size: 12, color: AppTheme.mutedText),
+            SizedBox(width: 6),
             Expanded(
               child: Text(
                 'No personal data is shown. Applicant names, emails, phone numbers, and ID documents are never accessible from this screen.',
                 style: TextStyle(
                   fontSize: 9,
-                  color: AppTheme.subtleText,
+                  color: AppTheme.mutedText,
                   height: 1.5,
                 ),
               ),

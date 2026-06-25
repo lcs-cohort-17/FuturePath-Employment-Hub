@@ -12,6 +12,7 @@ class AppRouter {
   static const String forgotPassword = '/forgot-password';
   static const String home = '/home';
   static const String adminJobApplications = '/admin/job-applications';
+  static const String adminEmployers = '/admin/employers';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -35,6 +36,7 @@ class AppRouter {
           builder: (_) => const AppShell(),
           settings: settings,
         );
+    // marco added the work below
       case adminEmployers:
         return MaterialPageRoute(
           builder: (_) => const AdminEmployersScreen(),
@@ -55,7 +57,7 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => const LoginScreen(),
           settings: settings,
-        ); // marco added the work below
+        );
     }
   }
 }
