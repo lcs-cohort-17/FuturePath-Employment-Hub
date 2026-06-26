@@ -49,7 +49,7 @@ dependencies:
   provider: ^6.1.2
 
   # Connects your mobile app to your real database server
-  supabase_flutter: ^2.8.0
+  supabase_flutter: 2.8.0
 
   # Safely reads secret keys from the local root .env configuration file
   flutter_dotenv: ^6.0.1
