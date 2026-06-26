@@ -101,24 +101,42 @@ class _SignupScreenState extends State<SignupScreen> {
     });
 
     try {
-      await _authService.signUp(
+      // 1. Create the Auth account in Supabase
+      final response = await _authService.signUp(
         email: _emailCtrl.text.trim(),
         password: _passwordCtrl.text,
       );
 
-      await RegistrationService.saveApplicant(
-        firstName: _firstNameCtrl.text.trim(),
-        lastName: _lastNameCtrl.text.trim(),
-        idNumber: _idCtrl.text.trim(),
-        dateOfBirth: _dobCtrl.text.trim(),
-        gender: _genderCtrl.text.trim(),
-        contactNumber: _phoneCtrl.text.trim(),
-        email: _emailCtrl.text.trim(),
-        residentialArea: _areaCtrl.text.trim(),
-        highestQualification: _qualificationCtrl.text.trim(),
-        employmentStatus: _employmentCtrl.text.trim(),
-        skills: _skills,
-      );
+      // If signup returns a user but the session isn't immediate (e.g. email confirmation required)
+      if (response.user == null) {
+        throw Exception('Signup failed: No user returned.');
+      }
+
+      // 2. Save the additional profile data
+      // We wrap this in a separate try-catch because the Auth account might be created 
+      // but the DB insert might fail (e.g. due to RLS or schema mismatch)
+      try {
+        await RegistrationService.saveApplicant(
+          firstName: _firstNameCtrl.text.trim(),
+          lastName: _lastNameCtrl.text.trim(),
+          idNumber: _idCtrl.text.trim(),
+          dateOfBirth: _dobCtrl.text.trim(),
+          gender: _genderCtrl.text.trim(),
+          email: _emailCtrl.text.trim(),
+          residentialArea: _areaCtrl.text.trim(),
+          highestQualification: _qualificationCtrl.text.trim(),
+          employmentStatus: _employmentCtrl.text.trim(),
+          skills: _skills,
+        );
+      } catch (dbError) {
+        debugPrint('Database Error: $dbError');
+        // If DB fails, the user is still created in Auth. 
+        // We notify the user but maybe don't treat it as a total failure if Auth worked.
+        if (mounted) {
+           setState(() => _errorMessage = 'Account created, but profile details failed to save. Please contact support.');
+        }
+        return;
+      }
 
       if (!mounted) return;
 

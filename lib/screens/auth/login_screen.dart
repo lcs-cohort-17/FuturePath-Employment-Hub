@@ -15,7 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final AuthService _authService = AuthService();
 
   final _loginFormKey = GlobalKey<FormState>();
-  final _loginEmailCtrl = TextEditingController(text: 'sipho.dlamini@gmail.com');
+  final _loginEmailCtrl = TextEditingController();
   final _loginPasswordCtrl = TextEditingController();
   bool _loginObscure = true;
 
