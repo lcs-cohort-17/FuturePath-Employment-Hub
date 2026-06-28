@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 import '../../core/theme/app_theme.dart';
 import '../../services/auth_services.dart';
+import '../../services/staff_registration_service.dart';
 import '../../router/app_router.dart';
+import 'staff_registration_screen.dart'; // Import for StaffPendingScreen
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -42,6 +44,34 @@ class _LoginScreenState extends State<LoginScreen> {
     return null;
   }
 
+  void _showPendingApprovalDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2C2E30),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.hourglass_empty, color: Colors.amber),
+            SizedBox(width: 12),
+            Text('Pending Approval', style: TextStyle(color: Colors.white, fontSize: 20)),
+          ],
+        ),
+        content: const Text(
+          'Your business account is still pending approval from our admin team. You will be notified via email once approved.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK', style: TextStyle(color: Color(0xFFE03A2F), fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _handleLogin() async {
     if (!_loginFormKey.currentState!.validate()) return;
 
@@ -51,16 +81,45 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      await _authService.signIn(
+      final response = await _authService.signIn(
         email: _loginEmailCtrl.text.trim(),
         password: _loginPasswordCtrl.text,
       );
 
+      final user = response.user;
+      if (user == null) throw Exception('Login failed');
+
       if (!mounted) return;
 
-      // TODO(INT-007): pass _loginEmailCtrl.text.trim() to load the user's
-      // Google Sheets profile once that integration is wired up.
+      // Check user role and status from Supabase
+      final profile = await StaffRegistrationService.checkUserRole(user.id);
+      
+      if (!mounted) return;
 
+      if (profile != null) {
+        final role = profile['role'];
+        final status = profile['status'];
+
+        if (role == 'staff') {
+          if (status == 'active') {
+            Navigator.of(context).pushNamedAndRemoveUntil(AppRouter.staffDashboard, (route) => false);
+          } else if (status == 'pending_approval') {
+            // Block login and sign out
+            await _authService.signOut();
+            if (!mounted) return;
+            _showPendingApprovalDialog();
+          } else {
+            await _authService.signOut();
+            setState(() => _loginErrorMessage = 'Your business account is suspended.');
+          }
+          return;
+        } else if (role == 'admin') {
+          Navigator.of(context).pushNamedAndRemoveUntil(AppRouter.adminStaffMgmt, (route) => false);
+          return;
+        }
+      }
+
+      // Default for job seekers or if no profile found yet
       Navigator.of(context).pushNamedAndRemoveUntil(
         AppRouter.home,
             (route) => false,
@@ -79,164 +138,225 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.surface,
+      backgroundColor: const Color(0xFF1A1C1E), // Dark background from design
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(22, 32, 22, 32),
-          child: Form(
-            key: _loginFormKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Logo row
-                Row(
-                  children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: AppTheme.primary,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      alignment: Alignment.center,
-                      child: const Text(
-                        'FP',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 9),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'FuturePath',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.textDark,
-                          ),
-                        ),
-                        Text(
-                          'Employment Hub',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: AppTheme.mutedText,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildHeader(),
+              const SizedBox(height: 48),
+              const Text(
+                'Welcome back',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
-                const SizedBox(height: 28),
-
-                // Welcome heading
-                const Text(
-                  'Welcome back',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.textDark,
-                  ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Sign in to your account',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white70,
                 ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Sign in to your account',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: AppTheme.mutedText,
-                  ),
-                ),
-                const SizedBox(height: 24),
+              ),
+              const SizedBox(height: 32),
+              _buildLoginForm(),
+              const SizedBox(height: 24),
+              _buildRoleSpecificNavigation(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-                // Email field
-                _fieldLabel('Email address'),
-                const SizedBox(height: 4),
-                _emailField(_loginEmailCtrl),
-                const SizedBox(height: 10),
-
-                // Password field
-                _fieldLabel('Password'),
-                const SizedBox(height: 4),
-                _passwordField(
-                  controller: _loginPasswordCtrl,
-                  obscure: _loginObscure,
-                  onToggle: () => setState(() => _loginObscure = !_loginObscure),
-                ),
-
-                if (_loginErrorMessage != null) ...[
-                  const SizedBox(height: 10),
-                  _errorBanner(_loginErrorMessage!),
-                ],
-
-                // Forgot password
-                const SizedBox(height: 6),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: GestureDetector(
-                    onTap: () => Navigator.of(context).pushNamed(AppRouter.forgotPassword),
-                    child: const Text(
-                      'Forgot password?',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: AppTheme.primary,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Sign In button
-                _primaryButton(
-                  label: 'Sign In',
-                  isLoading: _isLoading,
-                  onPressed: _handleLogin,
-                ),
-                const SizedBox(height: 18),
-
-                // Don't have an account
-                const Center(
-                  child: Text(
-                    "Don't have an account?",
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: AppTheme.mutedText,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-
-                // Job Seeker / Business buttons
-                Row(
-                  children: [
-                    Expanded(
-                      child: _secondaryButton(
-                        icon: Icons.person_outline,
-                        label: 'Job Seeker',
-                        onPressed: () => Navigator.of(context).pushNamed(AppRouter.signup),
-                        borderColor: AppTheme.border2,
-                        textColor: AppTheme.mutedText,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _secondaryButton(
-                        icon: Icons.business_outlined,
-                        label: 'Business',
-                        onPressed: () => Navigator.of(context).pushNamed(AppRouter.staffRegister),
-                        borderColor: AppTheme.primary.withValues(alpha: 0.3),
-                        textColor: AppTheme.primary,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+  Widget _buildHeader() {
+    return Row(
+      children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: const Color(0xFFE03A2F), // Brand red
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Center(
+            child: Text(
+              'FP',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
             ),
           ),
         ),
+        const SizedBox(width: 16),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'FuturePath',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              'Employment Hub',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.6),
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLoginForm() {
+    return Form(
+      key: _loginFormKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'Email address',
+            style: TextStyle(color: Colors.white, fontSize: 14),
+          ),
+          const SizedBox(height: 8),
+          _textField(
+            controller: _loginEmailCtrl,
+            hint: 'you@example.com',
+            validator: _validateEmail,
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'Password',
+            style: TextStyle(color: Colors.white, fontSize: 14),
+          ),
+          const SizedBox(height: 8),
+          _textField(
+            controller: _loginPasswordCtrl,
+            hint: '••••••••',
+            obscure: _loginObscure,
+            isPassword: true,
+            onToggleVisibility: () => setState(() => _loginObscure = !_loginObscure),
+            validator: (v) => _validateRequired(v, 'Password'),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: () => Navigator.of(context).pushNamed(AppRouter.forgotPassword),
+              child: const Text(
+                'Forgot password?',
+                style: TextStyle(color: Color(0xFFE03A2F)),
+              ),
+            ),
+          ),
+          if (_loginErrorMessage != null) ...[
+            _errorBanner(_loginErrorMessage!),
+            const SizedBox(height: 16),
+          ],
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 56,
+            child: ElevatedButton(
+              onPressed: _isLoading ? null : _handleLogin,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE03A2F),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: _isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text('Sign In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRoleSpecificNavigation() {
+    return Column(
+      children: [
+        const Text(
+          "Don't have an account?",
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white70),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.of(context).pushNamed(AppRouter.signup),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  side: const BorderSide(color: Colors.white24),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Job Seeker', style: TextStyle(color: Colors.white)),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.of(context).pushNamed(AppRouter.staffSignup),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  side: const BorderSide(color: Color(0xFFE03A2F)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Business', style: TextStyle(color: Color(0xFFE03A2F))),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        TextButton(
+          onPressed: () => Navigator.of(context).pushNamed(AppRouter.adminLogin),
+          child: const Text(
+            'Admin Login',
+            style: TextStyle(color: Colors.white38, fontSize: 13),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _textField({
+    required TextEditingController controller,
+    required String hint,
+    bool obscure = false,
+    bool isPassword = false,
+    VoidCallback? onToggleVisibility,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscure,
+      validator: validator,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: const TextStyle(color: Colors.white24),
+        filled: true,
+        fillColor: const Color(0xFF2C2E30),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        suffixIcon: isPassword
+            ? IconButton(
+          icon: Icon(obscure ? Icons.visibility_off : Icons.visibility, color: Colors.white24),
+          onPressed: onToggleVisibility,
+        )
+            : null,
       ),
     );
   }
@@ -245,172 +365,18 @@ class _LoginScreenState extends State<LoginScreen> {
     width: double.infinity,
     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
     decoration: BoxDecoration(
-      color: AppTheme.errorLow,
-      borderRadius: BorderRadius.circular(10),
-      border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3)),
+      color: Colors.redAccent.withOpacity(0.1),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: Colors.redAccent.withOpacity(0.3)),
     ),
     child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(Icons.error_outline, color: AppTheme.primary, size: 14),
+        const Icon(Icons.error_outline, color: Colors.redAccent, size: 18),
         const SizedBox(width: 8),
         Expanded(
-          child: Text(
-            message,
-            style: const TextStyle(
-              color: AppTheme.primary,
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
+          child: Text(message, style: const TextStyle(color: Colors.redAccent, fontSize: 13)),
         ),
       ],
     ),
   );
-
-  Widget _fieldLabel(String text) => Text(
-    text,
-    style: const TextStyle(
-      fontSize: 10,
-      color: AppTheme.mutedText,
-    ),
-  );
-
-  InputDecoration _fieldDecoration({
-    required String hint,
-    Widget? prefix,
-    Widget? suffix,
-  }) =>
-      InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(color: AppTheme.subtleText, fontSize: 12),
-        prefixIcon: prefix,
-        suffixIcon: suffix,
-        filled: true,
-        fillColor: AppTheme.surface2,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppTheme.border2, width: 0.5),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppTheme.border2, width: 0.5),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppTheme.primary, width: 1),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppTheme.error, width: 0.5),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppTheme.error, width: 1),
-        ),
-      );
-
-  Widget _emailField(TextEditingController ctrl) => TextFormField(
-    controller: ctrl,
-    keyboardType: TextInputType.emailAddress,
-    autovalidateMode: AutovalidateMode.onUserInteraction,
-    validator: _validateEmail,
-    style: const TextStyle(color: AppTheme.textDark, fontSize: 12),
-    decoration: _fieldDecoration(
-      hint: 'you@example.com',
-      prefix: const Icon(Icons.mail_outline, color: AppTheme.subtleText, size: 16),
-    ),
-  );
-
-  Widget _passwordField({
-    required TextEditingController controller,
-    required bool obscure,
-    required VoidCallback onToggle,
-    String? hint,
-    String? Function(String?)? validator,
-  }) =>
-      TextFormField(
-        controller: controller,
-        obscureText: obscure,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
-        validator: validator ?? (v) => _validateRequired(v, 'Password'),
-        style: const TextStyle(color: AppTheme.textDark, fontSize: 12),
-        decoration: _fieldDecoration(
-          hint: hint ?? '••••••••',
-          suffix: IconButton(
-            icon: Icon(
-              obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-              color: AppTheme.subtleText,
-              size: 14,
-            ),
-            onPressed: onToggle,
-          ),
-        ),
-      );
-
-  Widget _primaryButton({
-    required String label,
-    required bool isLoading,
-    required VoidCallback onPressed,
-  }) =>
-      SizedBox(
-        height: 46,
-        child: FilledButton(
-          onPressed: isLoading ? null : onPressed,
-          style: FilledButton.styleFrom(
-            backgroundColor: AppTheme.primary,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            padding: const EdgeInsets.symmetric(vertical: 13),
-          ),
-          child: isLoading
-              ? const SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
-          )
-              : const Text(
-            'Sign In',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-            ),
-          ),
-        ),
-      );
-
-  Widget _secondaryButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onPressed,
-    required Color borderColor,
-    required Color textColor,
-  }) =>
-      SizedBox(
-        height: 42,
-        child: OutlinedButton(
-          onPressed: onPressed,
-          style: OutlinedButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            side: BorderSide(color: borderColor, width: 0.5),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            padding: const EdgeInsets.symmetric(vertical: 10),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 14, color: textColor),
-              const SizedBox(width: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: textColor,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
 }
