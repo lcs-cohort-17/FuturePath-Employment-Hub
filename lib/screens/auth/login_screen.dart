@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 import '../../core/theme/app_theme.dart';
 import '../../services/auth_services.dart';
+import '../../services/staff_registration_service.dart';
 import '../../router/app_router.dart';
+import 'staff_registration_screen.dart'; // Import for StaffPendingScreen
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -42,10 +44,34 @@ class _LoginScreenState extends State<LoginScreen> {
     return null;
   }
 
-  /// Validates the login form, signs in via [AuthService], and routes to
-  /// Home on success. Clears the navigation stack so the back button cannot
-  /// return to Login. Shows a readable error message on failure rather than
-  /// crashing.
+  void _showPendingApprovalDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2C2E30),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.hourglass_empty, color: Colors.amber),
+            SizedBox(width: 12),
+            Text('Pending Approval', style: TextStyle(color: Colors.white, fontSize: 20)),
+          ],
+        ),
+        content: const Text(
+          'Your business account is still pending approval from our admin team. You will be notified via email once approved.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK', style: TextStyle(color: Color(0xFFE03A2F), fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _handleLogin() async {
     if (!_loginFormKey.currentState!.validate()) return;
 
@@ -55,16 +81,45 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      await _authService.signIn(
+      final response = await _authService.signIn(
         email: _loginEmailCtrl.text.trim(),
         password: _loginPasswordCtrl.text,
       );
 
+      final user = response.user;
+      if (user == null) throw Exception('Login failed');
+
       if (!mounted) return;
 
-      // TODO(INT-007): pass _loginEmailCtrl.text.trim() to load the user's
-      // Google Sheets profile once that integration is wired up.
+      // Check user role and status from Supabase
+      final profile = await StaffRegistrationService.checkUserRole(user.id);
+      
+      if (!mounted) return;
 
+      if (profile != null) {
+        final role = profile['role'];
+        final status = profile['status'];
+
+        if (role == 'staff') {
+          if (status == 'active') {
+            Navigator.of(context).pushNamedAndRemoveUntil(AppRouter.staffDashboard, (route) => false);
+          } else if (status == 'pending_approval') {
+            // Block login and sign out
+            await _authService.signOut();
+            if (!mounted) return;
+            _showPendingApprovalDialog();
+          } else {
+            await _authService.signOut();
+            setState(() => _loginErrorMessage = 'Your business account is suspended.');
+          }
+          return;
+        } else if (role == 'admin') {
+          Navigator.of(context).pushNamedAndRemoveUntil(AppRouter.adminStaffMgmt, (route) => false);
+          return;
+        }
+      }
+
+      // Default for job seekers or if no profile found yet
       Navigator.of(context).pushNamedAndRemoveUntil(
         AppRouter.home,
             (route) => false,
@@ -83,60 +138,85 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
-      body: Column(
-        children: [
-          _buildHeader(),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Text(
-                    'Welcome back',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.textDark),
-                  ),
-                  const SizedBox(height: 28),
-                  _buildLoginForm(),
-                ],
+      backgroundColor: const Color(0xFF1A1C1E), // Dark background from design
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildHeader(),
+              const SizedBox(height: 48),
+              const Text(
+                'Welcome back',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
-            ),
+              const SizedBox(height: 8),
+              const Text(
+                'Sign in to your account',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white70,
+                ),
+              ),
+              const SizedBox(height: 32),
+              _buildLoginForm(),
+              const SizedBox(height: 24),
+              _buildRoleSpecificNavigation(),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildHeader() {
-    return Container(
-      width: double.infinity,
-      color: AppTheme.primary,
-      padding: const EdgeInsets.only(top: 60, bottom: 32),
-      child: Column(
-        children: [
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(18),
+    return Row(
+      children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: const Color(0xFFE03A2F), // Brand red
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Center(
+            child: Text(
+              'FP',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
             ),
-            child: const Icon(Icons.work_outline_rounded, size: 38, color: Colors.white),
           ),
-          const SizedBox(height: 14),
-          const Text(
-            'FuturePath',
-            style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Employment Hub',
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 14),
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(width: 16),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'FuturePath',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              'Employment Hub',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.6),
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -146,43 +226,137 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _fieldLabel('Email Address'),
-          const SizedBox(height: 6),
-          _emailField(_loginEmailCtrl),
-          const SizedBox(height: 16),
-          _fieldLabel('Password'),
-          const SizedBox(height: 6),
-          _passwordField(
-            controller: _loginPasswordCtrl,
-            obscure: _loginObscure,
-            onToggle: () => setState(() => _loginObscure = !_loginObscure),
+          const Text(
+            'Email address',
+            style: TextStyle(color: Colors.white, fontSize: 14),
           ),
-          if (_loginErrorMessage != null) ...[
-            const SizedBox(height: 12),
-            _errorBanner(_loginErrorMessage!),
-          ],
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
+          _textField(
+            controller: _loginEmailCtrl,
+            hint: 'you@example.com',
+            validator: _validateEmail,
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'Password',
+            style: TextStyle(color: Colors.white, fontSize: 14),
+          ),
+          const SizedBox(height: 8),
+          _textField(
+            controller: _loginPasswordCtrl,
+            hint: '••••••••',
+            obscure: _loginObscure,
+            isPassword: true,
+            onToggleVisibility: () => setState(() => _loginObscure = !_loginObscure),
+            validator: (v) => _validateRequired(v, 'Password'),
+          ),
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
               onPressed: () => Navigator.of(context).pushNamed(AppRouter.forgotPassword),
-              style: TextButton.styleFrom(
-                foregroundColor: AppTheme.accent,
-                padding: EdgeInsets.zero,
-                minimumSize: const Size(0, 36),
+              child: const Text(
+                'Forgot password?',
+                style: TextStyle(color: Color(0xFFE03A2F)),
               ),
-              child: const Text('Forgot Password?', style: TextStyle(fontWeight: FontWeight.w600)),
             ),
           ),
+          if (_loginErrorMessage != null) ...[
+            _errorBanner(_loginErrorMessage!),
+            const SizedBox(height: 16),
+          ],
           const SizedBox(height: 16),
-          _primaryButton(label: 'Log In', isLoading: _isLoading, onPressed: _handleLogin),
-          const SizedBox(height: 20),
-          _orDivider(),
-          const SizedBox(height: 16),
-          _googleButton(),
-          const SizedBox(height: 20),
-          _switchToSignupPrompt(),
+          SizedBox(
+            height: 56,
+            child: ElevatedButton(
+              onPressed: _isLoading ? null : _handleLogin,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE03A2F),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: _isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text('Sign In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildRoleSpecificNavigation() {
+    return Column(
+      children: [
+        const Text(
+          "Don't have an account?",
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white70),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.of(context).pushNamed(AppRouter.signup),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  side: const BorderSide(color: Colors.white24),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Job Seeker', style: TextStyle(color: Colors.white)),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.of(context).pushNamed(AppRouter.staffSignup),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  side: const BorderSide(color: Color(0xFFE03A2F)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Business', style: TextStyle(color: Color(0xFFE03A2F))),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        TextButton(
+          onPressed: () => Navigator.of(context).pushNamed(AppRouter.adminLogin),
+          child: const Text(
+            'Admin Login',
+            style: TextStyle(color: Colors.white38, fontSize: 13),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _textField({
+    required TextEditingController controller,
+    required String hint,
+    bool obscure = false,
+    bool isPassword = false,
+    VoidCallback? onToggleVisibility,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscure,
+      validator: validator,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: const TextStyle(color: Colors.white24),
+        filled: true,
+        fillColor: const Color(0xFF2C2E30),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        suffixIcon: isPassword
+            ? IconButton(
+          icon: Icon(obscure ? Icons.visibility_off : Icons.visibility, color: Colors.white24),
+          onPressed: onToggleVisibility,
+        )
+            : null,
       ),
     );
   }
@@ -191,128 +365,18 @@ class _LoginScreenState extends State<LoginScreen> {
     width: double.infinity,
     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
     decoration: BoxDecoration(
-      color: Colors.redAccent.withValues(alpha: 0.08),
+      color: Colors.redAccent.withOpacity(0.1),
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+      border: Border.all(color: Colors.redAccent.withOpacity(0.3)),
     ),
     child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Icon(Icons.error_outline, color: Colors.redAccent, size: 18),
         const SizedBox(width: 8),
         Expanded(
-          child: Text(message, style: const TextStyle(color: Colors.redAccent, fontSize: 13, fontWeight: FontWeight.w500)),
+          child: Text(message, style: const TextStyle(color: Colors.redAccent, fontSize: 13)),
         ),
       ],
     ),
-  );
-
-  Widget _fieldLabel(String text) => Text(
-    text,
-    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: AppTheme.textDark),
-  );
-
-  InputDecoration _fieldDecoration({required String hint, Widget? prefix, Widget? suffix}) =>
-      InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(color: AppTheme.mutedText),
-        prefixIcon: prefix,
-        suffixIcon: suffix,
-        filled: true,
-        fillColor: const Color(0xFFF0F4F8),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-        errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Colors.redAccent)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: AppTheme.primary.withValues(alpha: 0.6), width: 1.5)),
-        focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Colors.redAccent, width: 1.5)),
-      );
-
-  Widget _emailField(TextEditingController ctrl) => TextFormField(
-    controller: ctrl,
-    keyboardType: TextInputType.emailAddress,
-    autovalidateMode: AutovalidateMode.onUserInteraction,
-    validator: _validateEmail,
-    decoration: _fieldDecoration(
-      hint: 'you@email.com',
-      prefix: const Icon(Icons.email_outlined, color: AppTheme.mutedText, size: 20),
-    ),
-  );
-
-  Widget _passwordField({
-    required TextEditingController controller,
-    required bool obscure,
-    required VoidCallback onToggle,
-    String? hint,
-    String? Function(String?)? validator,
-  }) =>
-      TextFormField(
-        controller: controller,
-        obscureText: obscure,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
-        validator: validator ?? (v) => _validateRequired(v, 'Password'),
-        decoration: _fieldDecoration(
-          hint: hint ?? 'Enter password',
-          prefix: const Icon(Icons.lock_outline, color: AppTheme.mutedText, size: 20),
-          suffix: IconButton(
-            icon: Icon(obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppTheme.mutedText, size: 20),
-            onPressed: onToggle,
-          ),
-        ),
-      );
-
-  Widget _primaryButton({required String label, required bool isLoading, required VoidCallback onPressed}) =>
-      SizedBox(
-        height: 54,
-        child: FilledButton(
-          onPressed: isLoading ? null : onPressed,
-          style: FilledButton.styleFrom(
-            backgroundColor: AppTheme.primary,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          ),
-          child: isLoading
-              ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
-              : Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
-        ),
-      );
-
-  Widget _orDivider() => Row(
-    children: [
-      const Expanded(child: Divider()),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Text('or continue with', style: TextStyle(color: AppTheme.mutedText, fontSize: 13)),
-      ),
-      const Expanded(child: Divider()),
-    ],
-  );
-
-  Widget _googleButton() => OutlinedButton(
-    onPressed: () {},
-    style: OutlinedButton.styleFrom(
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      side: const BorderSide(color: Color(0xFFDDE3ED)),
-      backgroundColor: Colors.white,
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Text('G', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF4285F4))),
-        const SizedBox(width: 10),
-        Text('Continue with Google', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.textDark)),
-      ],
-    ),
-  );
-
-  Widget _switchToSignupPrompt() => Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      const Text("Don't have an account?", style: TextStyle(color: AppTheme.mutedText)),
-      const SizedBox(width: 4),
-      GestureDetector(
-        onTap: () => Navigator.of(context).pushNamed(AppRouter.signup),
-        child: const Text('Sign Up Free', style: TextStyle(color: AppTheme.accent, fontWeight: FontWeight.w700)),
-      ),
-    ],
   );
 }
