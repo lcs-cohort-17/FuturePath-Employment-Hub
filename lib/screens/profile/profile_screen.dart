@@ -27,7 +27,7 @@ class ProfileScreen extends ConsumerWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Logout failed: $e'),
-                backgroundColor: Colors.red,
+                backgroundColor: AppTheme.error,
               ),
             );
           }
@@ -60,31 +60,28 @@ class ProfileScreenContent extends StatefulWidget {
 }
 
 class _ProfileScreenContentState extends State<ProfileScreenContent> {
-  int _selectedTab = 0;
-  bool _isEditMode = false;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.surface,
       body: SafeArea(
         child: Column(
           children: [
-            // Header Section
-            _buildHeader(),
-
-            // Tab Navigation
-            _buildTabNavigation(),
-
-            // Tab Content
+            _buildTopBar(),
             Expanded(
-              child: IndexedStack(
-                index: _selectedTab,
-                children: [
-                  _buildDetailsTab(),
-                  _buildApplicationsTab(),
-                  _buildSavedTab(),
-                ],
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildProfileHeader(),
+                    _buildHiredBanner(),
+                    _buildContactIdentityBlock(),
+                    _buildSkillsBlock(),
+                    _buildApplicationsBlock(),
+                    _buildSignOutButton(),
+                    const SizedBox(height: 8),
+                  ],
+                ),
               ),
             ),
           ],
@@ -93,585 +90,551 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildTopBar() {
     return Container(
-      padding: const EdgeInsets.all(20),
-      child: Column(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      decoration: const BoxDecoration(
+        color: AppTheme.surface,
+        border: Border(
+          bottom: BorderSide(color: AppTheme.border, width: 0.5),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Top bar with title and icons
+          Row(
+            children: [
+              Container(
+                width: 26,
+                height: 26,
+                decoration: BoxDecoration(
+                  color: AppTheme.primary,
+                  borderRadius: BorderRadius.circular(7),
+                ),
+                child: const Center(
+                  child: Text(
+                    'FP',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 7),
+              const Text(
+                'FuturePath',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textDark,
+                ),
+              ),
+            ],
+          ),
+          Stack(
+            children: [
+              Icon(Icons.notifications_none, color: AppTheme.mutedText, size: 18),
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Container(
+                  width: 13,
+                  height: 13,
+                  decoration: const BoxDecoration(
+                    color: AppTheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(
+                    child: Text(
+                      '2',
+                      style: TextStyle(
+                        fontSize: 8,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // [UIUX-PRIV-002] Avatar with initials — only visible to authenticated user on their own profile
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryDim,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Center(
+                      child: Text(
+                        _getInitials(widget.userProfile.name),
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  // [UIUX-PRIV-002] Name — only visible to authenticated user on their own profile
+                  Text(
+                    widget.userProfile.name,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textDark,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: const [
+                      Icon(Icons.location_on_outlined, size: 11, color: AppTheme.mutedText),
+                      SizedBox(width: 4),
+                      Text(
+                        'Cape Town, Western Cape',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppTheme.mutedText,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 7),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: AppTheme.border, width: 0.5),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 7,
+                          height: 7,
+                          decoration: const BoxDecoration(
+                            color: AppTheme.primary,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          widget.userProfile.employmentStatus,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: AppTheme.mutedText,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: AppTheme.surface2,
+                  borderRadius: BorderRadius.circular(7),
+                  border: Border.all(color: AppTheme.border, width: 0.5),
+                ),
+                child: Row(
+                  children: const [
+                    Icon(Icons.edit_outlined, size: 12, color: AppTheme.primary),
+                    SizedBox(width: 4),
+                    Text(
+                      'Edit',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: AppTheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHiredBanner() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      decoration: BoxDecoration(
+        color: AppTheme.successLow,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.success.withOpacity(0.2), width: 0.5),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.celebration_outlined, size: 18, color: AppTheme.success),
+          const SizedBox(width: 9),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                Text(
+                  "YOU'RE HIRED!",
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.success,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Salesforce Admin Intern · FutureTech Africa',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.textDark,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'R12,000/month + allowances',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: AppTheme.mutedText,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactIdentityBlock() {
+    // [UIUX-PRIV-002] Personal data — only visible to the authenticated user on their own profile
+    return Container(
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+      padding: const EdgeInsets.all(13),
+      decoration: BoxDecoration(
+        color: AppTheme.surface2,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.border, width: 0.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'CONTACT & IDENTITY',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.mutedText,
+              letterSpacing: 0.4,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _buildInfoCell('EMAIL', widget.userProfile.email),
+              ),
+              Expanded(
+                child: _buildInfoCell('PHONE', '071 234 5678'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _buildInfoCell('ID NUMBER', '000101•••083'),
+              ),
+              Expanded(
+                child: _buildInfoCell(
+                  'QUALIFICATION',
+                  widget.userProfile.education?.isNotEmpty == true
+                      ? widget.userProfile.education!
+                      : 'Matric / NSC',
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoCell(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 9,
+            color: AppTheme.subtleText,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 11,
+            color: AppTheme.textDark,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSkillsBlock() {
+    final skills = widget.userProfile.skills.isNotEmpty
+        ? widget.userProfile.skills
+        : ['Microsoft Office', 'Communication', 'Problem Solving'];
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+      padding: const EdgeInsets.all(13),
+      decoration: BoxDecoration(
+        color: AppTheme.surface2,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.border, width: 0.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'My Profile',
+                'SKILLS',
                 style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textDark,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.mutedText,
+                  letterSpacing: 0.4,
                 ),
               ),
-              Row(
-                children: [
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(Icons.dark_mode_outlined),
-                    color: AppTheme.mutedText,
-                  ),
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(Icons.settings_outlined),
-                    color: AppTheme.mutedText,
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // Avatar
-          Stack(
-            children: [
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  color: AppTheme.primary,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    _getInitials(widget.userProfile.name),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                right: 0,
-                bottom: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    color: AppTheme.accent,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.camera_alt,
-                    color: Colors.white,
-                    size: 16,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // Name
-          Text(
-            widget.userProfile.name,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.textDark,
-            ),
-          ),
-          const SizedBox(height: 4),
-
-          // Qualification
-          Text(
-            widget.userProfile.education?.isNotEmpty == true
-                ? widget.userProfile.education!
-                : 'National Diploma in IT',
-            style: TextStyle(
-              fontSize: 14,
-              color: AppTheme.mutedText,
-            ),
-          ),
-          const SizedBox(height: 4),
-
-          // Employment Status
-          Text(
-            '${widget.userProfile.employmentStatus} — Seeking Opportunities',
-            style: TextStyle(
-              fontSize: 13,
-              color: AppTheme.mutedText,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTabNavigation() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: AppTheme.card,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildTabButton('Details', 0),
-          ),
-          Expanded(
-            child: _buildTabButton('Applications', 1),
-          ),
-          Expanded(
-            child: _buildTabButton('Saved', 2),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTabButton(String label, int index) {
-    final isSelected = _selectedTab == index;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedTab = index),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: isSelected
-              ? [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ]
-              : null,
-        ),
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-            color: isSelected ? AppTheme.textDark : AppTheme.mutedText,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDetailsTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Edit Profile Button
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton.icon(
-              onPressed: () => setState(() => _isEditMode = !_isEditMode),
-              icon: const Icon(Icons.edit_outlined, size: 18),
-              label: Text(_isEditMode ? 'Save' : 'Edit Profile'),
-              style: TextButton.styleFrom(
-                foregroundColor: AppTheme.accent,
-              ),
-            ),
-          ),
-
-          // Bio Section
-          _buildSectionCard(
-            title: 'Bio',
-            child: Text(
-              widget.userProfile.bio ??
-                  'Passionate mobile developer and digital enthusiast eager to contribute to innovative tech solutions across Africa. Currently upskilling through FuturePath training programmes.',
-              style: TextStyle(
-                color: AppTheme.textDark,
-                fontSize: 14,
-                height: 1.6,
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Personal Information Section
-          _buildSectionCard(
-            title: 'Personal Information',
-            child: Column(
-              children: [
-                _buildInfoRow('Email', widget.userProfile.email),
-                const SizedBox(height: 12),
-                _buildInfoRow(
-                  'Qualification',
-                  widget.userProfile.education?.isNotEmpty == true
-                      ? widget.userProfile.education!
-                      : 'National Diploma in IT',
-                ),
-                const SizedBox(height: 12),
-                _buildInfoRow(
-                  'Employment Status',
-                  '${widget.userProfile.employmentStatus} — Seeking Opportunities',
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Links Section
-          _buildSectionCard(
-            title: 'Links',
-            child: Column(
-              children: [
-                _buildLinkRow(
-                  'GitHub',
-                  'https://github.com/thabonkosi',
-                ),
-                const SizedBox(height: 12),
-                _buildLinkRow(
-                  'Portfolio',
-                  'https://thabonkosi.dev',
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Skills Section
-          _buildSectionCard(
-            title: 'Skills',
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const SizedBox(),
-                    TextButton(
-                      onPressed: widget.onNavigateToCV,
-                      child: const Text('+ Add Skill'),
+              GestureDetector(
+                onTap: widget.onNavigateToCV,
+                child: Row(
+                  children: const [
+                    Icon(Icons.add, size: 12, color: AppTheme.primary),
+                    SizedBox(width: 3),
+                    Text(
+                      'Add',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: AppTheme.primary,
+                      ),
                     ),
                   ],
                 ),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: (widget.userProfile.skills.isNotEmpty
-                      ? widget.userProfile.skills
-                      : ['Flutter', 'Dart', 'JavaScript', 'Python', 'UI Design', 'Git'])
-                      .map((skill) => _buildSkillChip(skill))
-                      .toList(),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Certificates Section
-          _buildSectionCard(
-            title: 'Certificates',
-            child: Column(
-              children: [
-                _buildCertificateCard(
-                  'Digital Marketing Fundamentals',
-                  'FuturePath - Innovate SA',
-                  'Issued 30 Apr 2024',
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 24),
-
-          // Sign Out Button
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: widget.onSignOut,
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                side: BorderSide(color: Colors.red.shade300),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'Sign Out',
-                style: TextStyle(
-                  color: Colors.red,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildApplicationsTab() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(40),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppTheme.secondary,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: const Icon(
-                Icons.assignment_outlined,
-                size: 64,
-                color: AppTheme.mutedText,
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'No Applications Yet',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textDark,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Start applying to opportunities to track your progress here.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: AppTheme.mutedText,
-                height: 1.5,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSavedTab() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(40),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppTheme.secondary,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: const Icon(
-                Icons.bookmark_border,
-                size: 64,
-                color: AppTheme.mutedText,
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'No Saved Items',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textDark,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Tap the bookmark icon on programmes and jobs to save them for later.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: AppTheme.mutedText,
-                height: 1.5,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionCard({required String title, required Widget child}) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.textDark,
-            ),
-          ),
-          const SizedBox(height: 16),
-          child,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            color: AppTheme.mutedText,
-          ),
-        ),
-        Flexible(
-          child: Text(
-            value,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.textDark,
-            ),
-            textAlign: TextAlign.right,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLinkRow(String label, String url) {
-    return Row(
-      children: [
-        const Icon(
-          Icons.link,
-          size: 16,
-          color: AppTheme.accent,
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: AppTheme.mutedText,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                url,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: AppTheme.textDark,
-                ),
               ),
             ],
           ),
-        ),
-      ],
+          const SizedBox(height: 9),
+          Wrap(
+            spacing: 5,
+            runSpacing: 5,
+            children: skills.map((skill) => _buildSkillChip(skill)).toList(),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildSkillChip(String skill) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
       decoration: BoxDecoration(
-        color: AppTheme.secondary,
-        borderRadius: BorderRadius.circular(8),
+        color: AppTheme.primaryLow,
+        borderRadius: BorderRadius.circular(7),
+        border: Border.all(color: AppTheme.primary.withOpacity(0.2), width: 0.5),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: Text(
+        skill,
+        style: const TextStyle(
+          fontSize: 10,
+          color: AppTheme.primary,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildApplicationsBlock() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+      padding: const EdgeInsets.all(13),
+      decoration: BoxDecoration(
+        color: AppTheme.surface2,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.border, width: 0.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            skill,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: AppTheme.textDark,
+          const Text(
+            'ACTIVE APPLICATIONS',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.mutedText,
+              letterSpacing: 0.4,
             ),
           ),
-          const SizedBox(width: 6),
-          const Icon(
-            Icons.close,
-            size: 14,
-            color: AppTheme.mutedText,
+          const SizedBox(height: 10),
+          _buildApplicationRow(
+            iconBg: AppTheme.successLow,
+            icon: Icons.check,
+            iconColor: AppTheme.success,
+            title: 'Flutter Mobile Dev',
+            badgeLabel: 'Accepted',
+            badgeColor: AppTheme.success,
+            badgeBg: AppTheme.successLow,
+            progress: 1.0,
+            progressColor: AppTheme.success,
+          ),
+          const SizedBox(height: 10),
+          _buildApplicationRow(
+            iconBg: AppTheme.warningLow,
+            icon: Icons.access_time,
+            iconColor: AppTheme.warning,
+            title: 'Data Analyst Trainee',
+            badgeLabel: 'Under Review',
+            badgeColor: AppTheme.warning,
+            badgeBg: AppTheme.warningLow,
+            progress: 0.5,
+            progressColor: AppTheme.warning,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCertificateCard(String title, String issuer, String date) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.secondary,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: const BoxDecoration(
-              color: Colors.amber,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.verified_user,
-              color: Colors.white,
-              size: 20,
-            ),
+  Widget _buildApplicationRow({
+    required Color iconBg,
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String badgeLabel,
+    required Color badgeColor,
+    required Color badgeBg,
+    required double progress,
+    required Color progressColor,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            color: iconBg,
+            borderRadius: BorderRadius.circular(7),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.textDark,
+          child: Icon(icon, color: iconColor, size: 13),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textDark,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '$issuer • $date',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppTheme.mutedText,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: badgeBg,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Text(
+                      badgeLabel,
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w700,
+                        color: badgeColor,
+                      ),
+                    ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(2),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 3,
+                  backgroundColor: AppTheme.surface3,
+                  valueColor: AlwaysStoppedAnimation<Color>(progressColor),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSignOutButton() {
+    return GestureDetector(
+      onTap: widget.onSignOut,
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(14, 6, 14, 0),
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppTheme.primary.withOpacity(0.3), width: 0.5),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(Icons.logout, size: 14, color: AppTheme.primary),
+            SizedBox(width: 7),
+            Text(
+              'Sign Out',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.primary,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

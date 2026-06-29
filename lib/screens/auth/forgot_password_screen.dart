@@ -54,19 +54,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppTheme.textDark),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
+      backgroundColor: AppTheme.surface,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: _isSuccess ? _buildSuccessView() : _buildForm(),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 22.0),
+            child: _isSuccess ? _buildSuccessView() : _buildForm(),
+          ),
         ),
       ),
     );
@@ -76,43 +70,120 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 20),
-        Text(
-          'Forgot Password?',
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: AppTheme.primary,
+        const SizedBox(height: 22),
+        // Back row — matches HTML auth back arrow pattern
+        GestureDetector(
+          onTap: () => Navigator.of(context).pop(),
+          child: Row(
+            children: const [
+              Icon(Icons.arrow_back_ios, size: 16, color: AppTheme.mutedText),
+              SizedBox(width: 6),
+              Text(
+                'Back to login',
+                style: TextStyle(fontSize: 11, color: AppTheme.mutedText),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 12),
-        Text(
+        const SizedBox(height: 18),
+        // Brand row — matches HTML auth brand block
+        Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppTheme.primary,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              alignment: Alignment.center,
+              child: const Text(
+                'FP',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            const SizedBox(width: 9),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                Text(
+                  'FuturePath',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.textDark,
+                  ),
+                ),
+                Text(
+                  'Employment Hub',
+                  style: TextStyle(fontSize: 10, color: AppTheme.mutedText),
+                ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 28),
+        // Title block
+        const Text(
+          'Forgot password?',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: AppTheme.textDark,
+          ),
+        ),
+        const SizedBox(height: 4),
+        const Text(
           'Enter your email address and we\'ll send you a link to reset your password.',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: AppTheme.mutedText,
-          ),
+          style: TextStyle(fontSize: 11, color: AppTheme.mutedText),
         ),
-        const SizedBox(height: 40),
+        const SizedBox(height: 24),
         Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Email label
+              const Text(
+                'Email address',
+                style: TextStyle(fontSize: 10, color: AppTheme.mutedText),
+              ),
+              const SizedBox(height: 4),
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.done,
+                style: const TextStyle(fontSize: 12, color: AppTheme.textDark),
                 decoration: InputDecoration(
-                  labelText: 'Email Address',
-                  hintText: 'Enter your email',
-                  prefixIcon: const Icon(Icons.email_outlined),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  hintText: 'you@example.com',
+                  hintStyle: const TextStyle(fontSize: 12, color: AppTheme.subtleText),
+                  prefixIcon: const Icon(Icons.email_outlined, size: 16, color: AppTheme.subtleText),
+                  filled: true,
+                  fillColor: AppTheme.surface2,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 11, horizontal: 13),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: AppTheme.border2, width: 0.5),
+                  ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey[300]!),
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: AppTheme.border2, width: 0.5),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.blue, width: 2),
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: AppTheme.primary, width: 1),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: AppTheme.error, width: 0.5),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: AppTheme.error, width: 1),
                   ),
                 ),
                 validator: (value) {
@@ -128,23 +199,49 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 onFieldSubmitted: (_) => _handleForgotPassword(),
               ),
               if (_errorMessage != null) ...[
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 ErrorMessage(message: _errorMessage!),
               ],
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
+              // Primary button — matches HTML .pbtn
               SizedBox(
-                height: 50,
+                width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _handleForgotPassword,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
+                    backgroundColor: AppTheme.primary,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    textStyle: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   child: _isLoading
-                      ? LoadingIndicator(color: Colors.white)
-                      : const Text('Send Reset Link', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      ? const LoadingIndicator(color: Colors.white)
+                      : const Text('Send Reset Link'),
+                ),
+              ),
+              const SizedBox(height: 8),
+              // Secondary back button — matches HTML .sbtn
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.mutedText,
+                    side: const BorderSide(color: AppTheme.border2, width: 0.5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 11),
+                    textStyle: const TextStyle(fontSize: 12),
+                  ),
+                  child: const Text('Back to Login'),
                 ),
               ),
             ],
@@ -156,40 +253,142 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   Widget _buildSuccessView() {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Icon(Icons.check_circle_outline, size: 80, color: Colors.green[400]),
-        const SizedBox(height: 24),
-        Text(
+        const SizedBox(height: 40),
+        // Success icon circle — matches HTML .pi-circle style (amber-low bg)
+        Container(
+          width: 72,
+          height: 72,
+          decoration: BoxDecoration(
+            color: AppTheme.successLow,
+            shape: BoxShape.circle,
+          ),
+          alignment: Alignment.center,
+          child: const Icon(
+            Icons.check_rounded,
+            size: 32,
+            color: AppTheme.success,
+          ),
+        ),
+        const SizedBox(height: 16),
+        // Title
+        const Text(
           'Check Your Email',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: AppTheme.textDark,
+          ),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Text(
           'If an account exists for ${_emailController.text}, '
               'we\'ve sent a password reset link to that address.',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+          style: const TextStyle(fontSize: 12, color: AppTheme.mutedText, height: 1.6),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 32),
-        Text(
-          'Didn\'t receive the email?',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
+        const SizedBox(height: 24),
+        // Submission detail card — matches HTML pending details card
+        Container(
+          decoration: BoxDecoration(
+            color: AppTheme.surface2,
+            border: Border.all(color: AppTheme.border, width: 0.5),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'SUBMISSION DETAILS',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.mutedText,
+                  letterSpacing: 0.4,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _emailController.text,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: AppTheme.textDark,
+                ),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Reset link sent successfully',
+                style: TextStyle(fontSize: 10, color: AppTheme.mutedText),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        // Success notice — matches HTML green notice block
+        Container(
+          decoration: BoxDecoration(
+            color: AppTheme.successLow,
+            border: Border.all(color: AppTheme.success, width: 0.5),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              Icon(Icons.check, size: 14, color: AppTheme.success),
+              SizedBox(width: 7),
+              Expanded(
+                child: Text(
+                  'You can close the app and return once you\'ve checked your inbox.',
+                  style: TextStyle(fontSize: 10, color: AppTheme.success),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+        // Try again secondary button
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: () => setState(() {
+              _isSuccess = false;
+              _errorMessage = null;
+            }),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppTheme.mutedText,
+              side: const BorderSide(color: AppTheme.border2, width: 0.5),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 11),
+              textStyle: const TextStyle(fontSize: 12),
+            ),
+            child: const Text('Try Again'),
+          ),
         ),
         const SizedBox(height: 8),
-        TextButton(
-          onPressed: () => setState(() {
-            _isSuccess = false;
-            _errorMessage = null;
-          }),
-          child: const Text('Try again'),
+        // Back to login secondary button
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: () => Navigator.of(context).pop(),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppTheme.mutedText,
+              side: const BorderSide(color: AppTheme.border2, width: 0.5),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 11),
+              textStyle: const TextStyle(fontSize: 12),
+            ),
+            child: const Text('Back to Login'),
+          ),
         ),
         const SizedBox(height: 16),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Back to Login'),
-        ),
       ],
     );
   }
