@@ -27,318 +27,350 @@ class ProgrammeDetailScreen extends StatelessWidget {
         : programme.enrolledCount / programme.capacity;
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.surface,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── Hero image with back button + status badge ──
-              Stack(
+        child: Column(
+          children: [
+            // ── Top bar ──
+            Container(
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: const BoxDecoration(
+                color: AppTheme.surface,
+                border: Border(
+                  bottom: BorderSide(color: AppTheme.border, width: 0.5),
+                ),
+              ),
+              child: Row(
                 children: [
-                  AspectRatio(
-                    aspectRatio: 16 / 10,
-                    child: Container(
-                      color: AppTheme.textDark,
-                      child: const Center(
-                        child: Icon(Icons.image_outlined,
-                            size: 40, color: Colors.white54),
+                  GestureDetector(
+                    onTap: onBack ?? () => Navigator.of(context).pop(),
+                    child: const Icon(
+                      Icons.arrow_back_ios_new,
+                      size: 16,
+                      color: AppTheme.mutedText,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Container(
+                    width: 26,
+                    height: 26,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary,
+                      borderRadius: BorderRadius.circular(7),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'FP',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ),
-                  Positioned(
-                    top: 12,
-                    left: 12,
-                    child: _CircleIconButton(
-                      icon: Icons.arrow_back,
-                      onTap: onBack ?? () => Navigator.of(context).pop(),
-                    ),
-                  ),
-                  Positioned(
-                    top: 12,
-                    right: 12,
-                    child: _StatusBadge(status: programme.status),
-                  ),
-                  Positioned(
-                    left: 16,
-                    bottom: 16,
-                    right: 16,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.55),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            programme.category,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          programme.title,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          programme.provider,
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
+                  const SizedBox(width: 7),
+                  const Text(
+                    'Programme Details',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textDark,
                     ),
                   ),
                 ],
               ),
+            ),
 
-              // ── Info grid: start/end date, duration, capacity, level, status ──
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _InfoTile(
-                            icon: Icons.calendar_today_outlined,
-                            label: 'START DATE',
-                            value: programme.startDate,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _InfoTile(
-                            icon: Icons.event_outlined,
-                            label: 'END DATE',
-                            value: programme.endDate,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _InfoTile(
-                            icon: Icons.access_time,
-                            label: 'DURATION',
-                            value: programme.duration,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _InfoTile(
-                            icon: Icons.people_outline,
-                            label: 'CAPACITY',
-                            value:
-                            '${programme.enrolledCount}/${programme.capacity} enrolled',
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _InfoTile(
-                            icon: Icons.military_tech_outlined,
-                            label: 'LEVEL',
-                            value: programme.level,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _InfoTile(
-                            icon: Icons.check_circle_outline,
-                            label: 'STATUS',
-                            value: programme.status,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              // ── Enrolment capacity progress bar ──
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+            // ── Scrollable body ──
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.only(bottom: 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    // ── Hero image with category + status badges ──
+                    Stack(
                       children: [
-                        const Text(
-                          'Enrolment Capacity',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.textDark,
+                        AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: Container(
+                            color: AppTheme.surface3,
+                            child: const Center(
+                              child: Icon(
+                                Icons.image_outlined,
+                                size: 40,
+                                color: AppTheme.subtleText,
+                              ),
+                            ),
                           ),
                         ),
-                        Text(
-                          '$spotsLeft spots remaining',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.accent,
+                        Positioned(
+                          top: 7,
+                          left: 9,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 7, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              programme.category,
+                              style: const TextStyle(
+                                color: AppTheme.textDark,
+                                fontSize: 8,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
+                        ),
+                        Positioned(
+                          top: 7,
+                          right: 9,
+                          child: _StatusBadge(status: programme.status),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: LinearProgressIndicator(
-                        value: progress.clamp(0.0, 1.0),
-                        minHeight: 8,
-                        backgroundColor: AppTheme.secondary,
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          AppTheme.primary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
 
-              // ── About This Programme ──
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'About This Programme',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textDark,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      programme.description,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        height: 1.5,
-                        color: AppTheme.textDark,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // ── Skills You'll Gain ──
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Skills You'll Gain",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textDark,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: programme.skills
-                          .map((skill) => _SkillChip(label: skill))
-                          .toList(),
-                    ),
-                  ],
-                ),
-              ),
-
-              // ── Career Opportunities ──
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Career Opportunities',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textDark,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    RichText(
-                      text: TextSpan(
-                        style: const TextStyle(
-                          fontSize: 14,
-                          height: 1.5,
-                          color: AppTheme.textDark,
-                        ),
+                    // ── Programme title + provider ──
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(14, 13, 14, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          TextSpan(text: programme.careerOpportunities),
+                          Text(
+                            programme.title,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.textDark,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            programme.provider,
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: AppTheme.mutedText,
+                            ),
+                          ),
                         ],
                       ),
                     ),
+
+                    // ── Enrolment progress bar ──
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(14, 10, 14, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(2),
+                            child: LinearProgressIndicator(
+                              value: progress.clamp(0.0, 1.0),
+                              minHeight: 3,
+                              backgroundColor: AppTheme.surface3,
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                AppTheme.primary,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                '$spotsLeft spots left',
+                                style: const TextStyle(
+                                  fontSize: 9,
+                                  color: AppTheme.subtleText,
+                                ),
+                              ),
+                              Text(
+                                '${programme.enrolledCount}/${programme.capacity}',
+                                style: const TextStyle(
+                                  fontSize: 9,
+                                  color: AppTheme.subtleText,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // ── Info grid ──
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(14, 12, 14, 0),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _InfoTile(
+                                  icon: Icons.calendar_today_outlined,
+                                  label: 'START DATE',
+                                  value: programme.startDate,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: _InfoTile(
+                                  icon: Icons.event_outlined,
+                                  label: 'END DATE',
+                                  value: programme.endDate,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _InfoTile(
+                                  icon: Icons.access_time,
+                                  label: 'DURATION',
+                                  value: programme.duration,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: _InfoTile(
+                                  icon: Icons.people_outline,
+                                  label: 'CAPACITY',
+                                  value:
+                                  '${programme.enrolledCount}/${programme.capacity} enrolled',
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _InfoTile(
+                                  icon: Icons.military_tech_outlined,
+                                  label: 'LEVEL',
+                                  value: programme.level,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: _InfoTile(
+                                  icon: Icons.check_circle_outline,
+                                  label: 'STATUS',
+                                  value: programme.status,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // ── Section: About This Programme ──
+                    _SectionHeader(title: 'About This Programme'),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(14, 0, 14, 0),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(13),
+                        decoration: BoxDecoration(
+                          color: AppTheme.surface2,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                              color: AppTheme.border, width: 0.5),
+                        ),
+                        child: Text(
+                          programme.description,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            height: 1.6,
+                            color: AppTheme.mutedText,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // ── Section: Skills You'll Gain ──
+                    _SectionHeader(title: "Skills You'll Gain"),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(14, 0, 14, 0),
+                      child: Wrap(
+                        spacing: 5,
+                        runSpacing: 5,
+                        children: programme.skills
+                            .map((skill) => _SkillChip(label: skill))
+                            .toList(),
+                      ),
+                    ),
+
+                    // ── Section: Career Opportunities ──
+                    _SectionHeader(title: 'Career Opportunities'),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(14, 0, 14, 0),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(13),
+                        decoration: BoxDecoration(
+                          color: AppTheme.surface2,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                              color: AppTheme.border, width: 0.5),
+                        ),
+                        child: Text(
+                          programme.careerOpportunities,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            height: 1.6,
+                            color: AppTheme.mutedText,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // ── Apply Now button ──
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(14, 16, 14, 0),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (onApplyNow != null) {
+                              onApplyNow!(programme);
+                            } else {
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                backgroundColor: Colors.transparent,
+                                builder: (context) =>
+                                    ProgrammeApplyScreen(programme: programme),
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            textStyle: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          child: const Text('Apply Now'),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
-
-              // ── Apply Now button ──
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (onApplyNow != null) {
-                        onApplyNow!(programme);
-                      } else {
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          builder: (context) =>
-                              ProgrammeApplyScreen(programme: programme),
-                        );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.accent,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(28),
-                      ),
-                    ),
-                    child: const Text(
-                      'Apply Now',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -346,7 +378,43 @@ class ProgrammeDetailScreen extends StatelessWidget {
 }
 
 // ───────────────────────────────────────────────────────────────────────
-// SHARED PRESENTATION WIDGETS
+// SECTION HEADER — red dot + title matching HTML .sec-h / .sec-t pattern
+// ───────────────────────────────────────────────────────────────────────
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  const _SectionHeader({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+      child: Row(
+        children: [
+          Container(
+            width: 5,
+            height: 5,
+            decoration: const BoxDecoration(
+              color: AppTheme.primary,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 5),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.textDark,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// INFO TILE — matching HTML .scard grid cards
 // ───────────────────────────────────────────────────────────────────────
 class _InfoTile extends StatelessWidget {
   final IconData icon;
@@ -362,36 +430,36 @@ class _InfoTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
       decoration: BoxDecoration(
-        color: AppTheme.card,
+        color: AppTheme.surface2,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.secondary),
+        border: Border.all(color: AppTheme.border, width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, size: 14, color: AppTheme.accent),
-              const SizedBox(width: 6),
+              Icon(icon, size: 12, color: AppTheme.primary),
+              const SizedBox(width: 5),
               Text(
                 label,
                 style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.mutedText,
-                  letterSpacing: 0.5,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.subtleText,
+                  letterSpacing: 0.4,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(
             value,
             style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
               color: AppTheme.textDark,
             ),
           ),
@@ -401,90 +469,69 @@ class _InfoTile extends StatelessWidget {
   }
 }
 
+// ───────────────────────────────────────────────────────────────────────
+// SKILL CHIP — matching HTML .tag style
+// ───────────────────────────────────────────────────────────────────────
 class _SkillChip extends StatelessWidget {
   final String label;
-
   const _SkillChip({required this.label});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
-        color: AppTheme.secondary,
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(5),
+        border: Border.all(color: AppTheme.border, width: 0.5),
       ),
       child: Text(
         label,
         style: const TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-          color: AppTheme.primary,
+          fontSize: 9,
+          color: AppTheme.mutedText,
         ),
       ),
     );
   }
 }
 
+// ───────────────────────────────────────────────────────────────────────
+// STATUS BADGE — matching HTML .bopen / .bpend / .bsusp
+// ───────────────────────────────────────────────────────────────────────
 class _StatusBadge extends StatelessWidget {
   final String status;
-
   const _StatusBadge({required this.status});
 
   @override
   Widget build(BuildContext context) {
-    final isOpen = status.toLowerCase() == 'open';
-    final color = isOpen ? AppTheme.accent : AppTheme.mutedText;
+    final lower = status.toLowerCase();
+    final Color bgColor;
+    final Color textColor;
+
+    if (lower == 'open') {
+      bgColor = AppTheme.successLow;
+      textColor = AppTheme.success;
+    } else if (lower == 'upcoming' || lower == 'starting soon') {
+      bgColor = AppTheme.warningLow;
+      textColor = AppTheme.warning;
+    } else {
+      bgColor = AppTheme.primaryLow;
+      textColor = AppTheme.primary;
+    }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color: bgColor,
+        borderRadius: BorderRadius.circular(4),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 6,
-            height: 6,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 4),
-          Text(
-            status,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CircleIconButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _CircleIconButton({required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.black.withOpacity(0.4),
-      shape: const CircleBorder(),
-      child: InkWell(
-        onTap: onTap,
-        customBorder: const CircleBorder(),
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Icon(icon, color: Colors.white, size: 20),
+      child: Text(
+        '● $status',
+        style: TextStyle(
+          fontSize: 8,
+          fontWeight: FontWeight.w700,
+          color: textColor,
         ),
       ),
     );

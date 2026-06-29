@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:futurepath/theme.dart';
 
 class LoadingIndicator extends StatelessWidget {
   final Color color;
 
-  const LoadingIndicator({super.key, required this.color});
+  const LoadingIndicator({super.key, this.color = AppTheme.primary});
 
   @override
   Widget build(BuildContext context) {

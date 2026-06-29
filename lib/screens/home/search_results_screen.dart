@@ -3,6 +3,7 @@ import '../../core/widgets/loading_overlay.dart';
 import '../../core/widgets/error_message.dart';
 import '../../core/widgets/empty_state.dart';
 import '../../services/sheets_service.dart';
+import '../../theme/app_theme.dart';
 
 
 class SearchResultsScreen extends StatefulWidget {
@@ -91,37 +92,295 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Search")),
+      backgroundColor: AppTheme.surface,
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: TextField(
-              controller: searchController,
-              decoration: const InputDecoration(
-                hintText: "Search programmes and jobs...",
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.search),
+          // Topbar
+          Container(
+            decoration: const BoxDecoration(
+              color: AppTheme.surface,
+              border: Border(
+                bottom: BorderSide(color: AppTheme.border, width: 0.5),
               ),
-              onChanged: onSearch,
+            ),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () => Navigator.of(context).pop(),
+                  child: const Icon(Icons.arrow_back, color: AppTheme.textDark, size: 20),
+                ),
+                const SizedBox(width: 10),
+                Container(
+                  width: 26,
+                  height: 26,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary,
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Text(
+                    'FP',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 7),
+                const Text(
+                  'Search',
+                  style: TextStyle(
+                    color: AppTheme.textDark,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
             ),
           ),
+
+          // Search bar
+          Container(
+            margin: const EdgeInsets.fromLTRB(14, 10, 14, 0),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            decoration: BoxDecoration(
+              color: AppTheme.surface2,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppTheme.border, width: 0.5),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.search, color: AppTheme.subtleText, size: 16),
+                const SizedBox(width: 7),
+                Expanded(
+                  child: TextField(
+                    controller: searchController,
+                    style: const TextStyle(
+                      color: AppTheme.textDark,
+                      fontSize: 12,
+                    ),
+                    decoration: const InputDecoration(
+                      hintText: 'Search jobs, programmes, skills…',
+                      hintStyle: TextStyle(color: AppTheme.subtleText, fontSize: 12),
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                    ),
+                    onChanged: onSearch,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Results count
+          if (results.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  '${results.length} result${results.length == 1 ? '' : 's'} found',
+                  style: const TextStyle(
+                    color: AppTheme.mutedText,
+                    fontSize: 10,
+                  ),
+                ),
+              ),
+            ),
+
+          const SizedBox(height: 4),
+
+          // Results list
           Expanded(
             child: results.isEmpty
                 ? const EmptyState(message: "No results found")
                 : ListView.builder(
+              padding: const EdgeInsets.only(bottom: 16),
               itemCount: results.length,
               itemBuilder: (context, index) {
                 final item = results[index];
-                return Card(
-                  child: ListTile(
-                    title: Text(item["title"]?.toString() ?? ''),
-                    trailing: Chip(
-                      label: Text(item["type"]?.toString() ?? "Item"),
+                final String title = item['title']?.toString() ?? '';
+                final String company = item['company']?.toString() ?? '';
+                final String type = item['type']?.toString() ?? '';
+                final List tags = item['tags'] is List
+                    ? item['tags'] as List
+                    : (item['tags']?.toString().isNotEmpty == true
+                    ? [item['tags'].toString()]
+                    : []);
+                final String meta = item['location']?.toString() ?? '';
+                final String closes = item['closes']?.toString() ?? '';
+                final bool isOpen = item['status']?.toString().toLowerCase() == 'open' ||
+                    item['status'] == null;
+
+                return GestureDetector(
+                  onTap: () {
+                    // NAV-004 handles navigation
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.fromLTRB(14, 0, 14, 9),
+                    padding: const EdgeInsets.all(13),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surface2,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppTheme.border, width: 0.5),
                     ),
-                    onTap: () {
-                      // NAV-004 handles navigation
-                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Header row
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Avatar
+                            Container(
+                              width: 34,
+                              height: 34,
+                              decoration: BoxDecoration(
+                                color: AppTheme.infoLow,
+                                borderRadius: BorderRadius.circular(9),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                company.isNotEmpty
+                                    ? company.substring(0, company.length >= 2 ? 2 : 1).toUpperCase()
+                                    : title.isNotEmpty
+                                    ? title.substring(0, 1).toUpperCase()
+                                    : '?',
+                                style: const TextStyle(
+                                  color: AppTheme.info,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 9),
+                            // Title + company
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    title,
+                                    style: const TextStyle(
+                                      color: AppTheme.textDark,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  if (company.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 1),
+                                      child: Text(
+                                        company,
+                                        style: const TextStyle(
+                                          color: AppTheme.mutedText,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            // Status badge
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: type.toLowerCase() == 'programme'
+                                    ? AppTheme.infoLow
+                                    : isOpen
+                                    ? AppTheme.successLow
+                                    : AppTheme.warningLow,
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Text(
+                                type.toLowerCase() == 'programme'
+                                    ? 'Programme'
+                                    : isOpen
+                                    ? '● Open'
+                                    : '● Pending',
+                                style: TextStyle(
+                                  color: type.toLowerCase() == 'programme'
+                                      ? AppTheme.info
+                                      : isOpen
+                                      ? AppTheme.success
+                                      : AppTheme.warning,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        // Tags
+                        if (tags.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 7),
+                            child: Wrap(
+                              spacing: 4,
+                              runSpacing: 4,
+                              children: tags.map((tag) {
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.surface3,
+                                    borderRadius: BorderRadius.circular(5),
+                                    border: Border.all(color: AppTheme.border, width: 0.5),
+                                  ),
+                                  child: Text(
+                                    tag.toString(),
+                                    style: const TextStyle(
+                                      color: AppTheme.mutedText,
+                                      fontSize: 9,
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+
+                        // Meta row
+                        if (meta.isNotEmpty || closes.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 7),
+                            child: Row(
+                              children: [
+                                if (meta.isNotEmpty) ...[
+                                  const Icon(Icons.location_on_outlined,
+                                      size: 10, color: AppTheme.subtleText),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    meta,
+                                    style: const TextStyle(
+                                      color: AppTheme.subtleText,
+                                      fontSize: 9,
+                                    ),
+                                  ),
+                                ],
+                                if (meta.isNotEmpty && closes.isNotEmpty)
+                                  const SizedBox(width: 10),
+                                if (closes.isNotEmpty) ...[
+                                  const Icon(Icons.access_time_outlined,
+                                      size: 10, color: AppTheme.subtleText),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    'Closes $closes',
+                                    style: const TextStyle(
+                                      color: AppTheme.subtleText,
+                                      fontSize: 9,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 );
               },

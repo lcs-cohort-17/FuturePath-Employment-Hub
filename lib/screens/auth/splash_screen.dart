@@ -124,7 +124,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.primary, // dark navy base
+      backgroundColor: AppTheme.surface,
       body: SafeArea(
         child: FadeTransition(
           opacity: _fadeAnimation,
@@ -140,12 +140,12 @@ class _SplashScreenState extends State<SplashScreen>
                       scale: _scaleAnimation,
                       child: _AppIconWidget(),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
                     _WordmarkWidget(
                       appName: widget.appName,
                       appSubtitle: widget.appSubtitle,
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 28),
                     _TaglineWidget(
                       tagline: widget.tagline,
                       highlight: widget.taglineHighlight,
@@ -170,7 +170,7 @@ class _SplashScreenState extends State<SplashScreen>
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     _DotsIndicator(activeDot: _activeDot),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
                     _PoweredByWidget(text: widget.poweredByText),
                     const SizedBox(height: 24),
                   ],
@@ -188,24 +188,26 @@ class _SplashScreenState extends State<SplashScreen>
 // Sub-widgets (private, file-scoped)
 // ============================================================
 
-/// Rounded square app icon with upward-trending line symbol.
+/// Rounded square app icon matching the .bdot style from HTML —
+/// 26×26 with borderRadius 7 scaled up to a splash-appropriate size,
+/// using the brand gradient from primaryDim → primary.
 class _AppIconWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 100,
-      height: 100,
+      width: 96,
+      height: 96,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFFCC2200), Color(0xFF8B0000)],
+          colors: [AppTheme.primary, AppTheme.primaryDim],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
-            blurRadius: 20,
+            color: AppTheme.primary.withOpacity(0.25),
+            blurRadius: 24,
             offset: const Offset(0, 8),
           ),
         ],
@@ -214,14 +216,16 @@ class _AppIconWidget extends StatelessWidget {
         child: Icon(
           Icons.trending_up_rounded,
           color: Colors.white,
-          size: 52,
+          size: 50,
         ),
       ),
     );
   }
 }
 
-/// "FuturePath" bold wordmark + "EMPLOYMENT HUB" subtitle.
+/// "FuturePath" bold wordmark + "EMPLOYMENT HUB" subtitle —
+/// matches .bname (font-size 14, weight 700) scaled for splash,
+/// and the muted subtitle style used throughout the HTML.
 class _WordmarkWidget extends StatelessWidget {
   final String appName;
   final String appSubtitle;
@@ -238,18 +242,18 @@ class _WordmarkWidget extends StatelessWidget {
         Text(
           appName,
           style: const TextStyle(
-            color: Colors.white,
+            color: AppTheme.textDark,
             fontSize: 34,
             fontWeight: FontWeight.w800,
             letterSpacing: 0.5,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 5),
         Text(
           appSubtitle,
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.75),
-            fontSize: 13,
+          style: const TextStyle(
+            color: AppTheme.mutedText,
+            fontSize: 11,
             fontWeight: FontWeight.w600,
             letterSpacing: 3.5,
           ),
@@ -259,7 +263,8 @@ class _WordmarkWidget extends StatelessWidget {
   }
 }
 
-/// Two-part tagline — plain white + accent-coloured highlight.
+/// Two-part tagline — plain textDark + primary-coloured highlight,
+/// matching the font weight and size used in HTML body copy.
 class _TaglineWidget extends StatelessWidget {
   final String tagline;
   final String highlight;
@@ -278,16 +283,16 @@ class _TaglineWidget extends StatelessWidget {
           TextSpan(
             text: tagline,
             style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
+              color: AppTheme.mutedText,
+              fontSize: 14,
               fontWeight: FontWeight.w400,
             ),
           ),
           TextSpan(
             text: highlight,
             style: const TextStyle(
-              color: AppTheme.accent, // teal highlight
-              fontSize: 16,
+              color: AppTheme.primary,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -298,6 +303,7 @@ class _TaglineWidget extends StatelessWidget {
 }
 
 /// Decorative bar-chart + trend-line illustration (drawn with Canvas).
+/// Colours use AppTheme tokens matching the HTML CSS variables.
 class _BarChartIllustration extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -311,18 +317,13 @@ class _BarChartIllustration extends StatelessWidget {
 class _BarChartPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final barColor = const Color(0xFF6B0000).withOpacity(0.85);
-    final lineColor = const Color(0xFFCC2200);
-    final dotColor = const Color(0xFFCC2200);
-    final arrowColor = const Color(0xFF999999);
-
     // Bar heights as fractions of total height (left to right)
     final barFractions = [0.30, 0.42, 0.55, 0.65, 0.50, 0.72, 0.80, 0.68, 0.75];
     final barCount = barFractions.length;
     final barWidth = (size.width - (barCount - 1) * 8) / barCount;
 
     final barPaint = Paint()
-      ..color = barColor
+      ..color = AppTheme.primaryDim
       ..style = PaintingStyle.fill;
 
     // Draw bars
@@ -337,10 +338,10 @@ class _BarChartPainter extends CustomPainter {
       canvas.drawRRect(rect, barPaint);
     }
 
-    // Baseline
+    // Baseline — matches --bdr2 (14% white)
     final baselinePaint = Paint()
-      ..color = Colors.white.withOpacity(0.15)
-      ..strokeWidth = 1;
+      ..color = AppTheme.border2
+      ..strokeWidth = 0.5;
     canvas.drawLine(
       Offset(0, size.height),
       Offset(size.width, size.height),
@@ -350,12 +351,12 @@ class _BarChartPainter extends CustomPainter {
     // Trend line dots (roughly follow bar tops)
     final dotFractions = [0, 2, 4, 6, 7]; // indices
     final linePaint = Paint()
-      ..color = lineColor
-      ..strokeWidth = 2.2
+      ..color = AppTheme.primary
+      ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
 
     final dotPaint = Paint()
-      ..color = dotColor
+      ..color = AppTheme.primary
       ..style = PaintingStyle.fill;
 
     final trendPoints = dotFractions.map((i) {
@@ -371,30 +372,34 @@ class _BarChartPainter extends CustomPainter {
 
     // Draw dots
     for (final pt in trendPoints) {
-      canvas.drawCircle(pt, 5, dotPaint);
-      canvas.drawCircle(pt, 5, Paint()
-        ..color = Colors.white.withOpacity(0.2)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5);
+      canvas.drawCircle(pt, 4.5, dotPaint);
+      canvas.drawCircle(
+        pt,
+        4.5,
+        Paint()
+          ..color = AppTheme.border2
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5,
+      );
     }
 
-    // Arrow at the top-right of trend
-    final arrowTip = trendPoints.last + const Offset(28, -28);
+    // Arrow at the top-right of trend — uses mutedText colour
+    final arrowTip = trendPoints.last + const Offset(26, -26);
     final arrowBase = trendPoints.last + const Offset(4, -4);
     final arrowPaint = Paint()
-      ..color = arrowColor
-      ..strokeWidth = 2.0
+      ..color = AppTheme.mutedText
+      ..strokeWidth = 1.8
       ..style = PaintingStyle.stroke;
     canvas.drawLine(arrowBase, arrowTip, arrowPaint);
 
     // Arrowhead
     final headPaint = Paint()
-      ..color = arrowColor
+      ..color = AppTheme.mutedText
       ..style = PaintingStyle.fill;
     final path = Path()
       ..moveTo(arrowTip.dx, arrowTip.dy)
-      ..lineTo(arrowTip.dx - 10, arrowTip.dy + 2)
-      ..lineTo(arrowTip.dx - 2, arrowTip.dy + 10)
+      ..lineTo(arrowTip.dx - 9, arrowTip.dy + 2)
+      ..lineTo(arrowTip.dx - 2, arrowTip.dy + 9)
       ..close();
     canvas.drawPath(path, headPaint);
   }
@@ -404,6 +409,8 @@ class _BarChartPainter extends CustomPainter {
 }
 
 /// Animated three-dot loading indicator.
+/// Active dot uses AppTheme.primary; inactive uses AppTheme.primaryLow —
+/// matching the brand-low token (12% opacity brand) from the HTML.
 class _DotsIndicator extends StatelessWidget {
   final int activeDot;
 
@@ -418,14 +425,12 @@ class _DotsIndicator extends StatelessWidget {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeInOut,
-          width: isActive ? 12 : 8,
-          height: isActive ? 12 : 8,
+          width: isActive ? 10 : 7,
+          height: isActive ? 10 : 7,
           margin: const EdgeInsets.symmetric(horizontal: 5),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isActive
-                ? const Color(0xFFCC2200)
-                : const Color(0xFFCC2200).withOpacity(0.35),
+            color: isActive ? AppTheme.primary : AppTheme.primaryLow,
           ),
         );
       }),
@@ -433,7 +438,7 @@ class _DotsIndicator extends StatelessWidget {
   }
 }
 
-/// "Powered by …" footer text.
+/// "Powered by …" footer text — uses subtleText token matching --t3.
 class _PoweredByWidget extends StatelessWidget {
   final String text;
 
@@ -441,13 +446,12 @@ class _PoweredByWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Split at first space-bounded "by " to style differently if desired.
     return Text(
       text,
       textAlign: TextAlign.center,
-      style: TextStyle(
-        color: Colors.white.withOpacity(0.45),
-        fontSize: 12,
+      style: const TextStyle(
+        color: AppTheme.subtleText,
+        fontSize: 11,
         fontWeight: FontWeight.w400,
         letterSpacing: 0.2,
       ),
