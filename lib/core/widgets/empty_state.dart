@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import '../theme.dart';
+// import '/lib/core/theme/app_theme.dart';
+// import './lib/core/theme/app_theme.dart'
+//import './theme/app_theme.dart'
+import '../theme/app_theme.dart';
+
 
 class EmptyState extends StatelessWidget {
   final String message;

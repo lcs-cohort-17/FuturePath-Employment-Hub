@@ -9,6 +9,9 @@ class AppRouter {
   static const String signup = '/signup';
   static const String forgotPassword = '/forgot-password';
   static const String home = '/home';
+//Abdul is testing this out- eventually
+  static const String staffRegister = '/staff-register';
+
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -32,6 +35,12 @@ class AppRouter {
           builder: (_) => const AppShell(),
           settings: settings,
         );
+      // case staffRegister:
+      //   return MaterialPageRoute(
+      //     builder: (_) => const SignUpScreen(), // Or whatever your staff screen widget is named
+      //     settings: settings,
+      //   );
+
       default:
         return MaterialPageRoute(
           builder: (_) => const LoginScreen(),

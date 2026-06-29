@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:futurepath/theme.dart';
+//import 'package:futurepath/theme.dart';
+import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 
 class ErrorMessage extends StatelessWidget {
   final String message;

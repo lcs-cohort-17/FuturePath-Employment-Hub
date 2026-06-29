@@ -5,6 +5,9 @@ import '../../providers/user_profile_provider.dart';
 import '../../services/auth_services.dart';
 import '../../models/user_profile.dart';
 import 'cv_screen.dart';
+import '../../core/errors/delete_account_error.dart';
+import '../../core/widgets/delete_account_dialog.dart';
+import '../../core/widgets/delete_account_error_sheet.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -16,6 +19,7 @@ class ProfileScreen extends ConsumerWidget {
 
     return ProfileScreenContent(
       userProfile: userProfile,
+      ref: ref,
       onSignOut: () async {
         try {
           await authService.logout();
@@ -47,12 +51,14 @@ class ProfileScreenContent extends StatefulWidget {
   final UserProfile userProfile;
   final VoidCallback onSignOut;
   final VoidCallback onNavigateToCV;
+  final WidgetRef ref;
 
   const ProfileScreenContent({
     super.key,
     required this.userProfile,
     required this.onSignOut,
     required this.onNavigateToCV,
+    required this.ref,
   });
 
   @override
@@ -609,34 +615,127 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
   }
 
   Widget _buildSignOutButton() {
-    return GestureDetector(
-      onTap: widget.onSignOut,
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(14, 6, 14, 0),
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppTheme.primary.withOpacity(0.3), width: 0.5),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(Icons.logout, size: 14, color: AppTheme.primary),
-            SizedBox(width: 7),
-            Text(
-              'Sign Out',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.primary,
-              ),
+    return Column(
+      children: [
+        // ── Sign Out ────────────────────────────────────────────────────────
+        GestureDetector(
+          onTap: widget.onSignOut,
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(14, 6, 14, 10),
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                  color: AppTheme.primary.withOpacity(0.3), width: 0.5),
             ),
-          ],
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Icon(Icons.logout, size: 14, color: AppTheme.primary),
+                SizedBox(width: 7),
+                Text(
+                  'Sign Out',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.primary,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-      ),
+
+        // ── Delete Account ──────────────────────────────────────────────────
+        GestureDetector(
+          onTap: () => _handleDeleteAccount(widget.ref),
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            decoration: BoxDecoration(
+              color: AppTheme.errorLow,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                  color: AppTheme.error.withOpacity(0.2), width: 0.5),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Icon(Icons.delete_forever_rounded,
+                    size: 16, color: AppTheme.error),
+                SizedBox(width: 7),
+                Text(
+                  'Delete Account',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.error,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // ── POPIA footnote ──────────────────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.fromLTRB(14, 0, 14, 4),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              Icon(Icons.shield_outlined, size: 12, color: AppTheme.subtleText),
+              SizedBox(width: 5),
+              Expanded(
+                child: Text(
+                  'Deleting your account permanently removes all personal '
+                      'data in accordance with POPIA.',
+                  style: TextStyle(
+                    fontSize: 9,
+                    color: AppTheme.subtleText,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
+  }
+
+  Future<void> _handleDeleteAccount(WidgetRef ref) async {
+    final confirmed = await showDeleteAccountDialog(context);
+    if (!confirmed || !mounted) return;
+
+    // INT-013 — replace 'mock-user-id' with real userId from auth state,
+    // e.g. Supabase.instance.client.auth.currentUser?.id
+    const String userId = 'mock-user-id';
+
+    final notifier = ref.read(userProfileProvider.notifier);
+    final success = await notifier.deleteAccount(userId);
+
+    if (!mounted) return;
+
+    if (success) {
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        '/login',
+            (_) => false,
+        arguments: 'Account deleted successfully.',
+      );
+    } else {
+      final error = notifier.deleteAccountError;
+      if (error != null) {
+        await showDeleteAccountErrorSheet(
+          context: context,
+          error: error,
+          onRetry: () => _handleDeleteAccount(ref),
+        );
+        if (mounted) notifier.clearDeleteAccountError();
+      }
+    }
   }
 
   String _getInitials(String name) {
