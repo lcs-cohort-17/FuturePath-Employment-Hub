@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
-import 'core/theme/app_theme.dart';
-import 'router/app_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
+import 'package:futurepath_employment_hub/router/app_router.dart';
 
 void main() {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(
+    const ProviderScope(
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

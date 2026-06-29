@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import '../home/home_screen.dart';
-import '../programmes/programme_list_screen.dart';
-import '../jobs/opportunity_list_screen.dart';
-import '../profile/profile_screen.dart';
+import 'package:futurepath_employment_hub/screens/home/home_screen.dart';
+import 'package:futurepath_employment_hub/screens/programmes/programme_list_screen.dart';
+import 'package:futurepath_employment_hub/screens/jobs/opportunity_list_screen.dart';
+import 'package:futurepath_employment_hub/screens/profile/profile_screen.dart';
+
+import 'package:futurepath_employment_hub/router/app_router.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -14,24 +16,38 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   int currentIndex = 0;
 
-  final List<Widget> screens = const [
-    HomeScreen(),
-    ProgrammeListScreen(),
-    OpportunityListScreen(),
-    ProfileScreen(),
-  ];
+  void _onTabTapped(int index) {
+    setState(() {
+      currentIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> screens = [
+      HomeScreen(
+        onSeeAllJobs: () => _onTabTapped(2),
+        onSeeAllProgrammes: () => _onTabTapped(1),
+        onSearch: (query) => Navigator.pushNamed(
+          context,
+          AppRouter.searchResults,
+          arguments: query,
+        ),
+      ),
+      const ProgrammeListScreen(),
+      const OpportunityListScreen(),
+      const ProfileScreen(),
+    ];
+
     return Scaffold(
-      body: screens[currentIndex],
+      body: IndexedStack(
+        index: currentIndex,
+        children: screens,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
-        onTap: (index) {
-          setState(() {
-            currentIndex = index;
-          });
-        },
+        onTap: _onTabTapped,
+        type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),

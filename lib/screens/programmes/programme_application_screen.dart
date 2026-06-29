@@ -3,9 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════════
 import 'package:flutter/material.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
-import 'package:futurepath_employment_hub/screens/programmes/programme_list_screen.dart'
-    show Programme, mockProgrammes;
-
+import 'package:futurepath_employment_hub/models/programme.dart';
 // ───────────────────────────────────────────────────────────────────────
 // MODELS
 // ───────────────────────────────────────────────────────────────────────

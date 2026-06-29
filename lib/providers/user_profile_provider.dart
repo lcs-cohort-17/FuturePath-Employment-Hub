@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/user_profile.dart';
-import '../models/programme.dart';
+import 'package:futurepath_employment_hub/models/user_profile.dart';
+import 'package:futurepath_employment_hub/models/programme.dart';
 
 // Mock data for development
 final mockUserProfile = UserProfile(
@@ -17,14 +17,14 @@ final mockUserProfile = UserProfile(
   completedProgrammes: [
     Programme(
       id: '1',
-      name: 'Computer Literacy Certificate',
+      title: 'Computer Literacy Certificate',
       status: 'Certificate issued',
       isCompleted: true,
       progress: 1.0,
     ),
     Programme(
       id: '2',
-      name: 'Customer Service Training',
+      title: 'Customer Service Training',
       status: 'Certificate issued',
       isCompleted: true,
       progress: 1.0,
@@ -33,7 +33,7 @@ final mockUserProfile = UserProfile(
   enrolledProgrammes: [
     Programme(
       id: '3',
-      name: 'Introduction to Logistics',
+      title: 'Introduction to Logistics',
       status: 'In progress',
       isCompleted: false,
       progress: 0.6,
@@ -41,8 +41,11 @@ final mockUserProfile = UserProfile(
   ],
 );
 
-class UserProfileNotifier extends StateNotifier<UserProfile> {
-  UserProfileNotifier() : super(mockUserProfile);
+class UserProfileNotifier extends Notifier<UserProfile> {
+  @override
+  UserProfile build() {
+    return mockUserProfile;
+  }
 
   void setUserProfile(UserProfile profile) {
     state = profile;
@@ -109,8 +112,6 @@ class UserProfileNotifier extends StateNotifier<UserProfile> {
   }
 }
 
-// 👇 THIS IS THE MISSING LINE 👇
-final userProfileProvider =
-StateNotifierProvider<UserProfileNotifier, UserProfile>((ref) {
+final userProfileProvider = NotifierProvider<UserProfileNotifier, UserProfile>(() {
   return UserProfileNotifier();
 });

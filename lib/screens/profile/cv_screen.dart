@@ -1,10 +1,10 @@
 //cv_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/theme/app_theme.dart';
-import '../../core/widgets/skill_chip.dart';
-import '../../providers/user_profile_provider.dart';
-import '../../models/programme.dart';
+import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
+import 'package:futurepath_employment_hub/core/widgets/skill_chip.dart';
+import 'package:futurepath_employment_hub/providers/user_profile_provider.dart';
+import 'package:futurepath_employment_hub/models/programme.dart';
 
 class CVScreen extends ConsumerWidget {
   const CVScreen({super.key});

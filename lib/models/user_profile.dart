@@ -1,5 +1,5 @@
 //user.profile
-import 'programme.dart';
+import 'package:futurepath_employment_hub/models/programme.dart';
 
 class UserProfile {
   final String id;

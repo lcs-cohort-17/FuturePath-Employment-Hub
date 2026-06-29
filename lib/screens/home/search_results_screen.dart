@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../core/widgets/loading_overlay.dart';
-import '../../core/widgets/error_message.dart';
-import '../../core/widgets/empty_state.dart';
-import '../../services/search_filter_service.dart';
-import '../../services/sheets_service.dart';
+import 'package:futurepath_employment_hub/core/widgets/loading_overlay.dart';
+import 'package:futurepath_employment_hub/core/widgets/error_message.dart';
+import 'package:futurepath_employment_hub/core/widgets/empty_state.dart';
+import 'package:futurepath_employment_hub/services/search_filter_service.dart';
+import 'package:futurepath_employment_hub/services/sheets_service.dart';
 
 class SearchResultsScreen extends StatefulWidget {
   const SearchResultsScreen({super.key});
@@ -31,6 +31,13 @@ class _SearchResultsScreenState
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final initialQuery = ModalRoute.of(context)?.settings.arguments as String?;
+      if (initialQuery != null) {
+        searchController.text = initialQuery;
+        onSearch(initialQuery);
+      }
+    });
     loadData();
   }
 

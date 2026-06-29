@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/core/widgets/skill_chip.dart';
-import 'opportunity_detail_screen.dart';
+import 'package:futurepath_employment_hub/screens/jobs/opportunity_detail_screen.dart';
+import 'package:futurepath_employment_hub/providers/notifications_provider.dart';
+import 'package:futurepath_employment_hub/router/app_router.dart';
 
 class Opportunity {
   final String id;
@@ -118,7 +121,7 @@ const List<String> _skillFilters = ['All', 'Flutter', 'Python', 'SQL', 'Salesfor
 const List<String> _jobTypeFilters = ['All Types', 'Full-time', 'Part-time', 'Internship', 'Learnership'];
 const List<String> _locationFilters = ['All Locations', 'Cape Town', 'Johannesburg', 'Durban', 'Remote'];
 
-class OpportunityListScreen extends StatefulWidget {
+class OpportunityListScreen extends ConsumerStatefulWidget {
   final List<Opportunity> opportunities;
   final Future<void> Function()? onRefresh;
 
@@ -129,10 +132,10 @@ class OpportunityListScreen extends StatefulWidget {
   });
 
   @override
-  State<OpportunityListScreen> createState() => _OpportunityListScreenState();
+  ConsumerState<OpportunityListScreen> createState() => _OpportunityListScreenState();
 }
 
-class _OpportunityListScreenState extends State<OpportunityListScreen> {
+class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   String _selectedSkill = 'All';
@@ -212,6 +215,8 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
   @override
   Widget build(BuildContext context) {
     final filtered = _filtered;
+    final notifications = ref.watch(notificationsProvider);
+    final unreadCount = notifications.where((n) => !n.isRead).length;
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -221,7 +226,7 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
           onRefresh: widget.onRefresh ?? () async {},
           child: CustomScrollView(
             slivers: [
-              SliverToBoxAdapter(child: _buildHeader()),
+              SliverToBoxAdapter(child: _buildHeader(unreadCount)),
               SliverToBoxAdapter(child: _buildSearchBar()),
               SliverToBoxAdapter(child: _buildSkillFilterRow()),
               SliverToBoxAdapter(child: _buildJobTypeFilterRow()),
@@ -275,7 +280,7 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(int unreadCount) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
       child: Row(
@@ -292,27 +297,28 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
           Stack(
             children: [
               IconButton(
-                onPressed: () {},
+                onPressed: () => Navigator.pushNamed(context, AppRouter.notifications),
                 icon: const Icon(Icons.notifications_outlined, color: AppTheme.textDark),
               ),
-              Positioned(
-                right: 8,
-                top: 8,
-                child: Container(
-                  width: 16,
-                  height: 16,
-                  decoration: const BoxDecoration(
-                    color: AppTheme.accent,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Center(
-                    child: Text(
-                      '4',
-                      style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w700),
+              if (unreadCount > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    width: 16,
+                    height: 16,
+                    decoration: const BoxDecoration(
+                      color: AppTheme.accent,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        '$unreadCount',
+                        style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w700),
+                      ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         ],

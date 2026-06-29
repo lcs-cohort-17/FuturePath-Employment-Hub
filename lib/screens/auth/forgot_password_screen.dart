@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../core/widgets/forgot_password_form.dart';
-import '../../core/theme/app_theme.dart';
+import 'package:futurepath_employment_hub/core/widgets/forgot_password_form.dart';
+import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 
 class ForgotPasswordScreen extends StatelessWidget {
   const ForgotPasswordScreen({super.key});

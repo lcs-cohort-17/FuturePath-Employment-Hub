@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_theme.dart';
-import '../../services/auth_services.dart';
-import '../shell/main_shell.dart';
-import 'forgot_password_screen.dart';
-import '../../services/registration_service.dart';
-import '../../router/app_router.dart';
+import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
+import 'package:futurepath_employment_hub/services/auth_services.dart';
+import 'package:futurepath_employment_hub/screens/shell/main_shell.dart';
+import 'package:futurepath_employment_hub/screens/auth/forgot_password_screen.dart';
+import 'package:futurepath_employment_hub/services/registration_service.dart';
+import 'package:futurepath_employment_hub/router/app_router.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

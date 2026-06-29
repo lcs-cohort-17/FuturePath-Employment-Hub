@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
+import 'package:futurepath_employment_hub/providers/notifications_provider.dart';
+import 'package:futurepath_employment_hub/router/app_router.dart';
 
 typedef DashboardFetcher = Future<HomeDashboardData> Function();
 
@@ -27,7 +30,6 @@ class JobSummary {
 
 enum ProgrammeStatus { open, startingSoon, closed }
 
-/// Lightweight stand-in for the real programme model until INT-003 ships one.
 class ProgrammeSummary {
   final String id;
   final String title;
@@ -52,8 +54,6 @@ class ProgrammeSummary {
   });
 }
 
-/// Bundles everything the Home screen needs from the data layer in one
-/// fetch, so a single FutureBuilder can drive the whole dashboard body.
 class HomeDashboardData {
   final int programmesCount;
   final int openJobsCount;
@@ -70,35 +70,31 @@ class HomeDashboardData {
   });
 }
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({
     super.key,
     this.userName = 'there',
     this.userInitials = 'U',
-    this.notificationCount = 0,
     this.fetchDashboardData = _mockFetchDashboardData,
     this.onSearch,
     this.onSeeAllJobs,
     this.onSeeAllProgrammes,
     this.onJobTap,
     this.onProgrammeTap,
-    this.onNotificationsTap,
   });
 
   final String userName;
   final String userInitials;
-  final int notificationCount;
   final DashboardFetcher fetchDashboardData;
   final ValueChanged<String>? onSearch;
   final VoidCallback? onSeeAllJobs;
   final VoidCallback? onSeeAllProgrammes;
   final ValueChanged<JobSummary>? onJobTap;
   final ValueChanged<ProgrammeSummary>? onProgrammeTap;
-  final VoidCallback? onNotificationsTap;
 
   static Future<HomeDashboardData> _mockFetchDashboardData() async {
     await Future.delayed(const Duration(milliseconds: 600));
-    return const HomeDashboardData(
+    return HomeDashboardData(
       programmesCount: 6,
       openJobsCount: 12,
       employersCount: 4,
@@ -156,26 +152,22 @@ class HomeScreen extends StatefulWidget {
   }
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   late final TextEditingController _searchController;
   late Future<HomeDashboardData> _dashboardFuture;
 
   @override
   void initState() {
     super.initState();
-    // initState: create the search controller once, and capture the
-    // dashboard Future a single time. Calling widget.fetchDashboardData()
-    // directly inside build() would re-trigger the fetch on every rebuild.
     _searchController = TextEditingController();
     _dashboardFuture = widget.fetchDashboardData();
   }
 
   @override
   void dispose() {
-    // dispose: release the text controller to avoid leaking resources.
     _searchController.dispose();
     super.dispose();
   }
@@ -223,6 +215,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final notifications = ref.watch(notificationsProvider);
+    final unreadCount = notifications.where((n) => !n.isRead).length;
+
     return Scaffold(
       backgroundColor: AppTheme.background,
       body: SafeArea(
@@ -231,7 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildTopBar(),
+              _buildTopBar(unreadCount),
               const SizedBox(height: 20),
               _buildGreeting(),
               const SizedBox(height: 16),
@@ -279,7 +274,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildTopBar() {
+  Widget _buildTopBar(int unreadCount) {
     return Row(
       children: [
         const CircleAvatar(
@@ -294,12 +289,12 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const Spacer(),
         Badge(
-          label: Text('${widget.notificationCount}'),
+          label: Text('$unreadCount'),
           backgroundColor: AppTheme.accent,
-          isLabelVisible: widget.notificationCount > 0,
+          isLabelVisible: unreadCount > 0,
           child: IconButton(
             icon: const Icon(Icons.notifications_outlined, color: AppTheme.primary),
-            onPressed: widget.onNotificationsTap,
+            onPressed: () => Navigator.pushNamed(context, AppRouter.notifications),
           ),
         ),
       ],
@@ -327,8 +322,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
-        // Decorative time-of-day icon to mirror the design reference.
-        // Not wired to an action — safe to repurpose (e.g. settings) later.
         const Icon(Icons.wb_sunny_outlined, color: AppTheme.mutedText),
       ],
     );
@@ -434,8 +427,6 @@ class _HomeScreenState extends State<HomeScreen> {
           onSeeAll: _handleSeeAllJobs,
         ),
         const SizedBox(height: 12),
-        // Acceptance criteria allows "first 3 or random" — first 3 keeps
-        // results deterministic and testable.
         ...data.recommendedJobs.take(3).map(
               (job) => Padding(padding: const EdgeInsets.only(bottom: 12), child: _jobCard(job)),
         ),
@@ -451,7 +442,7 @@ class _HomeScreenState extends State<HomeScreen> {
         decoration: BoxDecoration(
           color: AppTheme.card,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: AppTheme.primary.withOpacity(0.06), blurRadius: 8, offset: const Offset(0, 2))],
+          boxShadow: [BoxShadow(color: AppTheme.primary.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, 2))],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -555,7 +546,7 @@ class _HomeScreenState extends State<HomeScreen> {
         decoration: BoxDecoration(
           color: AppTheme.card,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: AppTheme.primary.withOpacity(0.06), blurRadius: 8, offset: const Offset(0, 2))],
+          boxShadow: [BoxShadow(color: AppTheme.primary.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, 2))],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -565,8 +556,6 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // Falls back to a themed placeholder if no URL is given or
-                  // the request fails — important on an offline emulator.
                   programme.imageUrl != null
                       ? Image.network(programme.imageUrl!,
                       fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(color: AppTheme.secondary))
@@ -574,14 +563,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: AppTheme.secondary,
                     child: const Center(child: Icon(Icons.image_outlined, color: AppTheme.primary, size: 32)),
                   ),
-                  // Scrim for text legibility, built from the theme's own
-                  // navy rather than introducing a new colour.
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [AppTheme.primary.withOpacity(0.0), AppTheme.primary.withOpacity(0.75)],
+                        colors: [AppTheme.primary.withValues(alpha: 0.0), AppTheme.primary.withValues(alpha: 0.75)],
                       ),
                     ),
                   ),
@@ -595,7 +582,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Text(programme.title,
                             style: const TextStyle(color: AppTheme.card, fontWeight: FontWeight.bold, fontSize: 15)),
-                        Text(programme.provider, style: TextStyle(color: AppTheme.card.withOpacity(0.85), fontSize: 12)),
+                        Text(programme.provider, style: TextStyle(color: AppTheme.card.withValues(alpha: 0.85), fontSize: 12)),
                       ],
                     ),
                   ),

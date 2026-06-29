@@ -1,6 +1,6 @@
 //employer_detail_screen.dart
 import 'package:flutter/material.dart';
-import '../../models/employer.dart';
+import 'package:futurepath_employment_hub/models/employer.dart';
 
 class EmployerDetailScreen extends StatelessWidget {
   final EmployerModel? employerData;

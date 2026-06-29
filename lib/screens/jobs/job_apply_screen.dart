@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'job_apply_success_screen.dart';
+import 'package:futurepath_employment_hub/screens/jobs/job_apply_success_screen.dart';
 
 class ApplyScreen extends StatelessWidget {
   final String jobId;

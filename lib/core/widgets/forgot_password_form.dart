@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../services/auth_services.dart';
-import 'loading_indicator.dart';
-import 'error_message.dart';
+import 'package:futurepath_employment_hub/services/auth_services.dart';
+import 'package:futurepath_employment_hub/core/widgets/loading_indicator.dart';
+import 'package:futurepath_employment_hub/core/widgets/error_message.dart';
 
 class ForgotPasswordForm extends StatefulWidget {
   const ForgotPasswordForm({super.key});
@@ -132,53 +132,55 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
   }
 
   Widget _buildSuccessView() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(
-          Icons.check_circle_outline,
-          size: 80,
-          color: Colors.green[400],
-        ),
-        const SizedBox(height: 24),
-        Text(
-          'Email Sent!',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.check_circle_outline,
+            size: 80,
+            color: Colors.green[400],
           ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 12),
-        Text(
-          'We\'ve sent a password reset link to\n${_emailController.text}',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Colors.grey[600],
+          const SizedBox(height: 24),
+          Text(
+            'Email Sent!',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
           ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 32),
-        Text(
-          'Didn\'t receive the email?',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.grey[500],
+          const SizedBox(height: 12),
+          Text(
+            'We\'ve sent a password reset link to\n${_emailController.text}',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Colors.grey[600],
+            ),
+            textAlign: TextAlign.center,
           ),
-        ),
-        const SizedBox(height: 8),
-        TextButton(
-          onPressed: () {
-            setState(() {
-              _isSuccess = false;
-              _errorMessage = null;
-            });
-          },
-          child: const Text('Try again'),
-        ),
-        const SizedBox(height: 16),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Back to Login'),
-        ),
-      ],
+          const SizedBox(height: 32),
+          Text(
+            'Didn\'t receive the email?',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Colors.grey[500],
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: () {
+              setState(() {
+                _isSuccess = false;
+                _errorMessage = null;
+              });
+            },
+            child: const Text('Try again'),
+          ),
+          const SizedBox(height: 16),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Back to Login'),
+          ),
+        ],
+      ),
     );
   }
 }

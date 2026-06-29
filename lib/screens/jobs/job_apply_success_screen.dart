@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../router/app_router.dart';
+import 'package:futurepath_employment_hub/router/app_router.dart';
 
 class JobApplySuccessScreen extends StatelessWidget {
   const JobApplySuccessScreen({super.key});
