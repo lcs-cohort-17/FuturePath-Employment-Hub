@@ -7,6 +7,7 @@ import '../utils/error_handler.dart';
 class StaffDashboardService extends ChangeNotifier {
   final SupabaseClient _supabase;
 
+
   StaffDashboardService(this._supabase);
 
   AsyncState<Map<String, dynamic>> _stats = AsyncState.idle();

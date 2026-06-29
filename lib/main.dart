@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:futurepath_employment_hub/screens/staff/staff_dashboard_screen.dart';
+import 'package:futurepath_employment_hub/screens/staff/staff_registration_screen.dart';
 
 void main() {
   runApp(const StaffApp());
@@ -14,7 +14,7 @@ class StaffApp extends StatelessWidget {
       title: 'FuturePath Staff',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark(),
-      home: const StaffDashboardScreen(),
+      home: const StaffRegistrationScreen(),
     );
   }
 }
