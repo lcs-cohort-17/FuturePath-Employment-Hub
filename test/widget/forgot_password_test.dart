@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:futurepath_employment_hub/screens/auth/forgot_password_screen.dart';
+import 'package:futurepath_employment_hub/core/widgets/forgot_password_form.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 
 void main() {

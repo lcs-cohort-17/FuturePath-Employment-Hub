@@ -1,49 +1,28 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
 
-class SearchFilterState {
-  final List<String> selectedLocations;
+class SearchFilterProvider extends ChangeNotifier {
+  List<String> selectedLocations = [];
 
-  SearchFilterState({
-    this.selectedLocations = const [],
-  });
+  void toggleLocation(String location) {
+    if (location == "All Locations") {
+      selectedLocations.clear();
+    } else {
+      if (selectedLocations.contains(location)) {
+        selectedLocations.remove(location);
+      } else {
+        selectedLocations.add(location);
+      }
+    }
 
-  SearchFilterState copyWith({
-    List<String>? selectedLocations,
-  }) {
-    return SearchFilterState(
-      selectedLocations: selectedLocations ?? this.selectedLocations,
-    );
+    notifyListeners();
+  }
+
+  void clearFilters() {
+    selectedLocations.clear();
+    notifyListeners();
   }
 
   int get activeFilterCount {
     return selectedLocations.length;
   }
 }
-
-class SearchFilterNotifier extends StateNotifier<SearchFilterState> {
-  SearchFilterNotifier() : super(SearchFilterState());
-
-  void toggleLocation(String location) {
-    if (location == "All Locations") {
-      state = state.copyWith(selectedLocations: []);
-    } else {
-      final currentLocations = List<String>.from(state.selectedLocations);
-      if (currentLocations.contains(location)) {
-        currentLocations.remove(location);
-      } else {
-        currentLocations.add(location);
-      }
-      state = state.copyWith(selectedLocations: currentLocations);
-    }
-  }
-
-  void clearFilters() {
-    state = SearchFilterState();
-  }
-}
-
-// 👇 THIS IS THE MISSING PROVIDER 👇
-final searchFilterProvider =
-StateNotifierProvider<SearchFilterNotifier, SearchFilterState>((ref) {
-  return SearchFilterNotifier();
-});

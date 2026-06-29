@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/screens/jobs/opportunity_list_screen.dart';
 import 'package:futurepath_employment_hub/screens/jobs/opportunity_detail_screen.dart';
+import 'package:futurepath_employment_hub/core/widgets/skill_chip.dart';
 
 void main() {
   final mockOpportunity = Opportunity(
