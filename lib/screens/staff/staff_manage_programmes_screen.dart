@@ -243,7 +243,7 @@ class _StaffManageProgrammesScreenState
         initialData: initialData,
         onSave: (data) {
           if (isEdit) {
-            context.read<ProgrammeProvider>().updateProgramme(initialData!['id'], data);
+            context.read<ProgrammeProvider>().updateProgramme(initialData['id'], data);
           } else {
             context.read<ProgrammeProvider>().createProgramme(data);
           }
