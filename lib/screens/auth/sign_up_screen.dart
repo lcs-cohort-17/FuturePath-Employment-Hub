@@ -127,8 +127,6 @@ class _SignupScreenState extends State<SignupScreen> {
       }
 
       // 2. Save the additional profile data
-      // We wrap this in a separate try-catch because the Auth account might be created 
-      // but the DB insert might fail (e.g. due to RLS or schema mismatch)
       try {
         await RegistrationService.saveApplicant(
           firstName: _firstNameCtrl.text.trim(),
@@ -144,15 +142,11 @@ class _SignupScreenState extends State<SignupScreen> {
         );
       } catch (dbError) {
         debugPrint('Database Error: $dbError');
-        // If DB fails, the user is still created in Auth. 
-        // We notify the user but maybe don't treat it as a total failure if Auth worked.
         if (mounted) {
            setState(() => _errorMessage = 'Account created, but profile details failed to save. Please contact support.');
         }
         return;
       }
-
-      // [UIUX-PRIV-004] — store privacyConsent: true via ApplicantService when user registers
 
       if (!mounted) return;
 
@@ -205,7 +199,7 @@ class _SignupScreenState extends State<SignupScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Back navigation row — matches HTML back arrow + "Back to login"
+                  // Back navigation row
                   GestureDetector(
                     onTap: () => Navigator.of(context).pop(),
                     child: Row(
@@ -221,9 +215,9 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   const SizedBox(height: 18),
 
-                  // Header — "Register as Business" / subtitle
+                  // Header — "Register as Employee"
                   const Text(
-                    'Register as Business',
+                    'Register as Employee',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
@@ -232,12 +226,12 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   const SizedBox(height: 2),
                   const Text(
-                    'Employer & recruiter accounts',
+                    'Job seeker accounts',
                     style: TextStyle(fontSize: 11, color: AppTheme.mutedText),
                   ),
                   const SizedBox(height: 20),
 
-                  // First name + Last name side by side
+                  // First name + Last name
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -352,23 +346,23 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   const SizedBox(height: 10),
 
-                  // Company name
-                  _fieldLabel('Company name'),
+                  // Residential Area
+                  _fieldLabel('Residential Area'),
                   const SizedBox(height: 4),
                   TextFormField(
                     controller: _areaCtrl,
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                     style: const TextStyle(color: AppTheme.textDark, fontSize: 11),
-                    validator: (v) => _validateRequired(v, 'Company name'),
+                    validator: (v) => _validateRequired(v, 'Residential area'),
                     decoration: _fieldDecoration(
-                      hint: 'e.g. Amazon SA',
-                      prefix: const Icon(Icons.business_outlined, color: AppTheme.subtleText, size: 18),
+                      hint: 'e.g. Cape Town',
+                      prefix: const Icon(Icons.location_on_outlined, color: AppTheme.subtleText, size: 18),
                     ),
                   ),
                   const SizedBox(height: 10),
 
                   // Work email
-                  _fieldLabel('Work email'),
+                  _fieldLabel('Email address'),
                   const SizedBox(height: 4),
                   TextFormField(
                     controller: _emailCtrl,
@@ -377,7 +371,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     style: const TextStyle(color: AppTheme.textDark, fontSize: 11),
                     validator: _validateEmail,
                     decoration: _fieldDecoration(
-                      hint: 'work@company.com',
+                      hint: 'you@example.com',
                       prefix: const Icon(Icons.email_outlined, color: AppTheme.subtleText, size: 18),
                     ),
                   ),
@@ -472,7 +466,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   const SizedBox(height: 4),
                   _passwordField(
                     controller: _passwordCtrl,
-                    hint: 'Min 8 characters',
+                    hint: 'Min 6 characters',
                     obscure: _obscurePassword,
                     onToggle: () => setState(() => _obscurePassword = !_obscurePassword),
                     validator: _validatePassword,
@@ -491,37 +485,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // Amber warning notice — matches HTML amber info box
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: AppTheme.warningLow,
-                      borderRadius: BorderRadius.circular(9),
-                      border: Border.all(
-                        color: AppTheme.warning.withOpacity(0.25),
-                        width: 0.5,
-                      ),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Icon(Icons.info_outline, color: AppTheme.warning, size: 14),
-                        SizedBox(width: 7),
-                        Expanded(
-                          child: Text(
-                            'Your account requires admin approval before accessing the dashboard.',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: AppTheme.warning,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-
-                  // [UIUX-PRIV-004] — privacy consent checkbox
+                  // Privacy consent checkbox
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
@@ -566,7 +530,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         const SizedBox(height: 10),
                         GestureDetector(
                           onTap: () {
-                            // [UIUX-PRIV-004] — open Privacy Policy (PDF or web view)
+                            // TODO: Open Privacy Policy
                           },
                           child: const Text(
                             'Read our Privacy Policy',
@@ -590,7 +554,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
                   const SizedBox(height: 14),
 
-                  // Primary CTA — "Create Business Account"
+                  // Primary CTA
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -611,7 +575,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
                       )
-                          : const Text('Create Business Account'),
+                          : const Text('Create Employee Account'),
                     ),
                   ),
                   const SizedBox(height: 8),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/sign_up_screen.dart';
 import '../screens/auth/forgot_password_screen.dart';
@@ -7,7 +8,12 @@ import '../screens/admin/admin_employers_screen.dart';
 import '../screens/admin/admin_job_applications_screen.dart';
 import '../screens/admin/admin_applicants_screen.dart';
 import '../screens/admin/admin_enrolments_screen.dart';
+import '../screens/shell/admin_shell.dart';
 import '../screens/admin/admin_activity_screen.dart';
+import '../screens/admin/admin_programmes_screen.dart';
+import '../screens/admin/admin_profile_screen.dart';
+import '../screens/profile/notifications_screen.dart';
+import '../providers/notifications_provider.dart';
 import '../screens/auth/admin_login_screen.dart';
 import '../screens/auth/staff_registration_screen.dart';
 import '../screens/admin/admin_staff_mgmt_screen.dart';
@@ -29,11 +35,17 @@ class AppRouter {
   static const String staffDashboard = '/staff-dashboard';
   static const String forgotPassword = '/forgot-password';
   static const String home = '/home';
+  static const String notifications = '/notifications';
+  static const String staffRegister = '/staff-register';
+
+  static const String adminHome = '/admin/home';
   static const String adminJobApplications = '/admin/job-applications';
   static const String adminEmployers = '/admin/employers';
   static const String adminApplicants = '/admin/applicants';
   static const String adminEnrolments = '/admin/enrolments';
   static const String adminActivity = '/admin/activity';
+  static const String adminProgrammes = '/admin/programmes';
+  static const String adminProfile = '/admin/profile';
 
   // Staff routes
   static const String staffAddJob = '/staff/jobs/add';
@@ -83,6 +95,28 @@ class AppRouter {
           builder: (_) => const AppShell(),
           settings: settings,
         );
+      case notifications:
+        return MaterialPageRoute(
+          builder: (_) => Consumer(
+            builder: (context, ref, _) {
+              final notifications = ref.watch(notificationsProvider);
+              return NotificationsScreen(
+                notifications: notifications.map((n) => n.toJson()).toList(),
+              );
+            },
+          ),
+          settings: settings,
+        );
+      case adminHome:
+        return MaterialPageRoute(
+          builder: (_) => const AdminShell(),
+          settings: settings,
+        );
+      case staffRegister:
+        return MaterialPageRoute(
+          builder: (_) => const AdminShell(),
+          settings: settings,
+        );
       case adminEmployers:
         return MaterialPageRoute(
           builder: (_) => const AdminEmployersScreen(),
@@ -115,7 +149,14 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => const AdminActivityScreen(),
         );
-    // Staff routes
+      case adminProgrammes:
+        return MaterialPageRoute(
+          builder: (_) => const AdminProgrammesScreen(),
+        );
+      case adminProfile:
+        return MaterialPageRoute(
+          builder: (_) => const AdminProfileScreen(),
+        );
       case staffAddJob:
         return MaterialPageRoute(
           builder: (_) => const StaffAddJobScreen(),

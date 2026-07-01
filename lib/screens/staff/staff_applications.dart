@@ -127,7 +127,7 @@ class _StaffApplicationsState extends State<StaffApplications> {
                       // Qualification (not PII)
                       Row(
                         children: [
-                          const Icon(Icons.school_outline, color: Colors.white54, size: 16),
+                          const Icon(Icons.school, color: Colors.white54, size: 16),
                           const SizedBox(width: 8),
                           Text(
                             app.applicantQualification ?? 'No qualification',
@@ -147,7 +147,7 @@ class _StaffApplicationsState extends State<StaffApplications> {
                               onTap: () {
                                 // TODO: Open CV URL in browser or download
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
+                                  SnackBar(
                                     content: Text('CV download: ${app.cvUrl}'),
                                   ),
                                 );
