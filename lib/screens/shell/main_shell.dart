@@ -1,50 +1,58 @@
 import 'package:flutter/material.dart';
-import 'package:futurepath_employment_hub/screens/profile/profile_main_screen.dart';
+import '../home/home_screen.dart';
+import '../programmes/programme_list_screen.dart';
+import '../jobs/opportunity_list_screen.dart';
+import '../profile/profile_screen.dart';
 
-class MainShell extends StatefulWidget {
-  const MainShell({super.key});
+class AppShell extends StatefulWidget {
+  const AppShell({super.key});
 
   @override
-  State<MainShell> createState() => _MainShellState();
+  State<AppShell> createState() => _AppShellState();
 }
 
-class _MainShellState extends State<MainShell> {
-  int _selectedIndex = 3; // Default to Profile tab as per user context
+class _AppShellState extends State<AppShell> {
+  int currentIndex = 0;
 
-  // Screens for each tab
-  final List<Widget> _screens = [
-    const Center(child: Text('Home Screen', style: TextStyle(color: Colors.white))),
-    const Center(child: Text('Programmes Screen', style: TextStyle(color: Colors.white))),
-    const Center(child: Text('Jobs Screen', style: TextStyle(color: Colors.white))),
-    const ProfileMainScreen(),
+  final List<Widget> screens = const [
+    HomeScreen(),
+    ProgrammeListScreen(),
+    OpportunityListScreen(),
+    ProfileScreen(),
   ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF050505),
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _screens,
-      ),
+      body: screens[currentIndex],
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: const Color(0xFF0D1117),
-        selectedItemColor: const Color(0xFF2196F3),
-        unselectedItemColor: Colors.grey,
+        currentIndex: currentIndex,
+        onTap: (index) {
+          setState(() {
+            currentIndex = index;
+          });
+        },
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.book_outlined), activeIcon: Icon(Icons.book), label: 'Programmes'),
-          BottomNavigationBarItem(icon: Icon(Icons.work_outline), activeIcon: Icon(Icons.work), label: 'Jobs'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Profile'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.menu_book_outlined),
+            activeIcon: Icon(Icons.menu_book),
+            label: 'Programmes',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.work_outline),
+            activeIcon: Icon(Icons.work),
+            label: 'Jobs',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Profile',
+          ),
         ],
       ),
     );

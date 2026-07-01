@@ -1,0 +1,9 @@
+Pending: convert remaining withOpacity occurrences in lib/screens/profile/cv_screen.dart to withValues(alpha: ...).
+Current file snippet still contains:
+- AppTheme.primary.withOpacity(0.2) twice (hint: in TextField border and enabledBorder)
+- AppTheme.mutedText.withOpacity(0.5)
+- Colors.black.withOpacity(0.05)
+- AppTheme.accent.withOpacity(0.1)
+- Colors.green.withOpacity(0.1)
+These require unique edit replacements; edit_file fails due to non-unique search strings.
+Next: rewrite full cv_screen.dart to ensure all conversions are applied.

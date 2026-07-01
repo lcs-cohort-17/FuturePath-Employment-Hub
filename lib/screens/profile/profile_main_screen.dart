@@ -105,7 +105,7 @@ class _ProfileMainScreenState extends State<ProfileMainScreen> {
                 children: [
                   Container(
                     width: 100, height: 100,
-                    decoration: BoxDecoration(shape: BoxShape.circle, color: accent, border: Border.all(color: accent.withOpacity(0.3), width: 2)),
+                    decoration: BoxDecoration(shape: BoxShape.circle, color: accent, border: Border.all(color: accent.withValues(alpha: 0.3), width: 2)),
                     alignment: Alignment.center,
                     child: const Text('SD', style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold)),
                   ),
@@ -193,12 +193,12 @@ class _ProfileMainScreenState extends State<ProfileMainScreen> {
         child: InkWell(
           onTap: () => _navigateToCvDetail(user, skills, history),
           borderRadius: BorderRadius.circular(12),
-          hoverColor: accent.withOpacity(0.08),
+          hoverColor: accent.withValues(alpha: 0.08),
           child: Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 30),
             child: CustomPaint(
-              painter: DashedBorderPainter(color: accent.withOpacity(0.4)),
+              painter: DashedBorderPainter(color: accent.withValues(alpha: 0.4)),
               child: Column(
                 children: [
                   Icon(Icons.cloud_upload_outlined, color: accent, size: 28),
@@ -236,7 +236,7 @@ class _ProfileMainScreenState extends State<ProfileMainScreen> {
                 if (titleIcon != null) ...[Icon(titleIcon, color: const Color(0xFF2196F3), size: 18), const SizedBox(width: 8)],
                 Text(title, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                 const Spacer(),
-                if (action != null) action,
+                ?action,
               ],
             ),
             const SizedBox(height: 16),
@@ -303,7 +303,7 @@ class _CvDetailScreenState extends State<CvDetailScreen> {
               padding: const EdgeInsets.symmetric(vertical: 40),
               decoration: BoxDecoration(color: const Color(0xFF0D1117), borderRadius: BorderRadius.circular(12)),
               child: CustomPaint(
-                painter: DashedBorderPainter(color: accent.withOpacity(0.4)),
+                painter: DashedBorderPainter(color: accent.withValues(alpha: 0.4)),
                 child: Column(
                   children: [
                     const Icon(Icons.cloud_upload_outlined, color: accent, size: 32),
@@ -351,7 +351,7 @@ class _CvDetailScreenState extends State<CvDetailScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF161B22),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: accent.withOpacity(0.2)),
+        border: Border.all(color: accent.withValues(alpha: 0.2)),
       ),
       child: Text(label, style: TextStyle(color: accent, fontSize: 13)),
     );
@@ -366,7 +366,7 @@ class _CvDetailScreenState extends State<CvDetailScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF161B22),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
