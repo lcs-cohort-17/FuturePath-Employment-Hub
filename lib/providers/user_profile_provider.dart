@@ -11,6 +11,7 @@ final mockUserProfile = UserProfile(
   location: 'Mitchells Plain, Cape Town',
   employmentStatus: 'Unemployed',
   isHired: false,
+  role: 'Applicant',
   email: 'sipho.dlamini@gmail.com',
   phone: '+27 82 123 4567',
   bio: 'Hardworking high school graduate looking for entry-level opportunities in tech and logistics.',

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'auth_guard.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/sign_up_screen.dart';
 import '../screens/auth/forgot_password_screen.dart';
 import '../screens/shell/main_shell.dart';
+import '../screens/admin/admin_dashboard_screen.dart';
 import '../screens/admin/admin_employers_screen.dart';
 import '../screens/admin/admin_job_applications_screen.dart';
 import '../screens/admin/admin_applicants_screen.dart';
@@ -17,13 +20,21 @@ class AppRouter {
 //Abdul is testing this out- eventually
   static const String staffRegister = '/staff-register';
 
+  static const String adminDashboard = '/admin/dashboard';
   static const String adminJobApplications = '/admin/job-applications';
   static const String adminEmployers = '/admin/employers';
   static const String adminApplicants = '/admin/applicants';
   static const String adminEnrolments = '/admin/enrolments';
   static const String adminActivity = '/admin/activity';
 
-  static Route<dynamic> generateRoute(RouteSettings settings) {
+  static Route<dynamic> generateRoute(RouteSettings settings, WidgetRef ref) {
+    // Check for route protection
+    final String? redirect = AuthGuard.getRedirect(ref, settings.name);
+    
+    if (redirect != null) {
+      return generateRoute(RouteSettings(name: redirect), ref);
+    }
+
     switch (settings.name) {
       case login:
         return MaterialPageRoute(
@@ -45,6 +56,11 @@ class AppRouter {
           builder: (_) => const AppShell(),
           settings: settings,
         ); //marco added the work below
+      case adminDashboard:
+        return MaterialPageRoute(
+          builder: (_) => const AdminDashboardScreen(),
+          settings: settings,
+        );
       case adminEmployers:
         return MaterialPageRoute(
           builder: (_) => const AdminEmployersScreen(),

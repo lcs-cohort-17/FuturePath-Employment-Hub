@@ -12,6 +12,7 @@ class UserProfile {
   final String email;
   final String? phone;
   final String? bio;
+  final String? role; // Salesforce: Role_c
   final List<String> skills;
   final List<Programme> completedProgrammes;
   final List<Programme> enrolledProgrammes;
@@ -31,6 +32,7 @@ class UserProfile {
     required this.email,
     this.phone,
     this.bio,
+    this.role,
     this.skills = const [],
     this.completedProgrammes = const [],
     this.enrolledProgrammes = const [],
@@ -51,6 +53,7 @@ class UserProfile {
     String? email,
     String? phone,
     String? bio,
+    String? role,
     List<String>? skills,
     List<Programme>? completedProgrammes,
     List<Programme>? enrolledProgrammes,
@@ -70,6 +73,7 @@ class UserProfile {
       email: email ?? this.email,
       phone: phone ?? this.phone,
       bio: bio ?? this.bio,
+      role: role ?? this.role,
       skills: skills ?? this.skills,
       completedProgrammes: completedProgrammes ?? this.completedProgrammes,
       enrolledProgrammes: enrolledProgrammes ?? this.enrolledProgrammes,
@@ -93,6 +97,7 @@ class UserProfile {
       email: json['email'] ?? '',
       phone: json['phone'],
       bio: json['bio'],
+      role: json['role'] ?? json['Role_c'],
       skills: List<String>.from(json['skills'] ?? []),
       completedProgrammes: (json['completedProgrammes'] as List?)
           ?.map((e) => Programme.fromJson(e))
@@ -122,6 +127,7 @@ class UserProfile {
       'email': email,
       'phone': phone,
       'bio': bio,
+      'role': role,
       'skills': skills,
       'completedProgrammes': completedProgrammes.map((e) => e.toJson()).toList(),
       'enrolledProgrammes': enrolledProgrammes.map((e) => e.toJson()).toList(),
