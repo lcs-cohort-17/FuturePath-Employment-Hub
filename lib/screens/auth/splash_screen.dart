@@ -189,9 +189,6 @@ class _SplashScreenState extends State<SplashScreen>
 // Sub-widgets (private, file-scoped)
 // ============================================================
 
-/// Rounded square app icon matching the .bdot style from HTML —
-/// 26×26 with borderRadius 7 scaled up to a splash-appropriate size,
-/// using the brand gradient from primaryDim → primary.
 class _AppIconWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -207,7 +204,7 @@ class _AppIconWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primary.withOpacity(0.25),
+            color: AppTheme.primary.withValues(alpha: 0.25),
             blurRadius: 24,
             offset: const Offset(0, 8),
           ),
@@ -224,9 +221,6 @@ class _AppIconWidget extends StatelessWidget {
   }
 }
 
-/// "FuturePath" bold wordmark + "EMPLOYMENT HUB" subtitle —
-/// matches .bname (font-size 14, weight 700) scaled for splash,
-/// and the muted subtitle style used throughout the HTML.
 class _WordmarkWidget extends StatelessWidget {
   final String appName;
   final String appSubtitle;
@@ -264,8 +258,6 @@ class _WordmarkWidget extends StatelessWidget {
   }
 }
 
-/// Two-part tagline — plain textDark + primary-coloured highlight,
-/// matching the font weight and size used in HTML body copy.
 class _TaglineWidget extends StatelessWidget {
   final String tagline;
   final String highlight;
@@ -303,8 +295,6 @@ class _TaglineWidget extends StatelessWidget {
   }
 }
 
-/// Decorative bar-chart + trend-line illustration (drawn with Canvas).
-/// Colours use AppTheme tokens matching the HTML CSS variables.
 class _BarChartIllustration extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -318,7 +308,6 @@ class _BarChartIllustration extends StatelessWidget {
 class _BarChartPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    // Bar heights as fractions of total height (left to right)
     final barFractions = [0.30, 0.42, 0.55, 0.65, 0.50, 0.72, 0.80, 0.68, 0.75];
     final barCount = barFractions.length;
     final barWidth = (size.width - (barCount - 1) * 8) / barCount;
@@ -327,7 +316,6 @@ class _BarChartPainter extends CustomPainter {
       ..color = AppTheme.primaryDim
       ..style = PaintingStyle.fill;
 
-    // Draw bars
     for (int i = 0; i < barCount; i++) {
       final left = i * (barWidth + 8);
       final barHeight = size.height * barFractions[i];
@@ -339,7 +327,6 @@ class _BarChartPainter extends CustomPainter {
       canvas.drawRRect(rect, barPaint);
     }
 
-    // Baseline — matches --bdr2 (14% white)
     final baselinePaint = Paint()
       ..color = AppTheme.border2
       ..strokeWidth = 0.5;
@@ -349,8 +336,7 @@ class _BarChartPainter extends CustomPainter {
       baselinePaint,
     );
 
-    // Trend line dots (roughly follow bar tops)
-    final dotFractions = [0, 2, 4, 6, 7]; // indices
+    final dotFractions = [0, 2, 4, 6, 7];
     final linePaint = Paint()
       ..color = AppTheme.primary
       ..strokeWidth = 2.0
@@ -366,12 +352,10 @@ class _BarChartPainter extends CustomPainter {
       return Offset(cx, cy);
     }).toList();
 
-    // Draw connecting line segments
     for (int i = 0; i < trendPoints.length - 1; i++) {
       canvas.drawLine(trendPoints[i], trendPoints[i + 1], linePaint);
     }
 
-    // Draw dots
     for (final pt in trendPoints) {
       canvas.drawCircle(pt, 4.5, dotPaint);
       canvas.drawCircle(
@@ -384,7 +368,6 @@ class _BarChartPainter extends CustomPainter {
       );
     }
 
-    // Arrow at the top-right of trend — uses mutedText colour
     final arrowTip = trendPoints.last + const Offset(26, -26);
     final arrowBase = trendPoints.last + const Offset(4, -4);
     final arrowPaint = Paint()
@@ -393,7 +376,6 @@ class _BarChartPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
     canvas.drawLine(arrowBase, arrowTip, arrowPaint);
 
-    // Arrowhead
     final headPaint = Paint()
       ..color = AppTheme.mutedText
       ..style = PaintingStyle.fill;
@@ -409,9 +391,6 @@ class _BarChartPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-/// Animated three-dot loading indicator.
-/// Active dot uses AppTheme.primary; inactive uses AppTheme.primaryLow —
-/// matching the brand-low token (12% opacity brand) from the HTML.
 class _DotsIndicator extends StatelessWidget {
   final int activeDot;
 
@@ -439,7 +418,6 @@ class _DotsIndicator extends StatelessWidget {
   }
 }
 
-/// "Powered by …" footer text — uses subtleText token matching --t3.
 class _PoweredByWidget extends StatelessWidget {
   final String text;
 
