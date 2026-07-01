@@ -8,6 +8,8 @@ import '../screens/shell/main_shell.dart';
 import '../services/auth_services.dart';
 
 class AppRouter {
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
   static const String login = '/login';
   static const String signup = '/signup';
   static const String forgotPassword = '/forgot-password';
