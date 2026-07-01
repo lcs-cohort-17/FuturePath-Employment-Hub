@@ -91,3 +91,42 @@ class Employer {
   String toString() =>
       'Employer(id: $id, companyName: $companyName, industry: $industry, location: $location)';
 }
+
+/// A UI-facing model used by the Employer Detail screen.
+///
+/// [EmployerModel] provides the data structure required by the
+/// Employer Detail screen and its corresponding tests.
+class EmployerModel {
+  final String id;
+  final String companyName;
+  final String industry;
+  final String location;
+  final String? email;
+  final String? website;
+  final String? bio;
+  final int activeOpeningsCount;
+
+  const EmployerModel({
+    required this.id,
+    required this.companyName,
+    required this.industry,
+    required this.location,
+    this.email,
+    this.website,
+    this.bio,
+    this.activeOpeningsCount = 0,
+  });
+
+  factory EmployerModel.fromJson(Map<String, dynamic> json) {
+    return EmployerModel(
+      id: json['id']?.toString() ?? '',
+      companyName: json['company_name']?.toString() ?? '',
+      industry: json['industry']?.toString() ?? '',
+      location: json['location']?.toString() ?? '',
+      email: json['email']?.toString(),
+      website: json['website']?.toString(),
+      bio: json['bio']?.toString(),
+      activeOpeningsCount: json['active_openings_count'] as int? ?? 0,
+    );
+  }
+}

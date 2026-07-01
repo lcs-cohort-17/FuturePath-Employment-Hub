@@ -179,7 +179,8 @@ void main() {
 }
 
 // Mock AuthService for testing
-class _MockAuthService extends AuthService {
+// class _MockAuthService {extends} AuthService {
+class _MockAuthService implements AuthService {
   final VoidCallback onLogout;
 
   _MockAuthService(this.onLogout);

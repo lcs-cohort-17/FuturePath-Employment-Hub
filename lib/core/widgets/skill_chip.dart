@@ -1,4 +1,3 @@
-// skill chip.dart
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 
@@ -18,12 +17,13 @@ class SkillChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
       decoration: BoxDecoration(
-        color: AppTheme.secondary,
-        borderRadius: BorderRadius.circular(20),
+        color: AppTheme.primaryLow,
+        borderRadius: BorderRadius.circular(7),
         border: Border.all(
-          color: AppTheme.primary.withAlpha(38),
+          color: AppTheme.primaryLow,
+          width: 0.5,
         ),
       ),
       child: Row(
@@ -32,7 +32,7 @@ class SkillChip extends StatelessWidget {
           Text(
             label,
             style: const TextStyle(
-              fontSize: 13,
+              fontSize: 10,
               fontWeight: FontWeight.w600,
               color: AppTheme.primary,
             ),
