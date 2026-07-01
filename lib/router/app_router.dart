@@ -11,12 +11,16 @@ import '../screens/shell/admin_shell.dart';
 import '../screens/admin/admin_activity_screen.dart';
 import '../screens/admin/admin_programmes_screen.dart';
 import '../screens/admin/admin_profile_screen.dart';
+import '../screens/profile/notifications_screen.dart';
+import '../providers/notifications_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AppRouter {
   static const String login = '/login';
   static const String signup = '/signup';
   static const String forgotPassword = '/forgot-password';
   static const String home = '/home';
+  static const String notifications = '/notifications';
 //Abdul is testing this out- eventually
   static const String staffRegister = '/staff-register';
 
@@ -49,6 +53,18 @@ class AppRouter {
       case home:
         return MaterialPageRoute(
           builder: (_) => const AppShell(),
+          settings: settings,
+        );
+      case notifications:
+        return MaterialPageRoute(
+          builder: (_) => Consumer(
+            builder: (context, ref, _) {
+              final notifications = ref.watch(notificationsProvider);
+              return NotificationsScreen(
+                notifications: notifications.map((n) => n.toJson()).toList(),
+              );
+            },
+          ),
           settings: settings,
         );
       case adminHome:
