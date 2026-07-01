@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:futurepath_employment_hub/screens/profile/profile_screen.dart';
 import 'package:futurepath_employment_hub/screens/profile/cv_screen.dart';
 import 'package:futurepath_employment_hub/providers/user_profile_provider.dart';
@@ -178,15 +179,73 @@ void main() {
   });
 }
 
-// Mock AuthService for testing
-// class _MockAuthService {extends} AuthService {
+// ---------------------------------------------------------------------------
+// Mock AuthService
+// Implements every member of AuthService so the compiler is satisfied.
+// Only logout() has real behaviour (the onLogout callback) — all other
+// methods return safe no-op stubs since no test exercises them here.
+// ---------------------------------------------------------------------------
 class _MockAuthService implements AuthService {
   final VoidCallback onLogout;
 
   _MockAuthService(this.onLogout);
 
+  // ── Getters ────────────────────────────────────────────────────────────────
+
+  @override
+  bool get isLoggedIn => false;
+
+  @override
+  String? get userEmail => null;
+
+  @override
+  User? get currentUser => null;
+
+  @override
+  Stream<AuthState> get authStateChanges => const Stream.empty();
+
+  // ── Methods ────────────────────────────────────────────────────────────────
+
   @override
   Future<void> logout() async {
     onLogout();
+  }
+
+  @override
+  Future<void> signOut() async {
+    onLogout();
+  }
+
+  @override
+  Future<AuthResponse> signIn({
+    required String email,
+    required String password,
+  }) async {
+    return AuthResponse();
+  }
+
+  @override
+  Future<AuthResponse> signUp({
+    required String email,
+    required String password,
+  }) async {
+    return AuthResponse();
+  }
+
+  @override
+  Future<void> resetPassword({
+    required String email,
+    required String redirectTo,
+  }) async {}
+
+//   @override
+//   Future<UserResponse> updatePassword(String newPassword) async {
+//     return UserResponse();
+//   }
+// }
+// REPLACE WITH:
+  @override
+  Future<UserResponse> updatePassword(String newPassword) async {
+    throw UnimplementedError('updatePassword not needed in this test mock');
   }
 }

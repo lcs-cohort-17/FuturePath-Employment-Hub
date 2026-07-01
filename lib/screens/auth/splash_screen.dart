@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
+import 'package:futurepath_employment_hub/services/auth_services.dart';
 
 class SplashScreen extends StatefulWidget {
   /// Navigation callback — called when a valid session is found.
