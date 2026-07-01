@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:futurepath_employment_hub/screens/programmes/programme_application_screen.dart';
+import 'package:futurepath_employment_hub/core/utils/cv_preview_utils.dart';
 
 void main() {
   group('CV preview helpers', () {

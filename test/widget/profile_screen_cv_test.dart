@@ -24,8 +24,6 @@ void main() {
           userProfile: profile,
           onSignOut: () {},
           onNavigateToCV: () {},
-          onNavigateToNotifications: () {},
-          onNavigateToTrackApplications: () {},
         ),
       ),
     );
