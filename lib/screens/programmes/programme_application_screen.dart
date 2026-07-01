@@ -129,6 +129,8 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
 
   String? _cvFileName;
   bool _isSubmitting = false;
+  // [UIUX-PRIV-004] — consent must be true before submission is permitted
+  bool _privacyConsentGiven = false;
 
   static const int _motivationMaxLength = 500;
 
@@ -163,7 +165,8 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
   Future<void> _handleUploadCv() async {
     // TODO(file_picker): wire up real file picker (PDF, DOC) once the
     // file upload service exists. Mocked here so the flow is demoable.
-    setState(() => _cvFileName = 'Sipho_Dlamini_CV.pdf');
+    // [UIUX-PRIV-001] — generic placeholder used instead of a real name
+    setState(() => _cvFileName = 'my_cv.pdf');
   }
 
   Future<ApplicationResult> _mockSubmit(
@@ -192,6 +195,8 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
           : _experienceController.text.trim(),
       status: ProgrammeApplicationStatus.pending,
     );
+
+    // [UIUX-PRIV-004] — store privacyConsent: true via ApplicantService when user registers
 
     final submitFn = widget.onSubmit ?? _mockSubmit;
     final result = await submitFn(data);
@@ -227,7 +232,7 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black.withValues(alpha: 0.0),
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         child: Align(
           alignment: Alignment.bottomCenter,
@@ -236,27 +241,27 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
               maxHeight: MediaQuery.of(context).size.height * 0.92,
             ),
             decoration: const BoxDecoration(
-              color: AppTheme.card,
+              color: AppTheme.surface2,
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Drag handle, matches Figma reference
+                // Drag handle
                 Padding(
                   padding: const EdgeInsets.only(top: 10, bottom: 4),
                   child: Container(
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppTheme.secondary,
+                      color: AppTheme.surface3,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                 ),
-                // Header
+                // Header row: title + close button
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 12, 8),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 12, 8),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -267,8 +272,8 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                             const Text(
                               'Enrol in Programme',
                               style: TextStyle(
-                                fontSize: 19,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
                                 color: AppTheme.textDark,
                               ),
                             ),
@@ -276,49 +281,63 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                             Text(
                               widget.programme.title,
                               style: const TextStyle(
-                                fontSize: 14,
+                                fontSize: 11,
                                 color: AppTheme.mutedText,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      IconButton(
-                        onPressed: widget.onClose ??
-                                () => Navigator.of(context).pop(),
-                        icon: const Icon(Icons.close,
-                            color: AppTheme.mutedText),
+                      GestureDetector(
+                        onTap: widget.onClose ?? () => Navigator.of(context).pop(),
+                        child: Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            color: AppTheme.surface3,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.close,
+                            color: AppTheme.mutedText,
+                            size: 16,
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const Divider(height: 1, color: AppTheme.secondary),
+                const Divider(height: 1, thickness: 0.5, color: AppTheme.border),
                 // Scrollable form body
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                    padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
                     child: Form(
                       key: _formKey,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Auto-fill banner, per acceptance criteria #2
+                          // Auto-fill banner
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 12),
+                                horizontal: 12, vertical: 10),
                             decoration: BoxDecoration(
-                              color: AppTheme.secondary,
-                              borderRadius: BorderRadius.circular(24),
+                              color: AppTheme.primaryLow,
+                              border: Border.all(
+                                color: AppTheme.primary.withValues(alpha: 0.2),
+                                width: 0.5,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
                             ),
                             child: const Row(
                               children: [
-                                Text('✨', style: TextStyle(fontSize: 14)),
-                                SizedBox(width: 8),
+                                Text('✨', style: TextStyle(fontSize: 13)),
+                                SizedBox(width: 7),
                                 Text(
                                   'Details auto-filled from your profile',
                                   style: TextStyle(
-                                    fontSize: 13,
+                                    fontSize: 11,
                                     fontWeight: FontWeight.w600,
                                     color: AppTheme.primary,
                                   ),
@@ -326,14 +345,15 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 14),
 
-                          _FieldLabel(
+                          // Full Name
+                          const _FieldLabel(
                             icon: Icons.person_outline,
                             label: 'Full Name',
                             required: true,
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 4),
                           _AppTextField(
                             controller: _fullNameController,
                             validator: (value) =>
@@ -341,14 +361,15 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                                 ? 'Full name is required'
                                 : null,
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 10),
 
-                          _FieldLabel(
+                          // SA ID Number
+                          const _FieldLabel(
                             icon: Icons.tag,
                             label: 'SA ID Number',
                             required: true,
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 4),
                           _AppTextField(
                             controller: _saIdController,
                             keyboardType: TextInputType.number,
@@ -363,22 +384,21 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                               return null;
                             },
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 10),
 
+                          // Email + Phone row
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment:
-                                  CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const _FieldLabel(label: 'Email'),
-                                    const SizedBox(height: 6),
+                                    const SizedBox(height: 4),
                                     _AppTextField(
                                       controller: _emailController,
-                                      keyboardType:
-                                      TextInputType.emailAddress,
+                                      keyboardType: TextInputType.emailAddress,
                                       validator: (value) {
                                         final trimmed = value?.trim() ?? '';
                                         if (trimmed.isEmpty) {
@@ -393,20 +413,18 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                                   ],
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 8),
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment:
-                                  CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const _FieldLabel(label: 'Phone'),
-                                    const SizedBox(height: 6),
+                                    const SizedBox(height: 4),
                                     _AppTextField(
                                       controller: _phoneController,
                                       keyboardType: TextInputType.phone,
                                       validator: (value) =>
-                                      (value == null ||
-                                          value.trim().isEmpty)
+                                      (value == null || value.trim().isEmpty)
                                           ? 'Required'
                                           : null,
                                     ),
@@ -415,26 +433,27 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 10),
 
-                          _FieldLabel(
+                          // CV / Resume upload
+                          const _FieldLabel(
                             icon: Icons.description_outlined,
                             label: 'CV / Resume',
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 4),
                           InkWell(
                             onTap: _handleUploadCv,
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(10),
                             child: Container(
                               width: double.infinity,
-                              padding:
-                              const EdgeInsets.symmetric(vertical: 16),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
                               decoration: BoxDecoration(
+                                color: AppTheme.surface3,
                                 border: Border.all(
-                                  color: AppTheme.mutedText.withValues(alpha: 0.4),
-                                  style: BorderStyle.solid,
+                                  color: AppTheme.border2,
+                                  width: 0.5,
                                 ),
-                                borderRadius: BorderRadius.circular(14),
+                                borderRadius: BorderRadius.circular(10),
                               ),
                               child: Column(
                                 children: [
@@ -443,17 +462,18 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                                         ? Icons.check_circle_outline
                                         : Icons.upload_outlined,
                                     color: _cvFileName != null
-                                        ? AppTheme.accent
+                                        ? AppTheme.success
                                         : AppTheme.primary,
+                                    size: 22,
                                   ),
-                                  const SizedBox(height: 6),
+                                  const SizedBox(height: 5),
                                   Text(
                                     _cvFileName ?? 'Upload CV (PDF, DOC)',
                                     style: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.w600,
                                       color: _cvFileName != null
-                                          ? AppTheme.accent
+                                          ? AppTheme.success
                                           : AppTheme.primary,
                                     ),
                                   ),
@@ -462,19 +482,20 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                             ),
                           ),
                           if (_cvFileName == null) ...[
-                            const SizedBox(height: 6),
+                            const SizedBox(height: 5),
                             const Text(
                               'Add your CV to your profile to auto-fill this field',
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 10,
                                 color: AppTheme.mutedText,
                               ),
                             ),
                           ],
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 10),
 
+                          // Cover Letter
                           const _FieldLabel(label: 'Cover Letter (Optional)'),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 4),
                           _AppTextField(
                             controller: _motivationController,
                             maxLines: 4,
@@ -488,26 +509,100 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                                   maxLength,
                                 }) =>
                                 Padding(
-                                  padding: const EdgeInsets.only(top: 4),
+                                  padding: const EdgeInsets.only(top: 3),
                                   child: Text(
                                     '$currentLength/$maxLength',
                                     style: const TextStyle(
-                                      fontSize: 11,
+                                      fontSize: 9,
                                       color: AppTheme.mutedText,
                                     ),
                                   ),
                                 ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 10),
 
+                          // Previous Experience
                           const _FieldLabel(
                               label: 'Previous Experience (Optional)'),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 4),
                           _AppTextField(
                             controller: _experienceController,
                             maxLines: 3,
-                            hintText:
-                            'Share any relevant prior experience...',
+                            hintText: 'Share any relevant prior experience...',
+                          ),
+                          const SizedBox(height: 14),
+
+                          // [UIUX-PRIV-004] — Privacy consent block
+                          Container(
+                            padding: const EdgeInsets.all(13),
+                            decoration: BoxDecoration(
+                              color: AppTheme.surface3,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: AppTheme.border,
+                                width: 0.5,
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: Checkbox(
+                                        value: _privacyConsentGiven,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            _privacyConsentGiven =
+                                                value ?? false;
+                                          });
+                                        },
+                                        activeColor: AppTheme.primary,
+                                        side: const BorderSide(
+                                          color: AppTheme.mutedText,
+                                          width: 1.5,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                          BorderRadius.circular(4),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    const Expanded(
+                                      child: Text(
+                                        'I consent to my data being stored for programme matching and job applications. I understand my data is not shared externally.',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: AppTheme.mutedText,
+                                          height: 1.5,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                // [UIUX-PRIV-004] — Privacy Policy link
+                                GestureDetector(
+                                  // TODO(privacy_policy): wire up to open
+                                  // Privacy Policy URL in browser or in-app
+                                  // web view once the policy document exists.
+                                  onTap: () {},
+                                  child: const Text(
+                                    'Read our Privacy Policy',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: AppTheme.primary,
+                                      decoration: TextDecoration.underline,
+                                      decorationColor: AppTheme.primary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 8),
                         ],
@@ -515,27 +610,35 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                     ),
                   ),
                 ),
-                const Divider(height: 1, color: AppTheme.secondary),
+                // Bottom divider + submit button
+                const Divider(height: 1, thickness: 0.5, color: AppTheme.border),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                  padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
                   child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _isSubmitting ? null : _handleSubmit,
+                      // [UIUX-PRIV-004] — disabled until consent is given
+                      onPressed: (_isSubmitting || !_privacyConsentGiven)
+                          ? null
+                          : _handleSubmit,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primary,
                         foregroundColor: Colors.white,
                         disabledBackgroundColor:
-                        AppTheme.primary.withValues(alpha: 0.6),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        AppTheme.primary.withValues(alpha: 0.4),
+                        padding: const EdgeInsets.symmetric(vertical: 13),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(28),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        textStyle: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                       child: _isSubmitting
                           ? const SizedBox(
-                        width: 22,
-                        height: 22,
+                        width: 20,
+                        height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.5,
                           valueColor: AlwaysStoppedAnimation<Color>(
@@ -543,13 +646,7 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                           ),
                         ),
                       )
-                          : const Text(
-                        'Submit Enrolment',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                          : const Text('Submit Enrolment'),
                     ),
                   ),
                 ),
@@ -581,54 +678,61 @@ class ProgrammeApplicationSuccessScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.surface,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Success icon circle — matches .pi-circle in HTML (72x72, green-low bg)
               Container(
-                width: 88,
-                height: 88,
-                decoration: BoxDecoration(
-                  color: AppTheme.accent.withValues(alpha: 0.12),
+                width: 72,
+                height: 72,
+                decoration: const BoxDecoration(
+                  color: AppTheme.successLow,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                  Icons.check_circle,
-                  color: AppTheme.accent,
-                  size: 52,
+                  Icons.check,
+                  color: AppTheme.success,
+                  size: 32,
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+              // Title — matches .plogtitle: 18px bold
               const Text(
                 'Application Submitted!',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
                   color: AppTheme.textDark,
                 ),
               ),
               const SizedBox(height: 8),
+              // Subtitle — matches .plogsubt: 12px, t2 colour, line-height 1.6
               Text(
-                "Your enrolment for ${programme.title} has been received and is now Pending review.",
+                'Your enrolment for ${programme.title} has been received and is now Pending review.',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontSize: 14,
+                  fontSize: 12,
                   color: AppTheme.mutedText,
-                  height: 1.5,
+                  height: 1.6,
                 ),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
+              // Status card — matches .info-block / surf2 card pattern
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 14),
                 decoration: BoxDecoration(
-                  color: AppTheme.card,
+                  color: AppTheme.surface2,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppTheme.secondary),
+                  border: Border.all(
+                    color: AppTheme.border,
+                    width: 0.5,
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -636,30 +740,31 @@ class ProgrammeApplicationSuccessScreen extends StatelessWidget {
                     const Text(
                       'Status',
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 11,
                         color: AppTheme.mutedText,
                       ),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
+                          horizontal: 7, vertical: 3),
                       decoration: BoxDecoration(
-                        color: Colors.orange.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(12),
+                        color: AppTheme.warningLow,
+                        borderRadius: BorderRadius.circular(5),
                       ),
                       child: const Text(
                         'Pending',
                         style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.orange,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.warning,
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
+              // Primary action button — matches .pbtn: 10px radius, 13px text
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -669,18 +774,16 @@ class ProgrammeApplicationSuccessScreen extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primary,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: const EdgeInsets.symmetric(vertical: 13),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  child: const Text(
-                    'View My Programmes',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: const Text('View My Programmes'),
                 ),
               ),
             ],
@@ -710,23 +813,23 @@ class _FieldLabel extends StatelessWidget {
     return Row(
       children: [
         if (icon != null) ...[
-          Icon(icon, size: 15, color: AppTheme.mutedText),
-          const SizedBox(width: 6),
+          Icon(icon, size: 13, color: AppTheme.mutedText),
+          const SizedBox(width: 5),
         ],
         Text(
           label,
           style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.textDark,
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            color: AppTheme.mutedText,
           ),
         ),
         if (required)
           const Text(
             ' *',
             style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
               color: AppTheme.error,
             ),
           ),
@@ -763,25 +866,33 @@ class _AppTextField extends StatelessWidget {
       maxLines: maxLines,
       maxLength: maxLength,
       buildCounter: buildCounter,
-      style: const TextStyle(fontSize: 14, color: AppTheme.textDark),
+      style: const TextStyle(fontSize: 12, color: AppTheme.textDark),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: const TextStyle(color: AppTheme.mutedText, fontSize: 13),
+        hintStyle: const TextStyle(color: AppTheme.subtleText, fontSize: 12),
         filled: true,
-        fillColor: AppTheme.secondary,
+        fillColor: AppTheme.surface2,
         contentPadding:
-        const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(maxLines > 1 ? 14 : 24),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppTheme.border2, width: 0.5),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppTheme.border2, width: 0.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(maxLines > 1 ? 14 : 24),
-          borderSide: const BorderSide(color: AppTheme.error),
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppTheme.error, width: 0.5),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(maxLines > 1 ? 14 : 24),
-          borderSide: const BorderSide(color: AppTheme.error, width: 1.5),
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppTheme.error, width: 1.0),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppTheme.primary, width: 1.0),
         ),
       ),
     );

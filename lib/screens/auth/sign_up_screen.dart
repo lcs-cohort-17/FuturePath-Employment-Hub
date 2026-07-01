@@ -37,6 +37,9 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _isLoading = false;
   String? _errorMessage;
 
+  // [UIUX-PRIV-004] — privacy consent state
+  bool _privacyConsented = false;
+
   @override
   void dispose() {
     _emailCtrl.dispose();
@@ -89,7 +92,18 @@ class _SignupScreenState extends State<SignupScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please select at least one skill.'),
-          backgroundColor: Colors.redAccent,
+          backgroundColor: AppTheme.error,
+        ),
+      );
+      return;
+    }
+
+    // [UIUX-PRIV-004] — block signup if consent not given
+    if (!_privacyConsented) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please accept the privacy consent to continue.'),
+          backgroundColor: AppTheme.error,
         ),
       );
       return;
@@ -120,12 +134,14 @@ class _SignupScreenState extends State<SignupScreen> {
         skills: _skills,
       );
 
+      // [UIUX-PRIV-004] — store privacyConsent: true via ApplicantService when user registers
+
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Account created! Please check your email to confirm your account.'),
-          backgroundColor: Colors.green,
+          backgroundColor: AppTheme.success,
         ),
       );
 
@@ -161,256 +177,457 @@ class _SignupScreenState extends State<SignupScreen> {
     ];
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: AppTheme.background,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppTheme.textDark),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
+      backgroundColor: AppTheme.surface,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 8, 24, 40),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Create Account',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppTheme.textDark),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Join FuturePath Employment Hub',
-                  style: TextStyle(color: AppTheme.mutedText, fontSize: 14),
-                ),
-                const SizedBox(height: 28),
-
-                _fieldLabel('First Name'),
-                const SizedBox(height: 6),
-                _textField(controller: _firstNameCtrl, hint: 'Your first name', validator: (v) => _validateRequired(v, 'First name')),
-                const SizedBox(height: 16),
-
-                _fieldLabel('Last Name'),
-                const SizedBox(height: 6),
-                _textField(controller: _lastNameCtrl, hint: 'Your last name', validator: (v) => _validateRequired(v, 'Last name')),
-                const SizedBox(height: 16),
-
-                _fieldLabel('ID Number'),
-                const SizedBox(height: 6),
-                _textField(
-                  controller: _idCtrl,
-                  hint: '13-digit SA ID number',
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'ID number is required';
-                    if (v.trim().length != 13) return 'ID number must be 13 digits';
-                    if (!RegExp(r'^\d{13}$').hasMatch(v.trim())) return 'ID number must contain only digits';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-
-                _fieldLabel('Date of Birth'),
-                const SizedBox(height: 6),
-                TextFormField(
-                  controller: _dobCtrl,
-                  readOnly: true,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  validator: (v) => _validateRequired(v, 'Date of birth'),
-                  onTap: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime(2000),
-                      firstDate: DateTime(1940),
-                      lastDate: DateTime.now(),
-                    );
-                    if (picked != null) {
-                      _dobCtrl.text =
-                      '${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}';
-                    }
-                  },
-                  decoration: _fieldDecoration(
-                    hint: 'DD/MM/YYYY',
-                    prefix: const Icon(Icons.calendar_today_outlined, color: AppTheme.mutedText, size: 20),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(22, 22, 22, 32),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Back navigation row — matches HTML back arrow + "Back to login"
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Row(
+                      children: const [
+                        Icon(Icons.arrow_back_ios, color: AppTheme.mutedText, size: 16),
+                        SizedBox(width: 4),
+                        Text(
+                          'Back to login',
+                          style: TextStyle(fontSize: 11, color: AppTheme.mutedText),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
+                  const SizedBox(height: 18),
 
-                _fieldLabel('Gender'),
-                const SizedBox(height: 6),
-                DropdownButtonFormField<String>(
-                  initialValue: _genderCtrl.text.isEmpty ? null : _genderCtrl.text,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  validator: (v) => v == null ? 'Gender is required' : null,
-                  decoration: _fieldDecoration(hint: 'Select gender'),
-                  items: genderOptions.map((g) => DropdownMenuItem(value: g, child: Text(g))).toList(),
-                  onChanged: (v) => setState(() => _genderCtrl.text = v ?? ''),
-                ),
-                const SizedBox(height: 16),
-
-                _fieldLabel('Contact Number'),
-                const SizedBox(height: 6),
-                TextFormField(
-                  controller: _phoneCtrl,
-                  keyboardType: TextInputType.phone,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'Contact number is required';
-                    if (!RegExp(r'^\+?[\d\s]{10,15}$').hasMatch(v.trim())) return 'Enter a valid contact number';
-                    return null;
-                  },
-                  decoration: _fieldDecoration(
-                    hint: '071 234 5678',
-                    prefix: const Icon(Icons.phone_outlined, color: AppTheme.mutedText, size: 20),
+                  // Header — "Register as Business" / subtitle
+                  const Text(
+                    'Register as Business',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textDark,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-
-                _fieldLabel('Email Address'),
-                const SizedBox(height: 6),
-                TextFormField(
-                  controller: _emailCtrl,
-                  keyboardType: TextInputType.emailAddress,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  validator: _validateEmail,
-                  decoration: _fieldDecoration(
-                    hint: 'you@email.com',
-                    prefix: const Icon(Icons.email_outlined, color: AppTheme.mutedText, size: 20),
+                  const SizedBox(height: 2),
+                  const Text(
+                    'Employer & recruiter accounts',
+                    style: TextStyle(fontSize: 11, color: AppTheme.mutedText),
                   ),
-                ),
-                const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
-                _fieldLabel('Residential Area'),
-                const SizedBox(height: 6),
-                _textField(controller: _areaCtrl, hint: 'e.g. Soweto, Johannesburg', validator: (v) => _validateRequired(v, 'Residential area')),
-                const SizedBox(height: 16),
-
-                _fieldLabel('Highest Qualification'),
-                const SizedBox(height: 6),
-                DropdownButtonFormField<String>(
-                  initialValue: _qualificationCtrl.text.isEmpty ? null : _qualificationCtrl.text,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  validator: (v) => v == null ? 'Qualification is required' : null,
-                  decoration: _fieldDecoration(hint: 'Select qualification'),
-                  items: qualificationOptions.map((q) => DropdownMenuItem(value: q, child: Text(q))).toList(),
-                  onChanged: (v) => setState(() => _qualificationCtrl.text = v ?? ''),
-                ),
-                const SizedBox(height: 16),
-
-                _fieldLabel('Current Employment Status'),
-                const SizedBox(height: 6),
-                DropdownButtonFormField<String>(
-                  initialValue: _employmentCtrl.text.isEmpty ? null : _employmentCtrl.text,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  validator: (v) => v == null ? 'Employment status is required' : null,
-                  decoration: _fieldDecoration(hint: 'Select employment status'),
-                  items: [
-                    'Employed (Full-time)',
-                    'Employed (Part-time)',
-                    'Self-employed',
-                    'Unemployed',
-                    'Student',
-                  ].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
-                  onChanged: (v) => setState(() => _employmentCtrl.text = v ?? ''),
-                ),
-                const SizedBox(height: 16),
-
-                _fieldLabel('Skills'),
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    'Communication',
-                    'Leadership',
-                    'Problem Solving',
-                    'Teamwork',
-                    'Computer Literacy',
-                    'Customer Service',
-                    'Project Management',
-                    'Data Analysis',
-                    'Marketing',
-                    'Sales',
-                  ].map((skill) {
-                    final selected = _skills.contains(skill);
-                    return FilterChip(
-                      label: Text(skill),
-                      selected: selected,
-                      onSelected: (val) {
-                        setState(() {
-                          if (val) {
-                            _skills.add(skill);
-                          } else {
-                            _skills.remove(skill);
-                          }
-                        });
-                      },
-                      selectedColor: AppTheme.primary.withValues(alpha: 0.15),
-                      checkmarkColor: AppTheme.primary,
-                      labelStyle: TextStyle(
-                        color: selected ? AppTheme.primary : AppTheme.mutedText,
-                        fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                  // First name + Last name side by side
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _fieldLabel('First name'),
+                            const SizedBox(height: 4),
+                            _textField(
+                              controller: _firstNameCtrl,
+                              hint: 'John',
+                              validator: (v) => _validateRequired(v, 'First name'),
+                            ),
+                          ],
+                        ),
                       ),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 16),
-
-                _fieldLabel('Password'),
-                const SizedBox(height: 6),
-                _passwordField(
-                  controller: _passwordCtrl,
-                  obscure: _obscurePassword,
-                  onToggle: () => setState(() => _obscurePassword = !_obscurePassword),
-                  validator: _validatePassword,
-                ),
-                const SizedBox(height: 16),
-
-                _fieldLabel('Confirm Password'),
-                const SizedBox(height: 6),
-                _passwordField(
-                  controller: _confirmCtrl,
-                  hint: 'Confirm password',
-                  obscure: _obscureConfirm,
-                  onToggle: () => setState(() => _obscureConfirm = !_obscureConfirm),
-                  validator: _validateConfirmPassword,
-                ),
-
-                if (_errorMessage != null) ...[
-                  const SizedBox(height: 16),
-                  _errorBanner(_errorMessage!),
-                ],
-
-                const SizedBox(height: 28),
-                SizedBox(
-                  height: 54,
-                  child: FilledButton(
-                    onPressed: _isLoading ? null : _handleSignUp,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppTheme.primary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
-                        : const Text('Create Account', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _fieldLabel('Last name'),
+                            const SizedBox(height: 4),
+                            _textField(
+                              controller: _lastNameCtrl,
+                              hint: 'Smith',
+                              validator: (v) => _validateRequired(v, 'Last name'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text('Already have an account?', style: TextStyle(color: AppTheme.mutedText)),
-                    const SizedBox(width: 4),
-                    GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: const Text('Log In', style: TextStyle(color: AppTheme.accent, fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 10),
+
+                  // ID Number
+                  _fieldLabel('ID Number'),
+                  const SizedBox(height: 4),
+                  _textField(
+                    controller: _idCtrl,
+                    hint: '13-digit SA ID number',
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) return 'ID number is required';
+                      if (v.trim().length != 13) return 'ID number must be 13 digits';
+                      if (!RegExp(r'^\d{13}$').hasMatch(v.trim())) return 'ID number must contain only digits';
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Date of Birth
+                  _fieldLabel('Date of Birth'),
+                  const SizedBox(height: 4),
+                  TextFormField(
+                    controller: _dobCtrl,
+                    readOnly: true,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: (v) => _validateRequired(v, 'Date of birth'),
+                    style: const TextStyle(color: AppTheme.textDark, fontSize: 11),
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime(2000),
+                        firstDate: DateTime(1940),
+                        lastDate: DateTime.now(),
+                      );
+                      if (picked != null) {
+                        _dobCtrl.text =
+                        '${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}';
+                      }
+                    },
+                    decoration: _fieldDecoration(
+                      hint: 'DD/MM/YYYY',
+                      prefix: const Icon(Icons.calendar_today_outlined, color: AppTheme.subtleText, size: 18),
                     ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Gender
+                  _fieldLabel('Gender'),
+                  const SizedBox(height: 4),
+                  DropdownButtonFormField<String>(
+                    initialValue: _genderCtrl.text.isEmpty ? null : _genderCtrl.text,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: (v) => v == null ? 'Gender is required' : null,
+                    decoration: _fieldDecoration(hint: 'Select gender'),
+                    dropdownColor: AppTheme.surface3,
+                    style: const TextStyle(color: AppTheme.textDark, fontSize: 11),
+                    items: genderOptions.map((g) => DropdownMenuItem(value: g, child: Text(g))).toList(),
+                    onChanged: (v) => setState(() => _genderCtrl.text = v ?? ''),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Contact Number
+                  _fieldLabel('Contact Number'),
+                  const SizedBox(height: 4),
+                  TextFormField(
+                    controller: _phoneCtrl,
+                    keyboardType: TextInputType.phone,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    style: const TextStyle(color: AppTheme.textDark, fontSize: 11),
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) return 'Contact number is required';
+                      if (!RegExp(r'^\+?[\d\s]{10,15}$').hasMatch(v.trim())) return 'Enter a valid contact number';
+                      return null;
+                    },
+                    decoration: _fieldDecoration(
+                      hint: '071 234 5678',
+                      prefix: const Icon(Icons.phone_outlined, color: AppTheme.subtleText, size: 18),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Company name
+                  _fieldLabel('Company name'),
+                  const SizedBox(height: 4),
+                  TextFormField(
+                    controller: _areaCtrl,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    style: const TextStyle(color: AppTheme.textDark, fontSize: 11),
+                    validator: (v) => _validateRequired(v, 'Company name'),
+                    decoration: _fieldDecoration(
+                      hint: 'e.g. Amazon SA',
+                      prefix: const Icon(Icons.business_outlined, color: AppTheme.subtleText, size: 18),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Work email
+                  _fieldLabel('Work email'),
+                  const SizedBox(height: 4),
+                  TextFormField(
+                    controller: _emailCtrl,
+                    keyboardType: TextInputType.emailAddress,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    style: const TextStyle(color: AppTheme.textDark, fontSize: 11),
+                    validator: _validateEmail,
+                    decoration: _fieldDecoration(
+                      hint: 'work@company.com',
+                      prefix: const Icon(Icons.email_outlined, color: AppTheme.subtleText, size: 18),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Highest Qualification
+                  _fieldLabel('Highest Qualification'),
+                  const SizedBox(height: 4),
+                  DropdownButtonFormField<String>(
+                    initialValue: _qualificationCtrl.text.isEmpty ? null : _qualificationCtrl.text,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: (v) => v == null ? 'Qualification is required' : null,
+                    decoration: _fieldDecoration(hint: 'Select qualification'),
+                    dropdownColor: AppTheme.surface3,
+                    style: const TextStyle(color: AppTheme.textDark, fontSize: 11),
+                    items: qualificationOptions.map((q) => DropdownMenuItem(value: q, child: Text(q))).toList(),
+                    onChanged: (v) => setState(() => _qualificationCtrl.text = v ?? ''),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Employment Status
+                  _fieldLabel('Current Employment Status'),
+                  const SizedBox(height: 4),
+                  DropdownButtonFormField<String>(
+                    initialValue: _employmentCtrl.text.isEmpty ? null : _employmentCtrl.text,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: (v) => v == null ? 'Employment status is required' : null,
+                    decoration: _fieldDecoration(hint: 'Select employment status'),
+                    dropdownColor: AppTheme.surface3,
+                    style: const TextStyle(color: AppTheme.textDark, fontSize: 11),
+                    items: [
+                      'Employed (Full-time)',
+                      'Employed (Part-time)',
+                      'Self-employed',
+                      'Unemployed',
+                      'Student',
+                    ].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                    onChanged: (v) => setState(() => _employmentCtrl.text = v ?? ''),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Skills
+                  _fieldLabel('Skills'),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      'Communication',
+                      'Leadership',
+                      'Problem Solving',
+                      'Teamwork',
+                      'Computer Literacy',
+                      'Customer Service',
+                      'Project Management',
+                      'Data Analysis',
+                      'Marketing',
+                      'Sales',
+                    ].map((skill) {
+                      final selected = _skills.contains(skill);
+                      return FilterChip(
+                        label: Text(skill),
+                        selected: selected,
+                        onSelected: (val) {
+                          setState(() {
+                            if (val) {
+                              _skills.add(skill);
+                            } else {
+                              _skills.remove(skill);
+                            }
+                          });
+                        },
+                        backgroundColor: AppTheme.surface3,
+                        selectedColor: AppTheme.primaryLow,
+                        checkmarkColor: AppTheme.primary,
+                        side: BorderSide(
+                          color: selected ? AppTheme.primary : AppTheme.border,
+                          width: 0.5,
+                        ),
+                        labelStyle: TextStyle(
+                          color: selected ? AppTheme.primary : AppTheme.mutedText,
+                          fontSize: 11,
+                          fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Password
+                  _fieldLabel('Password'),
+                  const SizedBox(height: 4),
+                  _passwordField(
+                    controller: _passwordCtrl,
+                    hint: 'Min 8 characters',
+                    obscure: _obscurePassword,
+                    onToggle: () => setState(() => _obscurePassword = !_obscurePassword),
+                    validator: _validatePassword,
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Confirm Password
+                  _fieldLabel('Confirm Password'),
+                  const SizedBox(height: 4),
+                  _passwordField(
+                    controller: _confirmCtrl,
+                    hint: 'Confirm password',
+                    obscure: _obscureConfirm,
+                    onToggle: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                    validator: _validateConfirmPassword,
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Amber warning notice — matches HTML amber info box
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: AppTheme.warningLow,
+                      borderRadius: BorderRadius.circular(9),
+                      border: Border.all(
+                        color: AppTheme.warning.withOpacity(0.25),
+                        width: 0.5,
+                      ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Icon(Icons.info_outline, color: AppTheme.warning, size: 14),
+                        SizedBox(width: 7),
+                        Expanded(
+                          child: Text(
+                            'Your account requires admin approval before accessing the dashboard.',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: AppTheme.warning,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // [UIUX-PRIV-004] — privacy consent checkbox
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surface2,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: _privacyConsented ? AppTheme.primary : AppTheme.border,
+                        width: 0.5,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: Checkbox(
+                                value: _privacyConsented,
+                                onChanged: (val) => setState(() => _privacyConsented = val ?? false),
+                                activeColor: AppTheme.primary,
+                                side: const BorderSide(color: AppTheme.border2, width: 1),
+                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                visualDensity: VisualDensity.compact,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            const Expanded(
+                              child: Text(
+                                'I consent to my data being stored for programme matching and job applications. I understand my data is not shared externally.',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppTheme.mutedText,
+                                  height: 1.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        GestureDetector(
+                          onTap: () {
+                            // [UIUX-PRIV-004] — open Privacy Policy (PDF or web view)
+                          },
+                          child: const Text(
+                            'Read our Privacy Policy',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppTheme.primary,
+                              fontWeight: FontWeight.w600,
+                              decoration: TextDecoration.underline,
+                              decorationColor: AppTheme.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  if (_errorMessage != null) ...[
+                    const SizedBox(height: 16),
+                    _errorBanner(_errorMessage!),
                   ],
-                ),
-              ],
+
+                  const SizedBox(height: 14),
+
+                  // Primary CTA — "Create Business Account"
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _handleSignUp,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        elevation: 0,
+                        textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                      )
+                          : const Text('Create Business Account'),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Secondary "Back to login" text link
+                  Center(
+                    child: GestureDetector(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: RichText(
+                          text: const TextSpan(
+                            children: [
+                              TextSpan(
+                                text: 'Already have an account? ',
+                                style: TextStyle(fontSize: 11, color: AppTheme.mutedText),
+                              ),
+                              TextSpan(
+                                text: 'Log In',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: AppTheme.primary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
             ),
           ),
         ),
@@ -422,17 +639,20 @@ class _SignupScreenState extends State<SignupScreen> {
     width: double.infinity,
     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
     decoration: BoxDecoration(
-      color: Colors.redAccent.withValues(alpha: 0.08),
+      color: AppTheme.errorLow,
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+      border: Border.all(color: AppTheme.error, width: 0.5),
     ),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Icon(Icons.error_outline, color: Colors.redAccent, size: 18),
+        const Icon(Icons.error_outline, color: AppTheme.error, size: 18),
         const SizedBox(width: 8),
         Expanded(
-          child: Text(message, style: const TextStyle(color: Colors.redAccent, fontSize: 13, fontWeight: FontWeight.w500)),
+          child: Text(
+            message,
+            style: const TextStyle(color: AppTheme.error, fontSize: 13, fontWeight: FontWeight.w500),
+          ),
         ),
       ],
     ),
@@ -440,29 +660,55 @@ class _SignupScreenState extends State<SignupScreen> {
 
   Widget _fieldLabel(String text) => Text(
     text,
-    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: AppTheme.textDark),
+    style: const TextStyle(
+      fontWeight: FontWeight.normal,
+      fontSize: 10,
+      color: AppTheme.mutedText,
+    ),
   );
 
   InputDecoration _fieldDecoration({required String hint, Widget? prefix, Widget? suffix}) => InputDecoration(
     hintText: hint,
-    hintStyle: const TextStyle(color: AppTheme.mutedText),
+    hintStyle: const TextStyle(color: AppTheme.subtleText, fontSize: 11),
     prefixIcon: prefix,
     suffixIcon: suffix,
     filled: true,
-    fillColor: const Color(0xFFF0F4F8),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-    errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Colors.redAccent)),
-    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: AppTheme.primary.withValues(alpha: 0.6), width: 1.5)),
-    focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Colors.redAccent, width: 1.5)),
+    fillColor: AppTheme.surface2,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: const BorderSide(color: AppTheme.border2, width: 0.5),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: const BorderSide(color: AppTheme.border2, width: 0.5),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: const BorderSide(color: AppTheme.error, width: 0.5),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: const BorderSide(color: AppTheme.primary, width: 1),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: const BorderSide(color: AppTheme.error, width: 1),
+    ),
   );
 
-  Widget _textField({required TextEditingController controller, required String hint, String? Function(String?)? validator}) => TextFormField(
-    controller: controller,
-    autovalidateMode: AutovalidateMode.onUserInteraction,
-    validator: validator,
-    decoration: _fieldDecoration(hint: hint),
-  );
+  Widget _textField({
+    required TextEditingController controller,
+    required String hint,
+    String? Function(String?)? validator,
+  }) =>
+      TextFormField(
+        controller: controller,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        style: const TextStyle(color: AppTheme.textDark, fontSize: 11),
+        validator: validator,
+        decoration: _fieldDecoration(hint: hint),
+      );
 
   Widget _passwordField({
     required TextEditingController controller,
@@ -470,18 +716,23 @@ class _SignupScreenState extends State<SignupScreen> {
     required VoidCallback onToggle,
     String? hint,
     String? Function(String?)? validator,
-  }) => TextFormField(
-    controller: controller,
-    obscureText: obscure,
-    autovalidateMode: AutovalidateMode.onUserInteraction,
-    validator: validator ?? (v) => _validateRequired(v, 'Password'),
-    decoration: _fieldDecoration(
-      hint: hint ?? 'Enter password',
-      prefix: const Icon(Icons.lock_outline, color: AppTheme.mutedText, size: 20),
-      suffix: IconButton(
-        icon: Icon(obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppTheme.mutedText, size: 20),
-        onPressed: onToggle,
-      ),
-    ),
-  );
+  }) =>
+      TextFormField(
+        controller: controller,
+        obscureText: obscure,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        style: const TextStyle(color: AppTheme.textDark, fontSize: 11),
+        validator: validator ?? (v) => _validateRequired(v, 'Password'),
+        decoration: _fieldDecoration(
+          hint: hint ?? 'Enter password',
+          suffix: IconButton(
+            icon: Icon(
+              obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+              color: AppTheme.subtleText,
+              size: 18,
+            ),
+            onPressed: onToggle,
+          ),
+        ),
+      );
 }

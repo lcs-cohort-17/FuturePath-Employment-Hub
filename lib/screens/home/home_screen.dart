@@ -27,7 +27,6 @@ class JobSummary {
 
 enum ProgrammeStatus { open, startingSoon, closed }
 
-/// Lightweight stand-in for the real programme model until INT-003 ships one.
 class ProgrammeSummary {
   final String id;
   final String title;
@@ -52,8 +51,6 @@ class ProgrammeSummary {
   });
 }
 
-/// Bundles everything the Home screen needs from the data layer in one
-/// fetch, so a single FutureBuilder can drive the whole dashboard body.
 class HomeDashboardData {
   final int programmesCount;
   final int openJobsCount;
@@ -166,16 +163,12 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // initState: create the search controller once, and capture the
-    // dashboard Future a single time. Calling widget.fetchDashboardData()
-    // directly inside build() would re-trigger the fetch on every rebuild.
     _searchController = TextEditingController();
     _dashboardFuture = widget.fetchDashboardData();
   }
 
   @override
   void dispose() {
-    // dispose: release the text controller to avoid leaking resources.
     _searchController.dispose();
     super.dispose();
   }
@@ -221,22 +214,33 @@ class _HomeScreenState extends State<HomeScreen> {
         .showSnackBar(SnackBar(content: Text('$message — navigation not wired yet')));
   }
 
+  /// Returns a background/foreground colour pair for a job avatar based on
+  /// the initials string, cycling through the app's semantic colour pairs so
+  /// each card feels distinct without requiring a data-model field.
+  ({Color bg, Color fg}) _avatarColours(String initials) {
+    final pairs = [
+      (bg: AppTheme.infoLow, fg: AppTheme.info),
+      (bg: AppTheme.successLow, fg: AppTheme.success),
+      (bg: AppTheme.warningLow, fg: AppTheme.warning),
+      (bg: AppTheme.primaryLow, fg: AppTheme.primary),
+    ];
+    final index = initials.codeUnits.fold(0, (sum, c) => sum + c) % pairs.length;
+    return pairs[index];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.surface,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildTopBar(),
-              const SizedBox(height: 20),
               _buildGreeting(),
-              const SizedBox(height: 16),
               _buildSearchBar(),
-              const SizedBox(height: 24),
+              const SizedBox(height: 6),
               FutureBuilder<HomeDashboardData>(
                 future: _dashboardFuture,
                 builder: (context, snapshot) {
@@ -244,7 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     return const Padding(
                       padding: EdgeInsets.symmetric(vertical: 48),
                       child: Center(
-                        child: CircularProgressIndicator(color: AppTheme.accent),
+                        child: CircularProgressIndicator(color: AppTheme.primary),
                       ),
                     );
                   }
@@ -263,11 +267,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildOverviewSection(data),
+                      _buildStatsGrid(data),
+                      _buildSectionHeader(title: 'Recommended', onSeeAll: _handleSeeAllJobs),
+                      ...data.recommendedJobs.take(3).map(
+                            (job) => _jobCard(job),
+                      ),
+                      _buildSectionHeader(
+                          title: 'Featured Programmes', onSeeAll: _handleSeeAllProgrammes),
+                      ...data.featuredProgrammes.take(3).map(
+                            (p) => _programmeCard(p),
+                      ),
                       const SizedBox(height: 24),
-                      _buildRecommendedSection(data),
-                      const SizedBox(height: 24),
-                      _buildFeaturedSection(data),
                     ],
                   );
                 },
@@ -279,214 +289,312 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ── Topbar ────────────────────────────────────────────────────────────────
+
   Widget _buildTopBar() {
-    return Row(
-      children: [
-        const CircleAvatar(
-          radius: 18,
-          backgroundColor: AppTheme.primary,
-          child: Text('FP', style: TextStyle(color: AppTheme.card, fontWeight: FontWeight.bold)),
-        ),
-        const SizedBox(width: 10),
-        const Text(
-          'FuturePath',
-          style: TextStyle(color: AppTheme.primary, fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const Spacer(),
-        Badge(
-          label: Text('${widget.notificationCount}'),
-          backgroundColor: AppTheme.accent,
-          isLabelVisible: widget.notificationCount > 0,
-          child: IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: AppTheme.primary),
-            onPressed: widget.onNotificationsTap,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildGreeting() {
-    return Row(
-      children: [
-        CircleAvatar(
-          radius: 22,
-          backgroundColor: AppTheme.secondary,
-          child: Text(widget.userInitials,
-              style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold)),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('$_greeting 👋', style: const TextStyle(color: AppTheme.mutedText, fontSize: 13)),
-              Text(widget.userName,
-                  style: const TextStyle(
-                      color: AppTheme.textDark, fontSize: 20, fontWeight: FontWeight.bold)),
-            ],
-          ),
-        ),
-        // Decorative time-of-day icon to mirror the design reference.
-        // Not wired to an action — safe to repurpose (e.g. settings) later.
-        const Icon(Icons.wb_sunny_outlined, color: AppTheme.mutedText),
-      ],
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return TextField(
-      controller: _searchController,
-      onSubmitted: _handleSearchSubmitted,
-      style: const TextStyle(color: AppTheme.textDark),
-      decoration: InputDecoration(
-        hintText: 'Search jobs, programmes, skills...',
-        hintStyle: const TextStyle(color: AppTheme.mutedText),
-        prefixIcon: const Icon(Icons.search, color: AppTheme.mutedText),
-        filled: true,
-        fillColor: AppTheme.card,
-        contentPadding: const EdgeInsets.symmetric(vertical: 14),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
-        ),
-      ),
-    );
-  }
-
-  Widget _sectionHeader({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required VoidCallback onSeeAll,
-  }) {
-    return Row(
-      children: [
-        Icon(icon, color: iconColor, size: 20),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Text(title,
-              style: const TextStyle(color: AppTheme.textDark, fontSize: 16, fontWeight: FontWeight.bold)),
-        ),
-        GestureDetector(
-          onTap: onSeeAll,
-          child: const Row(
-            children: [
-              Text('See all', style: TextStyle(color: AppTheme.accent, fontWeight: FontWeight.w600)),
-              Icon(Icons.chevron_right, color: AppTheme.accent, size: 18),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildOverviewSection(HomeDashboardData data) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Row(
-          children: [
-            Icon(Icons.trending_up, color: AppTheme.accent, size: 20),
-            SizedBox(width: 6),
-            Text('Overview',
-                style: TextStyle(color: AppTheme.textDark, fontSize: 16, fontWeight: FontWeight.bold)),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(child: _statCard(Icons.school_outlined, '${data.programmesCount}', 'Programmes')),
-            const SizedBox(width: 12),
-            Expanded(child: _statCard(Icons.work_outline, '${data.openJobsCount}', 'Open Jobs')),
-            const SizedBox(width: 12),
-            Expanded(child: _statCard(Icons.apartment_outlined, '${data.employersCount}', 'Employers')),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _statCard(IconData icon, String value, String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(color: AppTheme.secondary, borderRadius: BorderRadius.circular(16)),
-      child: Column(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      decoration: const BoxDecoration(
+        color: AppTheme.surface,
+        border: Border(bottom: BorderSide(color: AppTheme.border, width: 0.5)),
+      ),
+      child: Row(
         children: [
-          Icon(icon, color: AppTheme.accent, size: 22),
-          const SizedBox(height: 8),
-          Text(value, style: const TextStyle(color: AppTheme.textDark, fontSize: 20, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 2),
-          Text(label, style: const TextStyle(color: AppTheme.mutedText, fontSize: 12)),
+          Container(
+            width: 26,
+            height: 26,
+            decoration: BoxDecoration(
+              color: AppTheme.primary,
+              borderRadius: BorderRadius.circular(7),
+            ),
+            alignment: Alignment.center,
+            child: const Text(
+              'FP',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          const SizedBox(width: 7),
+          const Text(
+            'FuturePath',
+            style: TextStyle(
+              color: AppTheme.textDark,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const Spacer(),
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              GestureDetector(
+                onTap: widget.onNotificationsTap,
+                child: const Icon(
+                  Icons.notifications_outlined,
+                  color: AppTheme.mutedText,
+                  size: 22,
+                ),
+              ),
+              if (widget.notificationCount > 0)
+                Positioned(
+                  top: -2,
+                  right: -2,
+                  child: Container(
+                    width: 13,
+                    height: 13,
+                    decoration: const BoxDecoration(
+                      color: AppTheme.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      '${widget.notificationCount}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 8,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildRecommendedSection(HomeDashboardData data) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _sectionHeader(
-          icon: Icons.star_border_rounded,
-          iconColor: AppTheme.accent,
-          title: 'Recommended for You',
-          onSeeAll: _handleSeeAllJobs,
+  // ── Greeting ──────────────────────────────────────────────────────────────
+
+  Widget _buildGreeting() {
+    // [UIUX-PRIV-001] — userName removed from display. Generic greeting only.
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+      child: Text(
+        _greeting,
+        style: const TextStyle(
+          color: AppTheme.mutedText,
+          fontSize: 11,
         ),
-        const SizedBox(height: 12),
-        // Acceptance criteria allows "first 3 or random" — first 3 keeps
-        // results deterministic and testable.
-        ...data.recommendedJobs.take(3).map(
-              (job) => Padding(padding: const EdgeInsets.only(bottom: 12), child: _jobCard(job)),
-        ),
-      ],
+      ),
     );
   }
 
+  // ── Search bar ────────────────────────────────────────────────────────────
+
+  Widget _buildSearchBar() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: BoxDecoration(
+        color: AppTheme.surface2,
+        border: Border.all(color: AppTheme.border, width: 0.5),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.search, color: AppTheme.subtleText, size: 16),
+          const SizedBox(width: 7),
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              onSubmitted: _handleSearchSubmitted,
+              style: const TextStyle(color: AppTheme.textDark, fontSize: 12),
+              decoration: const InputDecoration(
+                hintText: 'Search jobs, programmes, skills…',
+                hintStyle: TextStyle(color: AppTheme.subtleText, fontSize: 12),
+                isDense: true,
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Stats grid ────────────────────────────────────────────────────────────
+
+  Widget _buildStatsGrid(HomeDashboardData data) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      child: Row(
+        children: [
+          Expanded(child: _statCard('${data.programmesCount}', 'Programmes', isRed: true)),
+          const SizedBox(width: 7),
+          Expanded(child: _statCard('${data.openJobsCount}', 'Open Jobs')),
+          const SizedBox(width: 7),
+          Expanded(child: _statCard('${data.employersCount}', 'Employers')),
+        ],
+      ),
+    );
+  }
+
+  Widget _statCard(String value, String label, {bool isRed = false}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+      decoration: BoxDecoration(
+        color: AppTheme.surface2,
+        border: Border.all(color: AppTheme.border, width: 0.5),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: TextStyle(
+              color: isRed ? AppTheme.primary : AppTheme.textDark,
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: const TextStyle(color: AppTheme.mutedText, fontSize: 10),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Section header ────────────────────────────────────────────────────────
+
+  Widget _buildSectionHeader({
+    required String title,
+    required VoidCallback onSeeAll,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+      child: Row(
+        children: [
+          Container(
+            width: 5,
+            height: 5,
+            decoration: const BoxDecoration(
+              color: AppTheme.primary,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 5),
+          Expanded(
+            child: Text(
+              title,
+              style: const TextStyle(
+                color: AppTheme.textDark,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: onSeeAll,
+            child: const Text(
+              'See all ›',
+              style: TextStyle(color: AppTheme.primary, fontSize: 11),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Job card ──────────────────────────────────────────────────────────────
+
   Widget _jobCard(JobSummary job) {
+    final colours = _avatarColours(job.companyInitials);
     return GestureDetector(
       onTap: () => _handleJobTap(job),
       child: Container(
-        padding: const EdgeInsets.all(14),
+        margin: const EdgeInsets.fromLTRB(14, 0, 14, 9),
+        padding: const EdgeInsets.all(13),
         decoration: BoxDecoration(
-          color: AppTheme.card,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: AppTheme.primary.withOpacity(0.06), blurRadius: 8, offset: const Offset(0, 2))],
+          color: AppTheme.surface2,
+          border: Border.all(color: AppTheme.border, width: 0.5),
+          borderRadius: BorderRadius.circular(14),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header row: avatar + title/company + status badge
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  radius: 18,
-                  backgroundColor: AppTheme.secondary,
-                  child: Text(job.companyInitials,
-                      style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold, fontSize: 12)),
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: colours.bg,
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    job.companyInitials,
+                    style: TextStyle(
+                      color: colours.fg,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 9),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(job.title,
-                          style: const TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.bold, fontSize: 14)),
-                      Text(job.company, style: const TextStyle(color: AppTheme.mutedText, fontSize: 12)),
+                      Text(
+                        job.title,
+                        style: const TextStyle(
+                          color: AppTheme.textDark,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 1),
+                      Text(
+                        job.company,
+                        style: const TextStyle(
+                          color: AppTheme.mutedText,
+                          fontSize: 10,
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                _statusPill(label: job.isOpen ? 'Open' : 'Closed', color: job.isOpen ? AppTheme.accent : AppTheme.mutedText),
+                const SizedBox(width: 8),
+                _openBadge(),
               ],
             ),
-            const SizedBox(height: 10),
-            Wrap(spacing: 6, runSpacing: 6, children: job.skills.map(_skillChip).toList()),
-            const SizedBox(height: 8),
+            // Skill tags
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 7),
+              child: Wrap(
+                spacing: 4,
+                runSpacing: 4,
+                children: job.skills.map(_skillTag).toList(),
+              ),
+            ),
+            // Meta row
             Row(
               children: [
-                const Icon(Icons.work_outline, size: 14, color: AppTheme.mutedText),
-                const SizedBox(width: 4),
-                Text('${job.employmentType} · ${job.closingLabel}',
-                    style: const TextStyle(color: AppTheme.mutedText, fontSize: 12)),
+                const Icon(Icons.work_outline, size: 11, color: AppTheme.subtleText),
+                const SizedBox(width: 3),
+                Text(
+                  job.employmentType,
+                  style: const TextStyle(color: AppTheme.subtleText, fontSize: 9),
+                ),
+                const SizedBox(width: 10),
+                const Icon(Icons.access_time, size: 11, color: AppTheme.subtleText),
+                const SizedBox(width: 3),
+                Text(
+                  job.closingLabel,
+                  style: const TextStyle(color: AppTheme.subtleText, fontSize: 9),
+                ),
               ],
             ),
           ],
@@ -495,143 +603,172 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _skillChip(String label) {
+  Widget _skillTag(String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(color: AppTheme.secondary, borderRadius: BorderRadius.circular(20)),
-      child: Text(label, style: const TextStyle(color: AppTheme.primary, fontSize: 11, fontWeight: FontWeight.w600)),
-    );
-  }
-
-  Widget _statusPill({required String label, required Color color}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: AppTheme.secondary, borderRadius: BorderRadius.circular(20)),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(width: 6, height: 6, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-          const SizedBox(width: 4),
-          Text(label, style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600)),
-        ],
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        color: const Color(0x0DFFFFFF),
+        border: Border.all(color: AppTheme.border, width: 0.5),
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(color: AppTheme.mutedText, fontSize: 9),
       ),
     );
   }
 
-  Widget _buildFeaturedSection(HomeDashboardData data) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _sectionHeader(
-          icon: Icons.rocket_launch_outlined,
-          iconColor: AppTheme.primary,
-          title: 'Featured Programmes',
-          onSeeAll: _handleSeeAllProgrammes,
+  Widget _openBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppTheme.successLow,
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: const Text(
+        '● Open',
+        style: TextStyle(
+          color: AppTheme.success,
+          fontSize: 9,
+          fontWeight: FontWeight.w700,
         ),
-        const SizedBox(height: 12),
-        ...data.featuredProgrammes.take(3).map(
-              (p) => Padding(padding: const EdgeInsets.only(bottom: 12), child: _programmeCard(p)),
-        ),
-      ],
+      ),
     );
   }
 
+  // ── Programme card ────────────────────────────────────────────────────────
+
   Widget _programmeCard(ProgrammeSummary programme) {
-    final statusColor = switch (programme.status) {
-      ProgrammeStatus.open => AppTheme.accent,
-      ProgrammeStatus.startingSoon => AppTheme.primary,
-      ProgrammeStatus.closed => AppTheme.mutedText,
-    };
     final statusLabel = switch (programme.status) {
-      ProgrammeStatus.open => 'Open',
+      ProgrammeStatus.open         => '● Open',
       ProgrammeStatus.startingSoon => 'Starting Soon',
-      ProgrammeStatus.closed => 'Closed',
+      ProgrammeStatus.closed       => 'Closed',
     };
+    final statusColor = switch (programme.status) {
+      ProgrammeStatus.open         => AppTheme.success,
+      ProgrammeStatus.startingSoon => AppTheme.warning,
+      ProgrammeStatus.closed       => AppTheme.mutedText,
+    };
+    final statusBg = switch (programme.status) {
+      ProgrammeStatus.open         => AppTheme.successLow,
+      ProgrammeStatus.startingSoon => AppTheme.warningLow,
+      ProgrammeStatus.closed       => AppTheme.surface3,
+    };
+
+    final fillRatio = programme.capacity == 0
+        ? 0.0
+        : programme.enrolled / programme.capacity;
+    final isFull = fillRatio >= 0.95;
 
     return GestureDetector(
       onTap: () => _handleProgrammeTap(programme),
       child: Container(
-        clipBehavior: Clip.antiAlias,
+        margin: const EdgeInsets.fromLTRB(14, 0, 14, 9),
         decoration: BoxDecoration(
-          color: AppTheme.card,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: AppTheme.primary.withOpacity(0.06), blurRadius: 8, offset: const Offset(0, 2))],
+          color: AppTheme.surface2,
+          border: Border.all(color: AppTheme.border, width: 0.5),
+          borderRadius: BorderRadius.circular(14),
         ),
+        clipBehavior: Clip.antiAlias,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Image / banner area — 80px tall
             SizedBox(
-              height: 130,
+              height: 80,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // Falls back to a themed placeholder if no URL is given or
-                  // the request fails — important on an offline emulator.
                   programme.imageUrl != null
-                      ? Image.network(programme.imageUrl!,
-                      fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(color: AppTheme.secondary))
+                      ? Image.network(
+                    programme.imageUrl!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) =>
+                        Container(color: AppTheme.surface3),
+                  )
                       : Container(
-                    color: AppTheme.secondary,
-                    child: const Center(child: Icon(Icons.image_outlined, color: AppTheme.primary, size: 32)),
-                  ),
-                  // Scrim for text legibility, built from the theme's own
-                  // navy rather than introducing a new colour.
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [AppTheme.primary.withOpacity(0.0), AppTheme.primary.withOpacity(0.75)],
-                      ),
+                    color: AppTheme.surface3,
+                    alignment: Alignment.center,
+                    child: const Icon(
+                      Icons.image_outlined,
+                      color: AppTheme.subtleText,
+                      size: 28,
                     ),
                   ),
-                  Positioned(top: 10, right: 10, child: _statusPill(label: statusLabel, color: statusColor)),
+                  // Status pill — top right
                   Positioned(
-                    left: 12,
-                    right: 12,
-                    bottom: 10,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(programme.title,
-                            style: const TextStyle(color: AppTheme.card, fontWeight: FontWeight.bold, fontSize: 15)),
-                        Text(programme.provider, style: TextStyle(color: AppTheme.card.withOpacity(0.85), fontSize: 12)),
-                      ],
+                    top: 7,
+                    right: 9,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: statusBg,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        statusLabel,
+                        style: TextStyle(
+                          color: statusColor,
+                          fontSize: 8,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
+            // Body
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.fromLTRB(13, 11, 13, 11),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.timer_outlined, size: 14, color: AppTheme.mutedText),
-                      const SizedBox(width: 4),
-                      Text('${programme.duration} · ${programme.level}',
-                          style: const TextStyle(color: AppTheme.mutedText, fontSize: 12)),
-                    ],
+                  Text(
+                    programme.title,
+                    style: const TextStyle(
+                      color: AppTheme.textDark,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${programme.provider} · ${programme.duration} · ${programme.level}',
+                    style: const TextStyle(
+                      color: AppTheme.mutedText,
+                      fontSize: 10,
+                    ),
+                  ),
+                  // Progress track
+                  const SizedBox(height: 7),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(2),
+                    child: LinearProgressIndicator(
+                      value: fillRatio,
+                      minHeight: 3,
+                      backgroundColor: AppTheme.surface3,
+                      color: AppTheme.primary,
+                    ),
+                  ),
+                  // Progress label
+                  const SizedBox(height: 3),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Expanded(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: LinearProgressIndicator(
-                            value: programme.capacity == 0 ? 0 : programme.enrolled / programme.capacity,
-                            minHeight: 6,
-                            backgroundColor: AppTheme.secondary,
-                            color: AppTheme.accent,
-                          ),
+                      Text(
+                        isFull ? 'Almost full!' : 'Spots',
+                        style: TextStyle(
+                          color: isFull ? AppTheme.primary : AppTheme.subtleText,
+                          fontSize: 9,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Text('${programme.enrolled}/${programme.capacity}',
-                          style: const TextStyle(color: AppTheme.mutedText, fontSize: 12)),
+                      Text(
+                        '${programme.enrolled}/${programme.capacity}',
+                        style: const TextStyle(
+                            color: AppTheme.subtleText, fontSize: 9),
+                      ),
                     ],
                   ),
                 ],

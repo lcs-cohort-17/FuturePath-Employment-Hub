@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../services/auth_services.dart';
 import 'loading_indicator.dart';
 import 'error_message.dart';
+//import '../../theme/app_theme.dart';
+import '../theme/app_theme.dart';
 
 class ForgotPasswordForm extends StatefulWidget {
   const ForgotPasswordForm({super.key});
@@ -72,24 +74,76 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Label
+          const Text(
+            'Email address',
+            style: TextStyle(
+              fontSize: 10,
+              color: AppTheme.mutedText,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 4),
+          // Email field
           TextFormField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.done,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppTheme.textDark,
+            ),
             decoration: InputDecoration(
-              labelText: 'Email Address',
-              hintText: 'Enter your email',
-              prefixIcon: const Icon(Icons.email_outlined),
+              hintText: 'you@example.com',
+              hintStyle: const TextStyle(
+                fontSize: 12,
+                color: AppTheme.subtleText,
+              ),
+              prefixIcon: const Icon(
+                Icons.email_outlined,
+                size: 16,
+                color: AppTheme.subtleText,
+              ),
+              filled: true,
+              fillColor: AppTheme.surface2,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 13,
+                vertical: 11,
+              ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(
+                  color: AppTheme.border2,
+                  width: 0.5,
+                ),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey[300]!),
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(
+                  color: AppTheme.border2,
+                  width: 0.5,
+                ),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Colors.blue, width: 2),
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(
+                  color: AppTheme.primary,
+                  width: 1,
+                ),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(
+                  color: AppTheme.error,
+                  width: 0.5,
+                ),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(
+                  color: AppTheme.error,
+                  width: 1,
+                ),
               ),
             ),
             validator: (value) {
@@ -105,28 +159,56 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
             onFieldSubmitted: (_) => _handlePasswordReset(),
           ),
           if (_errorMessage != null) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             ErrorMessage(message: _errorMessage!),
           ],
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
+          // Primary button
           SizedBox(
-            height: 50,
+            width: double.infinity,
             child: ElevatedButton(
               onPressed: _isLoading ? null : _handlePasswordReset,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
+                backgroundColor: AppTheme.primary,
                 foregroundColor: Colors.white,
+                disabledBackgroundColor: AppTheme.primaryDim,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
+                padding: const EdgeInsets.symmetric(vertical: 13),
                 elevation: 0,
+                textStyle: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               child: _isLoading
                   ? LoadingIndicator(color: Colors.white)
-                  : const Text(
-                'Send Reset Link',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  : const Text('Send Reset Link'),
+            ),
+          ),
+          const SizedBox(height: 8),
+          // Secondary back button
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppTheme.mutedText,
+                side: const BorderSide(
+                  color: AppTheme.border2,
+                  width: 0.5,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 11),
+                textStyle: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                ),
               ),
+              child: const Text('Back to Login'),
             ),
           ),
         ],
@@ -137,48 +219,129 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
   Widget _buildSuccessView() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Icon(
-          Icons.check_circle_outline,
-          size: 80,
-          color: Colors.green[400],
+        // Icon circle — mirrors Staff Pending pi-circle pattern
+        Center(
+          child: Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              color: AppTheme.successLow,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.check_rounded,
+              size: 32,
+              color: AppTheme.success,
+            ),
+          ),
         ),
-        const SizedBox(height: 24),
-        Text(
+        const SizedBox(height: 16),
+        // Title
+        const Text(
           'Email Sent!',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: AppTheme.textDark,
           ),
           textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 12),
-        Text(
-          'We\'ve sent a password reset link to\n${_emailController.text}',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Colors.grey[600],
-          ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 32),
-        Text(
-          'Didn\'t receive the email?',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.grey[500],
-          ),
         ),
         const SizedBox(height: 8),
-        TextButton(
+        // Subtitle
+        // [UIUX-PRIV-002] — email address removed from success message.
+        // Previously displayed: 'We\'ve sent a password reset link to\n${_emailController.text}'
+        // Replaced with generic text to avoid echoing user PII in the UI.
+        const Text(
+          'We\'ve sent a password reset link to your email address.',
+          style: TextStyle(
+            fontSize: 12,
+            color: AppTheme.mutedText,
+            height: 1.6,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 24),
+        // Confirmation detail card — mirrors submission details card in Staff Pending
+        Container(
+          decoration: BoxDecoration(
+            color: AppTheme.surface2,
+            border: Border.all(color: AppTheme.border, width: 0.5),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                margin: const EdgeInsets.only(top: 3),
+                decoration: const BoxDecoration(
+                  color: AppTheme.success,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text(
+                  'You can close the app and return once you have clicked the link in your email.',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: AppTheme.success,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+        // Try again secondary button
+        OutlinedButton(
           onPressed: () {
             setState(() {
               _isSuccess = false;
               _errorMessage = null;
             });
           },
-          child: const Text('Try again'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppTheme.mutedText,
+            side: const BorderSide(
+              color: AppTheme.border2,
+              width: 0.5,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 11),
+            textStyle: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+          child: const Text('Didn\'t receive it? Try again'),
         ),
-        const SizedBox(height: 16),
-        TextButton(
+        const SizedBox(height: 8),
+        // Back to login secondary button
+        OutlinedButton(
           onPressed: () => Navigator.of(context).pop(),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppTheme.mutedText,
+            side: const BorderSide(
+              color: AppTheme.border2,
+              width: 0.5,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 11),
+            textStyle: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
           child: const Text('Back to Login'),
         ),
       ],

@@ -4,6 +4,9 @@ import '../../services/auth_services.dart';
 import '../home/home_screen.dart';
 import '../auth/login_screen.dart';
 import '../auth/reset_password_screen.dart';
+//import '../../theme.dart';
+// import '../lib/core/theme/app_theme.dart';
+import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 
 /// The first widget the app mounts.
 /// Routes to HomeScreen, LoginScreen, or ResetPasswordScreen
@@ -65,8 +68,11 @@ class _AppGateState extends State<AppGate> {
   Widget build(BuildContext context) {
     if (_hasSession == null) {
       return const Scaffold(
+        backgroundColor: AppTheme.surface,
         body: Center(
-          child: CircularProgressIndicator(),
+          child: CircularProgressIndicator(
+            color: AppTheme.primary,
+          ),
         ),
       );
     }

@@ -1,6 +1,8 @@
 //employer_detail_screen.dart
 import 'package:flutter/material.dart';
 import '../../models/employer.dart';
+// import '../../theme.dart';
+import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 
 class EmployerDetailScreen extends StatelessWidget {
   final EmployerModel? employerData;
@@ -14,12 +16,10 @@ class EmployerDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final employer = employerData;
 
-    // Use a local variable to help type promotion
     if (employer == null) {
       return _buildNullState(context);
     }
 
-    // Now employer is promoted to non-nullable EmployerModel
     final bool isMissingInfo = employer.bio == null || employer.website == null;
 
     final String currentCompanyName = employer.companyName;
@@ -32,36 +32,68 @@ class EmployerDetailScreen extends StatelessWidget {
     final String? rawWebsite = isMissingInfo ? null : employer.website;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.surface,
         elevation: 0,
-        toolbarHeight: 85,
+        toolbarHeight: 56,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1A365D)),
+          icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.textDark, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Employer Profile',
-          style: TextStyle(color: Color(0xFF1A365D), fontWeight: FontWeight.bold, fontSize: 22),
+        title: Row(
+          children: [
+            Container(
+              width: 26,
+              height: 26,
+              decoration: BoxDecoration(
+                color: AppTheme.primary,
+                borderRadius: BorderRadius.circular(7),
+              ),
+              child: const Center(
+                child: Text(
+                  'FP',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 7),
+            const Text(
+              'Employer Profile',
+              style: TextStyle(
+                color: AppTheme.textDark,
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+              ),
+            ),
+          ],
         ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                 decoration: BoxDecoration(
-                  color: isMissingInfo ? const Color(0xFFFFF7ED) : const Color(0xFFF0FDF4),
-                  border: Border.all(color: isMissingInfo ? Colors.orange : const Color(0xFF008080)),
-                  borderRadius: BorderRadius.circular(20),
+                  color: isMissingInfo ? AppTheme.warningLow : AppTheme.successLow,
+                  border: Border.all(
+                    color: isMissingInfo
+                        ? AppTheme.warning.withOpacity(0.3)
+                        : AppTheme.success.withOpacity(0.3),
+                    width: 0.5,
+                  ),
+                  borderRadius: BorderRadius.circular(5),
                 ),
                 child: Text(
-                  isMissingInfo ? 'Incomplete Profile' : 'Verified Full Profile',
+                  isMissingInfo ? 'Incomplete' : 'Verified',
                   style: TextStyle(
-                    color: isMissingInfo ? Colors.orange.shade800 : const Color(0xFF008080),
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
+                    color: isMissingInfo ? AppTheme.warning : AppTheme.success,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -69,57 +101,104 @@ class EmployerDetailScreen extends StatelessWidget {
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(color: const Color(0xFFE2E8F0), height: 1),
+          preferredSize: const Size.fromHeight(0.5),
+          child: Container(color: AppTheme.border, height: 0.5),
         ),
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (isMissingInfo) _buildIncompleteWarning(),
 
-            const SizedBox(height: 12),
-
             // HERO IDENTITY CARD
             Container(
-              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.fromLTRB(14, 14, 14, 9),
+              padding: const EdgeInsets.all(13),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+                color: AppTheme.surface2,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppTheme.border, width: 0.5),
               ),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 54,
-                    height: 54,
-                    decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(12)),
-                    child: const Icon(Icons.business_rounded, color: Color(0xFF1A365D), size: 24),
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: AppTheme.infoLow,
+                      borderRadius: BorderRadius.circular(9),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'EM',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.info,
+                        ),
+                      ),
+                    ),
                   ),
-                  const SizedBox(width: 14),
+                  const SizedBox(width: 9),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
-                              child: Text(currentCompanyName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)), overflow: TextOverflow.ellipsis),
+                              child: Text(
+                                currentCompanyName,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppTheme.textDark,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                            const Icon(Icons.verified_rounded, color: Color(0xFF008080), size: 16),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: AppTheme.successLow,
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: const Text(
+                                '● Active',
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppTheme.success,
+                                ),
+                              ),
+                            ),
                           ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(currentIndustry, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B), fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 1),
+                        Text(
+                          currentIndustry,
+                          style: const TextStyle(fontSize: 10, color: AppTheme.mutedText),
+                        ),
+                        const SizedBox(height: 7),
                         Row(
                           children: [
-                            const Icon(Icons.location_on_outlined, size: 13, color: Color(0xFF94A3B8)),
+                            const Icon(Icons.location_on_outlined, size: 11, color: AppTheme.subtleText),
                             const SizedBox(width: 4),
-                            Text(currentLocation, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                            Text(
+                              currentLocation,
+                              style: const TextStyle(fontSize: 9, color: AppTheme.subtleText),
+                            ),
+                            const SizedBox(width: 10),
+                            const Icon(Icons.work_outline_rounded, size: 11, color: AppTheme.subtleText),
+                            const SizedBox(width: 4),
+                            Text(
+                              '$currentOpenings open positions',
+                              style: const TextStyle(fontSize: 9, color: AppTheme.subtleText),
+                            ),
                           ],
                         ),
                       ],
@@ -128,47 +207,113 @@ class EmployerDetailScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
 
-            // ABOUT COMPANY
-            const Text('About Company', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1A365D), letterSpacing: 0.3)),
-            const SizedBox(height: 8),
+            // ABOUT COMPANY section header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 5, 16, 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 5,
+                        height: 5,
+                        decoration: const BoxDecoration(
+                          color: AppTheme.primary,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      const Text(
+                        'About Company',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textDark,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // ABOUT COMPANY card
             Container(
+              margin: const EdgeInsets.fromLTRB(14, 0, 14, 9),
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: const Color(0xFFE2E8F0))),
+              padding: const EdgeInsets.all(13),
+              decoration: BoxDecoration(
+                color: AppTheme.surface2,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppTheme.border, width: 0.5),
+              ),
               child: Text(
-                rawBio ?? 'No overview biography details have been published by this company. Please reach out via their direct contact channels for general inquiries.',
+                rawBio ??
+                    'No overview biography details have been published by this company. Please reach out via their direct contact channels for general inquiries.',
                 style: TextStyle(
-                  fontSize: 13,
-                  color: rawBio != null ? const Color(0xFF475569) : const Color(0xFF64748B),
-                  height: 1.5,
+                  fontSize: 11,
+                  color: rawBio != null ? AppTheme.mutedText : AppTheme.subtleText,
+                  height: 1.6,
                   fontStyle: rawBio != null ? FontStyle.normal : FontStyle.italic,
                 ),
               ),
             ),
-            const SizedBox(height: 24),
 
-            // ADDITIONAL INFORMATION
-            const Text('Additional Information', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1A365D), letterSpacing: 0.3)),
-            const SizedBox(height: 8),
+            // ADDITIONAL INFORMATION section header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 5, 16, 8),
+              child: Row(
+                children: [
+                  Container(
+                    width: 5,
+                    height: 5,
+                    decoration: const BoxDecoration(
+                      color: AppTheme.primary,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                  const Text(
+                    'Additional Information',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textDark,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // ADDITIONAL INFORMATION block
             Container(
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: const Color(0xFFE2E8F0))),
+              margin: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+              decoration: BoxDecoration(
+                color: AppTheme.surface2,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppTheme.border, width: 0.5),
+              ),
               child: Column(
                 children: [
                   _buildMetaRow(Icons.language_rounded, 'Website', rawWebsite, isLink: true),
-                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  Container(height: 0.5, color: AppTheme.border),
                   _buildMetaRow(Icons.email_outlined, 'Contact', currentEmail),
-                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  Container(height: 0.5, color: AppTheme.border),
                   _buildMetaRow(
-                    Icons.business_center_outlined,
+                    Icons.work_outline_rounded,
                     'Active Openings',
-                    currentOpenings > 0 ? '$currentOpenings Open Positions' : 'No active positions listed',
+                    currentOpenings > 0
+                        ? '$currentOpenings Open Positions'
+                        : 'No active positions listed',
                     isPlaceholder: currentOpenings == 0,
                   ),
                 ],
               ),
             ),
+
+            const SizedBox(height: 12),
           ],
         ),
       ),
@@ -177,28 +322,46 @@ class EmployerDetailScreen extends StatelessWidget {
 
   Widget _buildNullState(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Employer Detail')),
-      body: const Center(child: Text('No employer data provided.')),
+      backgroundColor: AppTheme.surface,
+      appBar: AppBar(
+        backgroundColor: AppTheme.surface,
+        elevation: 0,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(0.5),
+          child: Container(color: AppTheme.border, height: 0.5),
+        ),
+        title: const Text(
+          'Employer Detail',
+          style: TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w700, fontSize: 14),
+        ),
+      ),
+      body: const Center(
+        child: Text(
+          'No employer data provided.',
+          style: TextStyle(color: AppTheme.mutedText, fontSize: 12),
+        ),
+      ),
     );
   }
 
   Widget _buildIncompleteWarning() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.fromLTRB(14, 14, 14, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.amber.withAlpha(26),
+        color: AppTheme.warningLow,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.amber.withAlpha(51)),
+        border: Border.all(color: AppTheme.warning.withOpacity(0.25), width: 0.5),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.warning_amber_rounded, color: Colors.amber.shade800, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
+          const Icon(Icons.info_outline_rounded, color: AppTheme.warning, size: 14),
+          const SizedBox(width: 7),
+          const Expanded(
             child: Text(
               'Some company details are currently pending verification. This section is being updated by our partner integration team.',
-              style: TextStyle(fontSize: 12, color: Colors.amber.shade900),
+              style: TextStyle(fontSize: 10, color: AppTheme.warning, height: 1.5),
             ),
           ),
         ],
@@ -206,26 +369,35 @@ class EmployerDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMetaRow(IconData icon, String label, String? value, {bool isLink = false, bool isPlaceholder = false}) {
+  Widget _buildMetaRow(
+      IconData icon,
+      String label,
+      String? value, {
+        bool isLink = false,
+        bool isPlaceholder = false,
+      }) {
     final bool isEmpty = value == null || value.isEmpty;
-    final String displayValue = isEmpty ? 'Website Not Listed' : value;
+    final String displayValue = isEmpty ? 'Not Listed' : value;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 14),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: const Color(0xFF64748B)),
+          Icon(icon, size: 16, color: AppTheme.mutedText),
           const SizedBox(width: 12),
-          Text(label, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 11, color: AppTheme.mutedText),
+          ),
           const Spacer(),
           Text(
             displayValue,
             style: TextStyle(
-              fontSize: 13,
-              fontWeight: (isEmpty || isPlaceholder) ? FontWeight.normal : FontWeight.bold,
+              fontSize: 11,
+              fontWeight: (isEmpty || isPlaceholder) ? FontWeight.normal : FontWeight.w700,
               color: isLink && !isEmpty
-                  ? const Color(0xFF008080)
-                  : (isEmpty || isPlaceholder ? const Color(0xFF94A3B8) : const Color(0xFF1E293B)),
+                  ? AppTheme.info
+                  : (isEmpty || isPlaceholder ? AppTheme.subtleText : AppTheme.textDark),
               fontStyle: (isEmpty || isPlaceholder) ? FontStyle.italic : FontStyle.normal,
             ),
           ),

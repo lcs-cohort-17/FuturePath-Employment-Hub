@@ -74,98 +74,246 @@ class _CvScreenContentState extends State<CvScreenContent> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.surface,
       appBar: AppBar(
-        backgroundColor: AppTheme.background,
+        backgroundColor: AppTheme.surface,
         elevation: 0,
-        title: Text(
-          'CV & Resume',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            color: AppTheme.textDark,
-            fontWeight: FontWeight.bold,
+        titleSpacing: 0,
+        title: Row(
+          children: [
+            const SizedBox(width: 16),
+            Container(
+              width: 26,
+              height: 26,
+              decoration: BoxDecoration(
+                color: AppTheme.primary,
+                borderRadius: BorderRadius.circular(7),
+              ),
+              alignment: Alignment.center,
+              child: const Text(
+                'FP',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            const SizedBox(width: 7),
+            const Text(
+              'CV & Skills',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.textDark,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(right: 16),
+                child: Icon(
+                  Icons.notifications_none,
+                  color: AppTheme.mutedText,
+                  size: 22,
+                ),
+              ),
+              Positioned(
+                top: 0,
+                right: 14,
+                child: Container(
+                  width: 13,
+                  height: 13,
+                  decoration: const BoxDecoration(
+                    color: AppTheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: const Text(
+                    '2',
+                    style: TextStyle(
+                      fontSize: 8,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(0.5),
+          child: Container(
+            height: 0.5,
+            color: AppTheme.border,
           ),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // [UIUX-PRIV-002] Privacy notice — personal data visible to authenticated user only
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 0),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppTheme.successLow,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: const Color(0x332ECC8A),
+                    width: 0.5,
+                  ),
+                ),
+                child: const Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.lock_outline,
+                      size: 14,
+                      color: AppTheme.mutedText,
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Your personal data is private and not shared with anyone.',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppTheme.mutedText,
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
             // CV Upload Section
+            _buildSectionHeader('CV & Resume', trailing: null),
             _buildCVUploadSection(),
 
-            const SizedBox(height: 28),
-
             // Skills Section
+            _buildSectionHeader('Skills', trailing: GestureDetector(
+              onTap: () {},
+              child: const Text(
+                '+ Add',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: AppTheme.primary,
+                ),
+              ),
+            )),
             _buildSkillsSection(),
 
-            const SizedBox(height: 28),
-
             // Programme History
-            _buildProgrammeHistory(),
+            if (widget.enrolledProgrammes.isNotEmpty || widget.completedProgrammes.isNotEmpty)
+              _buildProgrammeHistory()
+            else
+              _buildEmptyProgrammes(),
+
+            const SizedBox(height: 12),
           ],
         ),
       ),
     );
   }
 
+  Widget _buildSectionHeader(String title, {Widget? trailing}) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+      child: Row(
+        children: [
+          Container(
+            width: 5,
+            height: 5,
+            decoration: const BoxDecoration(
+              color: AppTheme.primary,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 5),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.textDark,
+            ),
+          ),
+          const Spacer(),
+          if (trailing != null) trailing,
+        ],
+      ),
+    );
+  }
+
   Widget _buildCVUploadSection() {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 9),
+      padding: const EdgeInsets.all(13),
       decoration: BoxDecoration(
-        color: AppTheme.card,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppTheme.primary.withAlpha(51),
-          width: 1.5,
-        ),
+        color: AppTheme.surface2,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.border, width: 0.5),
       ),
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(16),
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
-              color: AppTheme.secondary,
-              shape: BoxShape.circle,
+              color: AppTheme.surface3,
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
+            alignment: Alignment.center,
+            child: const Icon(
               Icons.cloud_upload_outlined,
-              size: 40,
+              size: 24,
               color: AppTheme.primary,
             ),
           ),
-          const SizedBox(height: 12),
-          Text(
+          const SizedBox(height: 10),
+          const Text(
             'Upload your CV',
             style: TextStyle(
               color: AppTheme.textDark,
-              fontWeight: FontWeight.w600,
-              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
+          const SizedBox(height: 3),
+          const Text(
             'PDF or DOC up to 5MB',
             style: TextStyle(
               color: AppTheme.mutedText,
-              fontSize: 13,
+              fontSize: 10,
             ),
           ),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: widget.onUploadCV,
-            icon: const Icon(Icons.upload_file, size: 20),
-            label: const Text(
-              'Choose File',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.accent,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+          const SizedBox(height: 13),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: widget.onUploadCV,
+              icon: const Icon(Icons.upload_file, size: 16),
+              label: const Text(
+                'Choose File',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 13),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
           ),
@@ -175,202 +323,138 @@ class _CvScreenContentState extends State<CvScreenContent> {
   }
 
   Widget _buildSkillsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(
-              'Skills',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textDark,
-              ),
-            ),
-            const Spacer(),
-            Text(
-              '${widget.skills.length}',
-              style: TextStyle(
-                color: AppTheme.mutedText,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        if (widget.skills.isNotEmpty)
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              ...widget.skills.map(
+    return Container(
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 9),
+      padding: const EdgeInsets.all(13),
+      decoration: BoxDecoration(
+        color: AppTheme.surface2,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.border, width: 0.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (widget.skills.isNotEmpty)
+            Wrap(
+              spacing: 5,
+              runSpacing: 5,
+              children: widget.skills.map(
                     (skill) => SkillChip(
                   label: skill,
                   onRemove: () => widget.onRemoveSkill(skill),
                 ),
-              ),
-            ],
-          )
-        else
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppTheme.secondary,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Center(
+              ).toList(),
+            )
+          else
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
               child: Text(
                 'No skills added yet',
                 style: TextStyle(
                   color: AppTheme.mutedText,
-                  fontSize: 14,
+                  fontSize: 11,
                 ),
               ),
             ),
-          ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _skillController,
-                decoration: InputDecoration(
-                  hintText: 'Add a new skill',
-                  hintStyle: TextStyle(color: AppTheme.mutedText),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(
-                      color: AppTheme.primary.withAlpha(51),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _skillController,
+                  style: const TextStyle(
+                    color: AppTheme.textDark,
+                    fontSize: 12,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Add a new skill',
+                    hintStyle: const TextStyle(
+                      color: AppTheme.subtleText,
+                      fontSize: 12,
+                    ),
+                    filled: true,
+                    fillColor: AppTheme.surface2,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 13,
+                      vertical: 11,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: AppTheme.border2,
+                        width: 0.5,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: AppTheme.border2,
+                        width: 0.5,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: AppTheme.primary,
+                        width: 1,
+                      ),
+                    ),
+                    suffixIcon: IconButton(
+                      onPressed: _handleAddSkill,
+                      icon: const Icon(
+                        Icons.send,
+                        color: AppTheme.primary,
+                        size: 16,
+                      ),
                     ),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(
-                      color: AppTheme.primary.withAlpha(51),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                      color: AppTheme.accent,
-                      width: 2,
-                    ),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-                  suffixIcon: IconButton(
-                    onPressed: _handleAddSkill,
-                    icon: const Icon(
-                      Icons.send,
-                      color: AppTheme.accent,
-                    ),
-                  ),
+                  onSubmitted: (_) => _handleAddSkill(),
                 ),
-                onSubmitted: (_) => _handleAddSkill(),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyProgrammes() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 14),
+      child: Center(
+        child: Column(
+          children: [
+            Icon(
+              Icons.school_outlined,
+              size: 40,
+              color: AppTheme.subtleText,
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              'No programme history yet.',
+              style: TextStyle(
+                color: AppTheme.mutedText,
+                fontSize: 11,
               ),
             ),
           ],
         ),
-      ],
+      ),
     );
   }
 
   Widget _buildProgrammeHistory() {
-    final hasProgrammes = widget.enrolledProgrammes.isNotEmpty ||
-        widget.completedProgrammes.isNotEmpty;
-
-    if (!hasProgrammes) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 40),
-          child: Column(
-            children: [
-              Icon(
-                Icons.school_outlined,
-                size: 48,
-                color: AppTheme.mutedText.withAlpha(128),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'No programme history yet.',
-                style: TextStyle(
-                  color: AppTheme.mutedText,
-                  fontSize: 15,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (widget.enrolledProgrammes.isNotEmpty) ...[
-          Row(
-            children: [
-              Icon(
-                Icons.play_circle_outline,
-                size: 20,
-                color: AppTheme.accent,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Currently Enrolled',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textDark,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                '${widget.enrolledProgrammes.length}',
-                style: TextStyle(
-                  color: AppTheme.mutedText,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
+          _buildSectionHeader('Currently Enrolled', trailing: null),
           ...widget.enrolledProgrammes.map(
                 (prog) => _buildProgrammeCard(prog, isEnrolled: true),
           ),
-          const SizedBox(height: 20),
         ],
         if (widget.completedProgrammes.isNotEmpty) ...[
-          Row(
-            children: [
-              Icon(
-                Icons.verified_outlined,
-                size: 20,
-                color: Colors.green,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Completed Programmes',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textDark,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                '${widget.completedProgrammes.length}',
-                style: TextStyle(
-                  color: AppTheme.mutedText,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
+          _buildSectionHeader('Completed Programmes', trailing: null),
           ...widget.completedProgrammes.map(
                 (prog) => _buildProgrammeCard(prog, isEnrolled: false),
           ),
@@ -380,90 +464,135 @@ class _CvScreenContentState extends State<CvScreenContent> {
   }
 
   Widget _buildProgrammeCard(Programme prog, {required bool isEnrolled}) {
+    final Color accentColor = isEnrolled ? AppTheme.primary : AppTheme.success;
+    final Color accentLow = isEnrolled ? AppTheme.primaryLow : AppTheme.successLow;
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 9),
+      padding: const EdgeInsets.all(13),
       decoration: BoxDecoration(
-        color: AppTheme.card,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(13),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: AppTheme.surface2,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.border, width: 0.5),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            width: 34,
+            height: 34,
             decoration: BoxDecoration(
-              color: isEnrolled
-                  ? AppTheme.accent.withAlpha(26)
-                  : Colors.green.withAlpha(26),
-              borderRadius: BorderRadius.circular(10),
+              color: accentLow,
+              borderRadius: BorderRadius.circular(9),
             ),
+            alignment: Alignment.center,
             child: Icon(
               isEnrolled ? Icons.school_outlined : Icons.verified_outlined,
-              color: isEnrolled ? AppTheme.accent : Colors.green,
-              size: 24,
+              color: accentColor,
+              size: 16,
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 9),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  prog.name,
-                  style: TextStyle(
-                    color: AppTheme.textDark,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        prog.name,
+                        style: const TextStyle(
+                          color: AppTheme.textDark,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: accentLow,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Text(
+                        isEnrolled ? 'Enrolled' : 'Completed',
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                          color: accentColor,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
                   prog.status,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: AppTheme.mutedText,
-                    fontSize: 13,
+                    fontSize: 10,
                   ),
                 ),
                 if (prog.progress > 0) ...[
-                  const SizedBox(height: 8),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: prog.progress,
-                      backgroundColor: AppTheme.secondary,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        isEnrolled ? AppTheme.accent : Colors.green,
+                  const SizedBox(height: 7),
+                  Container(
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: AppTheme.surface3,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                    child: FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: prog.progress,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: accentColor,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
-                      minHeight: 6,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${(prog.progress * 100).round()}% complete',
-                    style: TextStyle(
-                      color: AppTheme.mutedText,
-                      fontSize: 12,
-                    ),
+                  const SizedBox(height: 3),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Progress',
+                        style: TextStyle(
+                          color: AppTheme.subtleText,
+                          fontSize: 9,
+                        ),
+                      ),
+                      Text(
+                        '${(prog.progress * 100).round()}%',
+                        style: const TextStyle(
+                          color: AppTheme.subtleText,
+                          fontSize: 9,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ],
             ),
           ),
           if (prog.isCompleted && prog.certificateUrl != null)
-            IconButton(
-              onPressed: () {
-              },
-              icon: const Icon(
-                Icons.picture_as_pdf,
-                color: Colors.red,
-                size: 20,
+            Padding(
+              padding: const EdgeInsets.only(left: 6),
+              child: IconButton(
+                onPressed: () {},
+                icon: const Icon(
+                  Icons.picture_as_pdf,
+                  color: AppTheme.primary,
+                  size: 18,
+                ),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
               ),
             ),
         ],

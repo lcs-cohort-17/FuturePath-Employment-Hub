@@ -3,12 +3,31 @@ import '../screens/auth/login_screen.dart';
 import '../screens/auth/sign_up_screen.dart';
 import '../screens/auth/forgot_password_screen.dart';
 import '../screens/shell/main_shell.dart';
+import '../screens/admin/admin_employers_screen.dart';
+import '../screens/admin/admin_job_applications_screen.dart';
+import '../screens/admin/admin_applicants_screen.dart';
+import '../screens/admin/admin_enrolments_screen.dart';
+import '../screens/shell/admin_shell.dart';
+import '../screens/admin/admin_activity_screen.dart';
+import '../screens/admin/admin_programmes_screen.dart';
+import '../screens/admin/admin_profile_screen.dart';
 
 class AppRouter {
   static const String login = '/login';
   static const String signup = '/signup';
   static const String forgotPassword = '/forgot-password';
   static const String home = '/home';
+//Abdul is testing this out- eventually
+  static const String staffRegister = '/staff-register';
+
+  static const String adminHome = '/admin/home';
+  static const String adminJobApplications = '/admin/job-applications';
+  static const String adminEmployers = '/admin/employers';
+  static const String adminApplicants = '/admin/applicants';
+  static const String adminEnrolments = '/admin/enrolments';
+  static const String adminActivity = '/admin/activity';
+  static const String adminProgrammes = '/admin/programmes';
+  static const String adminProfile = '/admin/profile';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -32,6 +51,71 @@ class AppRouter {
           builder: (_) => const AppShell(),
           settings: settings,
         );
+      case adminHome:
+        return MaterialPageRoute(
+          builder: (_) => const AdminShell(),
+          settings: settings,
+        );
+      case adminEmployers:
+        return MaterialPageRoute(
+          builder: (_) => const AdminEmployersScreen(),
+          settings: settings,
+        );
+      // case staffRegister:
+      //   return MaterialPageRoute(
+      //     builder: (_) => const SignUpScreen(), // Or whatever your staff screen widget is named
+      //     settings: settings,
+      //   );
+
+// Sisonke sprint 2 Ticket UIUX-019
+      case adminApplicants:
+        return MaterialPageRoute(
+          builder: (_) => const AdminApplicantsScreen(),
+          settings: settings,
+        );
+// Qaasim sprint 2 UIUX ticket 022
+      case '/admin/job-applications':
+        final args = settings.arguments as Map<String, String>;
+        return MaterialPageRoute(
+          builder: (_) => AdminJobApplicationsScreen(
+            jobId: args['jobId']!,
+            jobTitle: args['jobTitle']!,
+          ),
+          settings: settings,
+        );
+//Qaasim  ticket ends here.
+
+//Onke/021 — Admin Enrolment Management
+      case adminEnrolments:
+        final args = settings.arguments as Map<String, String>;
+        return MaterialPageRoute(
+          builder: (_) => AdminEnrolmentsScreen(
+            programmeId: args['programmeId']!,
+            programmeName: args['programmeName'] ?? 'Programme',
+          ),
+          settings: settings,
+        );
+//Onke/021 ends here
+
+// Antonio ticket 017 — Admin Activity Log
+      case adminActivity:
+        return MaterialPageRoute(
+          builder: (_) => const AdminActivityScreen(),
+        );
+// Antonio ticket 017 ends here
+
+// UIUX-017 / UIUX-021 — Admin Programmes
+      case adminProgrammes:
+        return MaterialPageRoute(
+          builder: (_) => const AdminProgrammesScreen(),
+        );
+
+// UIUX-025 — Admin Profile
+      case adminProfile:
+        return MaterialPageRoute(
+          builder: (_) => const AdminProfileScreen(),
+        );
+
       default:
         return MaterialPageRoute(
           builder: (_) => const LoginScreen(),
