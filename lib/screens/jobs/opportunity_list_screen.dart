@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/core/widgets/skill_chip.dart';
 import 'package:futurepath_employment_hub/screens/jobs/opportunity_detail_screen.dart';
-import 'package:futurepath_employment_hub/providers/notifications_provider.dart';
-import 'package:futurepath_employment_hub/router/app_router.dart';
+import 'package:futurepath_employment_hub/core/widgets/notification_badge.dart';
 
 class Opportunity {
   final String id;
@@ -121,7 +119,7 @@ const List<String> _skillFilters = ['All', 'Flutter', 'Python', 'SQL', 'Salesfor
 const List<String> _jobTypeFilters = ['All Types', 'Full-time', 'Part-time', 'Internship', 'Learnership'];
 const List<String> _locationFilters = ['All Locations', 'Cape Town', 'Johannesburg', 'Durban', 'Remote'];
 
-class OpportunityListScreen extends ConsumerStatefulWidget {
+class OpportunityListScreen extends StatefulWidget {
   final List<Opportunity> opportunities;
   final Future<void> Function()? onRefresh;
 
@@ -132,10 +130,10 @@ class OpportunityListScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<OpportunityListScreen> createState() => _OpportunityListScreenState();
+  State<OpportunityListScreen> createState() => _OpportunityListScreenState();
 }
 
-class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
+class _OpportunityListScreenState extends State<OpportunityListScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   String _selectedSkill = 'All';
@@ -215,8 +213,6 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
   @override
   Widget build(BuildContext context) {
     final filtered = _filtered;
-    final notifications = ref.watch(notificationsProvider);
-    final unreadCount = notifications.where((n) => !n.isRead).length;
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -226,7 +222,7 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
           onRefresh: widget.onRefresh ?? () async {},
           child: CustomScrollView(
             slivers: [
-              SliverToBoxAdapter(child: _buildHeader(unreadCount)),
+              SliverToBoxAdapter(child: _buildHeader()),
               SliverToBoxAdapter(child: _buildSearchBar()),
               SliverToBoxAdapter(child: _buildSkillFilterRow()),
               SliverToBoxAdapter(child: _buildJobTypeFilterRow()),
@@ -280,7 +276,7 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
     );
   }
 
-  Widget _buildHeader(int unreadCount) {
+  Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
       child: Row(
@@ -294,33 +290,7 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
               color: AppTheme.textDark,
             ),
           ),
-          Stack(
-            children: [
-              IconButton(
-                onPressed: () => Navigator.pushNamed(context, AppRouter.notifications),
-                icon: const Icon(Icons.notifications_outlined, color: AppTheme.textDark),
-              ),
-              if (unreadCount > 0)
-                Positioned(
-                  right: 8,
-                  top: 8,
-                  child: Container(
-                    width: 16,
-                    height: 16,
-                    decoration: const BoxDecoration(
-                      color: AppTheme.accent,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        '$unreadCount',
-                        style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
+          const NotificationBadge(iconColor: AppTheme.textDark),
         ],
       ),
     );
@@ -614,9 +584,9 @@ class _OpportunityCard extends StatelessWidget {
                       color: const Color(0xFFDCFCE7),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: const [
+                      children: [
                         Icon(Icons.circle, size: 6, color: Color(0xFF16A34A)),
                         SizedBox(width: 4),
                         Text(

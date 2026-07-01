@@ -92,7 +92,7 @@ class ProgrammeDetailScreen extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.55),
+                            color: Colors.black.withValues(alpha: 0.55),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
@@ -329,19 +329,15 @@ class ProgrammeDetailScreen extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      // lina nav-002
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => ProgrammeApplyScreen(
-                            programme: programme,
+                            programme: programme!,
                           ),
                         ),
                       );
                     },
-
-                      // Navigates to UIUX-012 Programme Application Form —
-                      // NOT the job application flow (UIUX-006).
 
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.accent,
@@ -501,7 +497,7 @@ class _CircleIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.black.withOpacity(0.4),
+      color: Colors.black.withValues(alpha: 0.4),
       shape: const CircleBorder(),
       child: InkWell(
         onTap: onTap,

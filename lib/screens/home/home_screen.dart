@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
-import 'package:futurepath_employment_hub/providers/notifications_provider.dart';
-import 'package:futurepath_employment_hub/router/app_router.dart';
+import '../../core/widgets/notification_badge.dart';
 
 typedef DashboardFetcher = Future<HomeDashboardData> Function();
 
@@ -70,7 +68,7 @@ class HomeDashboardData {
   });
 }
 
-class HomeScreen extends ConsumerStatefulWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({
     super.key,
     this.userName = 'there',
@@ -99,7 +97,7 @@ class HomeScreen extends ConsumerStatefulWidget {
       openJobsCount: 12,
       employersCount: 4,
       recommendedJobs: [
-        JobSummary(
+        const JobSummary(
           id: 'job-tn-flutter',
           title: 'Junior Flutter Developer',
           company: 'TechNova Solutions',
@@ -108,7 +106,7 @@ class HomeScreen extends ConsumerStatefulWidget {
           employmentType: 'Full-time',
           closingLabel: 'Closes 31 Jul',
         ),
-        JobSummary(
+        const JobSummary(
           id: 'job-dgh-marketing',
           title: 'Digital Marketing Assistant',
           company: 'Digital Growth Hub',
@@ -119,7 +117,7 @@ class HomeScreen extends ConsumerStatefulWidget {
         ),
       ],
       featuredProgrammes: [
-        ProgrammeSummary(
+        const ProgrammeSummary(
           id: 'prog-flutter-dev',
           title: 'Flutter Mobile Development',
           provider: 'TechNova Solutions',
@@ -128,7 +126,7 @@ class HomeScreen extends ConsumerStatefulWidget {
           enrolled: 24,
           capacity: 30,
         ),
-        ProgrammeSummary(
+        const ProgrammeSummary(
           id: 'prog-salesforce',
           title: 'Salesforce Administration',
           provider: 'FutureTech Africa',
@@ -137,7 +135,7 @@ class HomeScreen extends ConsumerStatefulWidget {
           enrolled: 20,
           capacity: 25,
         ),
-        ProgrammeSummary(
+        const ProgrammeSummary(
           id: 'prog-digital-marketing',
           title: 'Digital Marketing Fundamentals',
           provider: 'Digital Growth Hub',
@@ -152,10 +150,10 @@ class HomeScreen extends ConsumerStatefulWidget {
   }
 
   @override
-  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> {
   late final TextEditingController _searchController;
   late Future<HomeDashboardData> _dashboardFuture;
 
@@ -185,39 +183,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _handleSeeAllJobs() {
-    widget.onSeeAllJobs != null
-        ? widget.onSeeAllJobs!()
-        : _showWiringSnackBar('See all jobs (NAV-003)');
+    if (widget.onSeeAllJobs != null) {
+      widget.onSeeAllJobs!();
+    }
   }
 
   void _handleSeeAllProgrammes() {
-    widget.onSeeAllProgrammes != null
-        ? widget.onSeeAllProgrammes!()
-        : _showWiringSnackBar('See all programmes (NAV-002)');
+    if (widget.onSeeAllProgrammes != null) {
+      widget.onSeeAllProgrammes!();
+    }
   }
 
   void _handleJobTap(JobSummary job) {
-    widget.onJobTap != null
-        ? widget.onJobTap!(job)
-        : _showWiringSnackBar('Open job detail: ${job.title}');
+    if (widget.onJobTap != null) {
+      widget.onJobTap!(job);
+    }
   }
 
   void _handleProgrammeTap(ProgrammeSummary programme) {
-    widget.onProgrammeTap != null
-        ? widget.onProgrammeTap!(programme)
-        : _showWiringSnackBar('Open programme detail: ${programme.title}');
-  }
-
-  void _showWiringSnackBar(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('$message — navigation not wired yet')));
+    if (widget.onProgrammeTap != null) {
+      widget.onProgrammeTap!(programme);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final notifications = ref.watch(notificationsProvider);
-    final unreadCount = notifications.where((n) => !n.isRead).length;
-
     return Scaffold(
       backgroundColor: AppTheme.background,
       body: SafeArea(
@@ -226,7 +216,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildTopBar(unreadCount),
+              _buildTopBar(),
               const SizedBox(height: 20),
               _buildGreeting(),
               const SizedBox(height: 16),
@@ -274,7 +264,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildTopBar(int unreadCount) {
+  Widget _buildTopBar() {
     return Row(
       children: [
         const CircleAvatar(
@@ -288,15 +278,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           style: TextStyle(color: AppTheme.primary, fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const Spacer(),
-        Badge(
-          label: Text('$unreadCount'),
-          backgroundColor: AppTheme.accent,
-          isLabelVisible: unreadCount > 0,
-          child: IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: AppTheme.primary),
-            onPressed: () => Navigator.pushNamed(context, AppRouter.notifications),
-          ),
-        ),
+        const NotificationBadge(iconColor: AppTheme.primary),
       ],
     );
   }
@@ -558,7 +540,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 children: [
                   programme.imageUrl != null
                       ? Image.network(programme.imageUrl!,
-                      fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(color: AppTheme.secondary))
+                      fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => Container(color: AppTheme.secondary))
                       : Container(
                     color: AppTheme.secondary,
                     child: const Center(child: Icon(Icons.image_outlined, color: AppTheme.primary, size: 32)),

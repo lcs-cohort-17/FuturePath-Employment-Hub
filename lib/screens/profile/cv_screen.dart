@@ -1,29 +1,28 @@
-//cv_screen.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:provider/provider.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/core/widgets/skill_chip.dart';
 import 'package:futurepath_employment_hub/providers/user_profile_provider.dart';
 import 'package:futurepath_employment_hub/models/programme.dart';
 
-class CVScreen extends ConsumerWidget {
+class CVScreen extends StatelessWidget {
   const CVScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final userProfile = ref.watch(userProfileProvider);
-    final notifier = ref.read(userProfileProvider.notifier);
+  Widget build(BuildContext context) {
+    final userProfileProvider = context.watch<UserProfileProvider>();
+    final userProfile = userProfileProvider.profile;
 
     return CvScreenContent(
       skills: userProfile.skills,
       completedProgrammes: userProfile.completedProgrammes,
       enrolledProgrammes: userProfile.enrolledProgrammes,
-      onAddSkill: notifier.addSkill,
-      onRemoveSkill: notifier.removeSkill,
+      onAddSkill: userProfileProvider.addSkill,
+      onRemoveSkill: userProfileProvider.removeSkill,
       onUploadCV: () {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('CV upload coming soon!'),
+          const SnackBar(
+            content: Text('CV upload coming soon!'),
             backgroundColor: AppTheme.accent,
           ),
         );
@@ -117,7 +116,7 @@ class _CvScreenContentState extends State<CvScreenContent> {
         color: AppTheme.card,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppTheme.primary.withAlpha(51),
+          color: AppTheme.primary.withValues(alpha: 0.2),
           width: 1.5,
         ),
       ),
@@ -125,18 +124,18 @@ class _CvScreenContentState extends State<CvScreenContent> {
         children: [
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppTheme.secondary,
               shape: BoxShape.circle,
             ),
-            child: Icon(
+            child: const Icon(
               Icons.cloud_upload_outlined,
               size: 40,
               color: AppTheme.primary,
             ),
           ),
           const SizedBox(height: 12),
-          Text(
+          const Text(
             'Upload your CV',
             style: TextStyle(
               color: AppTheme.textDark,
@@ -145,7 +144,7 @@ class _CvScreenContentState extends State<CvScreenContent> {
             ),
           ),
           const SizedBox(height: 4),
-          Text(
+          const Text(
             'PDF or DOC up to 5MB',
             style: TextStyle(
               color: AppTheme.mutedText,
@@ -190,7 +189,7 @@ class _CvScreenContentState extends State<CvScreenContent> {
             const Spacer(),
             Text(
               '${widget.skills.length}',
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppTheme.mutedText,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -219,7 +218,7 @@ class _CvScreenContentState extends State<CvScreenContent> {
               color: AppTheme.secondary,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Center(
+            child: const Center(
               child: Text(
                 'No skills added yet',
                 style: TextStyle(
@@ -237,17 +236,17 @@ class _CvScreenContentState extends State<CvScreenContent> {
                 controller: _skillController,
                 decoration: InputDecoration(
                   hintText: 'Add a new skill',
-                  hintStyle: TextStyle(color: AppTheme.mutedText),
+                  hintStyle: const TextStyle(color: AppTheme.mutedText),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide(
-                      color: AppTheme.primary.withAlpha(51),
+                      color: AppTheme.primary.withValues(alpha: 0.2),
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide(
-                      color: AppTheme.primary.withAlpha(51),
+                      color: AppTheme.primary.withValues(alpha: 0.2),
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
@@ -291,10 +290,10 @@ class _CvScreenContentState extends State<CvScreenContent> {
               Icon(
                 Icons.school_outlined,
                 size: 48,
-                color: AppTheme.mutedText.withAlpha(128),
+                color: AppTheme.mutedText.withValues(alpha: 0.5),
               ),
               const SizedBox(height: 12),
-              Text(
+              const Text(
                 'No programme history yet.',
                 style: TextStyle(
                   color: AppTheme.mutedText,
@@ -313,7 +312,7 @@ class _CvScreenContentState extends State<CvScreenContent> {
         if (widget.enrolledProgrammes.isNotEmpty) ...[
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.play_circle_outline,
                 size: 20,
                 color: AppTheme.accent,
@@ -329,7 +328,7 @@ class _CvScreenContentState extends State<CvScreenContent> {
               const Spacer(),
               Text(
                 '${widget.enrolledProgrammes.length}',
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppTheme.mutedText,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -346,7 +345,7 @@ class _CvScreenContentState extends State<CvScreenContent> {
         if (widget.completedProgrammes.isNotEmpty) ...[
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.verified_outlined,
                 size: 20,
                 color: Colors.green,
@@ -362,7 +361,7 @@ class _CvScreenContentState extends State<CvScreenContent> {
               const Spacer(),
               Text(
                 '${widget.completedProgrammes.length}',
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppTheme.mutedText,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -388,7 +387,7 @@ class _CvScreenContentState extends State<CvScreenContent> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(13),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -400,8 +399,8 @@ class _CvScreenContentState extends State<CvScreenContent> {
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: isEnrolled
-                  ? AppTheme.accent.withAlpha(26)
-                  : Colors.green.withAlpha(26),
+                  ? AppTheme.accent.withValues(alpha: 0.1)
+                  : Colors.green.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
@@ -417,7 +416,7 @@ class _CvScreenContentState extends State<CvScreenContent> {
               children: [
                 Text(
                   prog.name,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: AppTheme.textDark,
                     fontWeight: FontWeight.w600,
                     fontSize: 15,
@@ -426,7 +425,7 @@ class _CvScreenContentState extends State<CvScreenContent> {
                 const SizedBox(height: 4),
                 Text(
                   prog.status,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: AppTheme.mutedText,
                     fontSize: 13,
                   ),
@@ -447,7 +446,7 @@ class _CvScreenContentState extends State<CvScreenContent> {
                   const SizedBox(height: 4),
                   Text(
                     '${(prog.progress * 100).round()}% complete',
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: AppTheme.mutedText,
                       fontSize: 12,
                     ),

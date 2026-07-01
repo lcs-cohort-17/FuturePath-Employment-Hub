@@ -34,7 +34,7 @@ class AppRouter {
         );
       case home:
         return MaterialPageRoute(
-          builder: (_) => const AppShell(),
+          builder: (_) => AppShell(key: AppShell.globalKey),
           settings: settings,
         );
       case trackApplications:
@@ -64,8 +64,10 @@ class AppRouter {
           settings: settings,
         );
       case notifications:
+        final args = settings.arguments as Map<String, dynamic>?;
+        final fromTabIndex = args?['fromTabIndex'] as int? ?? 0;
         return MaterialPageRoute(
-          builder: (_) => const NotificationsScreen(),
+          builder: (_) => NotificationsScreen(fromTabIndex: fromTabIndex),
           settings: settings,
         );
       case cv:

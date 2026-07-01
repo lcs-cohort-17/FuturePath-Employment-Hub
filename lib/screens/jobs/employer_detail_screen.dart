@@ -1,4 +1,3 @@
-//employer_detail_screen.dart
 import 'package:flutter/material.dart';
 import 'package:futurepath_employment_hub/models/employer.dart';
 
@@ -14,12 +13,10 @@ class EmployerDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final employer = employerData;
 
-    // Use a local variable to help type promotion
     if (employer == null) {
       return _buildNullState(context);
     }
 
-    // Now employer is promoted to non-nullable EmployerModel
     final bool isMissingInfo = employer.bio == null || employer.website == null;
 
     final String currentCompanyName = employer.companyName;

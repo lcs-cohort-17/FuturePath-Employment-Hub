@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:provider/provider.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/providers/user_profile_provider.dart';
 import 'package:futurepath_employment_hub/models/user_profile.dart';
 import 'package:futurepath_employment_hub/services/auth_services.dart';
 import 'package:futurepath_employment_hub/router/app_router.dart';
+import '../../core/widgets/notification_badge.dart';
 
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final userProfile = ref.watch(userProfileProvider);
-    final authService = ref.read(authServiceProvider);
+  Widget build(BuildContext context) {
+    final userProfileProvider = context.watch<UserProfileProvider>();
+    final userProfile = userProfileProvider.profile;
+    final authService = AuthService(); // AuthService doesn't seem to have state in the class itself
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -33,6 +35,10 @@ class ProfileScreen extends ConsumerWidget {
                 );
               }
             },
+          ),
+          const Padding(
+            padding: EdgeInsets.only(right: 8.0),
+            child: NotificationBadge(),
           ),
         ],
       ),

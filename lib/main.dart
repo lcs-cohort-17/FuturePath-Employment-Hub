@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
-import 'package:futurepath_employment_hub/router/app_router.dart';
+import 'package:provider/provider.dart';
+import 'core/theme/app_theme.dart';
+import 'router/app_router.dart';
+import 'providers/search_filter_provider.dart';
+import 'providers/user_profile_provider.dart';
+import 'providers/notifications_provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
-    const ProviderScope(
-      child: MyApp(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => SearchFilterProvider()),
+        ChangeNotifierProvider(create: (_) => UserProfileProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationsProvider()),
+      ],
+      child: const MyApp(),
     ),
   );
 }

@@ -1,6 +1,4 @@
-//auth services.dart
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AuthService {
   static const _keyIsLoggedIn = 'is_logged_in';
@@ -41,5 +39,3 @@ class AuthService {
     }
   }
 }
-
-final authServiceProvider = Provider<AuthService>((ref) => AuthService());

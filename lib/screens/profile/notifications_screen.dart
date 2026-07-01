@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:provider/provider.dart';
 import 'package:futurepath_employment_hub/providers/notifications_provider.dart';
 import 'package:futurepath_employment_hub/models/notification_item.dart';
 
-class NotificationsScreen extends ConsumerStatefulWidget {
-  const NotificationsScreen({super.key});
+class NotificationsScreen extends StatefulWidget {
+  final int fromTabIndex;
+  const NotificationsScreen({super.key, this.fromTabIndex = 0});
 
   @override
-  ConsumerState<NotificationsScreen> createState() => _NotificationsScreenState();
+  State<NotificationsScreen> createState() => _NotificationsScreenState();
 }
 
-class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
+class _NotificationsScreenState extends State<NotificationsScreen> {
   final Set<String> _expandedIds = {};
 
   @override
   Widget build(BuildContext context) {
-    final notifications = ref.watch(notificationsProvider);
+    final provider = Provider.of<NotificationsProvider>(context);
+    final notifications = provider.notifications;
     final unread = notifications.where((n) => !n.isRead).toList();
     final read = notifications.where((n) => n.isRead).toList();
 
@@ -71,7 +73,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         actions: [
           if (unread.isNotEmpty)
             TextButton(
-              onPressed: () => ref.read(notificationsProvider.notifier).markAllAsRead(),
+              onPressed: () => provider.markAllAsRead(),
               child: const Text(
                 'Mark all read',
                 style: TextStyle(
@@ -94,11 +96,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               children: [
                 if (unread.isNotEmpty) ...[
                   _buildHeader('NEW ALERTS', const Color(0xFF008080)),
-                  _buildList(unread),
+                  _buildList(unread, provider),
                 ],
                 if (read.isNotEmpty) ...[
                   _buildHeader('EARLIER', const Color(0xFF64748B)),
-                  _buildList(read),
+                  _buildList(read, provider),
                 ],
               ],
             ),
@@ -118,7 +120,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         ),
       );
 
-  Widget _buildList(List<NotificationItem> items) {
+  Widget _buildList(List<NotificationItem> items, NotificationsProvider provider) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
@@ -131,14 +133,14 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         physics: const NeverScrollableScrollPhysics(),
         padding: EdgeInsets.zero,
         itemCount: items.length,
-        separatorBuilder: (_, _) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
+        separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
         itemBuilder: (context, idx) {
           final item = items[idx];
           final bool isUnread = !item.isRead;
           final bool isExpanded = _expandedIds.contains(item.id);
 
           return InkWell(
-            onTap: isUnread ? () => ref.read(notificationsProvider.notifier).markAsRead(item.id) : null,
+            onTap: isUnread ? () => provider.markAsRead(item.id) : null,
             child: Padding(
               padding: const EdgeInsets.all(14.0),
               child: Row(

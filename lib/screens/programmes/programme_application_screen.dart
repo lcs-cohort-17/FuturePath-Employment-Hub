@@ -4,14 +4,8 @@
 import 'package:flutter/material.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/models/programme.dart';
-// ───────────────────────────────────────────────────────────────────────
-// MODELS
-// ───────────────────────────────────────────────────────────────────────
 
 /// Local typed stand-in for the real applicant profile service.
-/// Replace `mockApplicantProfile` with the real injected profile once
-/// available — the shape (full name, SA ID, email, phone, CV) should
-/// stay stable since application_service.dart will expect these fields.
 class ApplicantProfile {
   final String fullName;
   final String saIdNumber;
@@ -36,12 +30,8 @@ const ApplicantProfile mockApplicantProfile = ApplicantProfile(
   cvFileName: null,
 );
 
-/// Status values tracked for a programme application, per acceptance
-/// criteria #6. Kept as a simple enum here — application_service.dart's
-/// real backing type should mirror these three states.
 enum ProgrammeApplicationStatus { pending, accepted, completed }
 
-/// Payload submitted to application_service.dart with type: "programme".
 class ProgrammeApplicationData {
   final String programmeId;
   final String fullName;
@@ -49,8 +39,8 @@ class ProgrammeApplicationData {
   final String email;
   final String phone;
   final String? cvFileName;
-  final String? motivationStatement; // optional
-  final String? previousExperience; // optional
+  final String? motivationStatement;
+  final String? previousExperience;
   final ProgrammeApplicationStatus status;
 
   const ProgrammeApplicationData({
@@ -65,9 +55,6 @@ class ProgrammeApplicationData {
     this.status = ProgrammeApplicationStatus.pending,
   });
 
-  // TODO(application_service): map this to the real request body once
-  // application_service.dart exposes its "programme" type schema, e.g.:
-  //   application_service.submit(type: "programme", payload: toJson());
   Map<String, dynamic> toJson() => {
     'type': 'programme',
     'programmeId': programmeId,
@@ -82,7 +69,6 @@ class ProgrammeApplicationData {
   };
 }
 
-/// Result returned by the (mock or real) submission call.
 class ApplicationResult {
   final bool success;
   final String? errorMessage;
@@ -91,25 +77,21 @@ class ApplicationResult {
   const ApplicationResult.failure(this.errorMessage) : success = false;
 }
 
-// ───────────────────────────────────────────────────────────────────────
-// SCREEN
-// ───────────────────────────────────────────────────────────────────────
 class ProgrammeApplyScreen extends StatefulWidget {
   final Programme programme;
   final ApplicantProfile applicantProfile;
-  final Future<ApplicationResult> Function(ProgrammeApplicationData data)?
-  onSubmit;
+  final Future<ApplicationResult> Function(ProgrammeApplicationData data)? onSubmit;
   final void Function(ProgrammeApplicationData data)? onSuccess;
   final VoidCallback? onClose;
 
-  ProgrammeApplyScreen({
+  const ProgrammeApplyScreen({
     super.key,
-    Programme? programme,
+    required this.programme,
     this.applicantProfile = mockApplicantProfile,
     this.onSubmit,
     this.onSuccess,
     this.onClose,
-  }) : programme = programme ?? mockProgrammes[1];
+  });
 
   @override
   State<ProgrammeApplyScreen> createState() => _ProgrammeApplyScreenState();
@@ -133,17 +115,10 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
   @override
   void initState() {
     super.initState();
-    // Auto-fill applicant fields from profile, per acceptance criteria #2.
-    // Fields are editable (not read-only) so the applicant can correct
-    // stale profile data without leaving this screen.
-    _fullNameController =
-        TextEditingController(text: widget.applicantProfile.fullName);
-    _saIdController =
-        TextEditingController(text: widget.applicantProfile.saIdNumber);
-    _emailController =
-        TextEditingController(text: widget.applicantProfile.email);
-    _phoneController =
-        TextEditingController(text: widget.applicantProfile.phone);
+    _fullNameController = TextEditingController(text: widget.applicantProfile.fullName);
+    _saIdController = TextEditingController(text: widget.applicantProfile.saIdNumber);
+    _emailController = TextEditingController(text: widget.applicantProfile.email);
+    _phoneController = TextEditingController(text: widget.applicantProfile.phone);
     _motivationController = TextEditingController();
     _experienceController = TextEditingController();
     _cvFileName = widget.applicantProfile.cvFileName;
@@ -151,7 +126,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
 
   @override
   void dispose() {
-    // Release all text controllers to avoid leaks.
     _fullNameController.dispose();
     _saIdController.dispose();
     _emailController.dispose();
@@ -162,13 +136,10 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
   }
 
   Future<void> _handleUploadCv() async {
-    // TODO(file_picker): wire up real file picker (PDF, DOC) once the
-    // file upload service exists. Mocked here so the flow is demoable.
     setState(() => _cvFileName = 'Sipho_Dlamini_CV.pdf');
   }
 
-  Future<ApplicationResult> _mockSubmit(
-      ProgrammeApplicationData data) async {
+  Future<ApplicationResult> _mockSubmit(ProgrammeApplicationData data) async {
     await Future.delayed(const Duration(milliseconds: 900));
     return const ApplicationResult.ok();
   }
@@ -185,12 +156,8 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
       email: _emailController.text.trim(),
       phone: _phoneController.text.trim(),
       cvFileName: _cvFileName,
-      motivationStatement: _motivationController.text.trim().isEmpty
-          ? null
-          : _motivationController.text.trim(),
-      previousExperience: _experienceController.text.trim().isEmpty
-          ? null
-          : _experienceController.text.trim(),
+      motivationStatement: _motivationController.text.trim().isEmpty ? null : _motivationController.text.trim(),
+      previousExperience: _experienceController.text.trim().isEmpty ? null : _experienceController.text.trim(),
       status: ProgrammeApplicationStatus.pending,
     );
 
@@ -204,8 +171,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
       if (widget.onSuccess != null) {
         widget.onSuccess!(data);
       } else {
-        // Fallback navigation if NAV-002 hasn't injected onSuccess yet —
-        // pushes the success screen defined below in this same file.
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => ProgrammeApplicationSuccessScreen(
@@ -218,9 +183,7 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            result.errorMessage ?? 'Something went wrong. Please try again.',
-          ),
+          content: Text(result.errorMessage ?? 'Something went wrong. Please try again.'),
           backgroundColor: AppTheme.error,
         ),
       );
@@ -230,7 +193,7 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black.withOpacity(0.0),
+      backgroundColor: Colors.black.withValues(alpha: 0.0),
       body: SafeArea(
         child: Align(
           alignment: Alignment.bottomCenter,
@@ -245,7 +208,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Drag handle, matches Figma reference
                 Padding(
                   padding: const EdgeInsets.only(top: 10, bottom: 4),
                   child: Container(
@@ -257,7 +219,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                     ),
                   ),
                 ),
-                // Header
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 8, 12, 8),
                   child: Row(
@@ -287,16 +248,13 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                         ),
                       ),
                       IconButton(
-                        onPressed: widget.onClose ??
-                                () => Navigator.of(context).pop(),
-                        icon: const Icon(Icons.close,
-                            color: AppTheme.mutedText),
+                        onPressed: widget.onClose ?? () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.close, color: AppTheme.mutedText),
                       ),
                     ],
                   ),
                 ),
                 const Divider(height: 1, color: AppTheme.secondary),
-                // Scrollable form body
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
@@ -305,17 +263,15 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Auto-fill banner, per acceptance criteria #2
                           Container(
                             width: double.infinity,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                             decoration: BoxDecoration(
                               color: AppTheme.secondary,
                               borderRadius: BorderRadius.circular(24),
                             ),
-                            child: Row(
-                              children: const [
+                            child: const Row(
+                              children: [
                                 Text('✨', style: TextStyle(fontSize: 14)),
                                 SizedBox(width: 8),
                                 Text(
@@ -330,66 +286,42 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                             ),
                           ),
                           const SizedBox(height: 20),
-
-                          _FieldLabel(
-                            icon: Icons.person_outline,
-                            label: 'Full Name',
-                            required: true,
-                          ),
+                          const _FieldLabel(icon: Icons.person_outline, label: 'Full Name', required: true),
                           const SizedBox(height: 6),
                           _AppTextField(
                             controller: _fullNameController,
-                            validator: (value) =>
-                            (value == null || value.trim().isEmpty)
-                                ? 'Full name is required'
-                                : null,
+                            validator: (value) => (value == null || value.trim().isEmpty) ? 'Full name is required' : null,
                           ),
                           const SizedBox(height: 16),
-
-                          _FieldLabel(
-                            icon: Icons.tag,
-                            label: 'SA ID Number',
-                            required: true,
-                          ),
+                          const _FieldLabel(icon: Icons.tag, label: 'SA ID Number', required: true),
                           const SizedBox(height: 6),
                           _AppTextField(
                             controller: _saIdController,
                             keyboardType: TextInputType.number,
                             validator: (value) {
                               final trimmed = value?.trim() ?? '';
-                              if (trimmed.isEmpty) {
-                                return 'SA ID number is required';
-                              }
-                              if (trimmed.length != 13) {
-                                return 'SA ID number must be 13 digits';
-                              }
+                              if (trimmed.isEmpty) return 'SA ID number is required';
+                              if (trimmed.length != 13) return 'SA ID number must be 13 digits';
                               return null;
                             },
                           ),
                           const SizedBox(height: 16),
-
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment:
-                                  CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const _FieldLabel(label: 'Email'),
                                     const SizedBox(height: 6),
                                     _AppTextField(
                                       controller: _emailController,
-                                      keyboardType:
-                                      TextInputType.emailAddress,
+                                      keyboardType: TextInputType.emailAddress,
                                       validator: (value) {
                                         final trimmed = value?.trim() ?? '';
-                                        if (trimmed.isEmpty) {
-                                          return 'Required';
-                                        }
-                                        if (!trimmed.contains('@')) {
-                                          return 'Invalid email';
-                                        }
+                                        if (trimmed.isEmpty) return 'Required';
+                                        if (!trimmed.contains('@')) return 'Invalid email';
                                         return null;
                                       },
                                     ),
@@ -399,19 +331,14 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment:
-                                  CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const _FieldLabel(label: 'Phone'),
                                     const SizedBox(height: 6),
                                     _AppTextField(
                                       controller: _phoneController,
                                       keyboardType: TextInputType.phone,
-                                      validator: (value) =>
-                                      (value == null ||
-                                          value.trim().isEmpty)
-                                          ? 'Required'
-                                          : null,
+                                      validator: (value) => (value == null || value.trim().isEmpty) ? 'Required' : null,
                                     ),
                                   ],
                                 ),
@@ -419,22 +346,17 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                             ],
                           ),
                           const SizedBox(height: 16),
-
-                          _FieldLabel(
-                            icon: Icons.description_outlined,
-                            label: 'CV / Resume',
-                          ),
+                          const _FieldLabel(icon: Icons.description_outlined, label: 'CV / Resume'),
                           const SizedBox(height: 6),
                           InkWell(
                             onTap: _handleUploadCv,
                             borderRadius: BorderRadius.circular(14),
                             child: Container(
                               width: double.infinity,
-                              padding:
-                              const EdgeInsets.symmetric(vertical: 16),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                  color: AppTheme.mutedText.withOpacity(0.4),
+                                  color: AppTheme.mutedText.withValues(alpha: 0.4),
                                   style: BorderStyle.solid,
                                 ),
                                 borderRadius: BorderRadius.circular(14),
@@ -442,12 +364,8 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                               child: Column(
                                 children: [
                                   Icon(
-                                    _cvFileName != null
-                                        ? Icons.check_circle_outline
-                                        : Icons.upload_outlined,
-                                    color: _cvFileName != null
-                                        ? AppTheme.accent
-                                        : AppTheme.primary,
+                                    _cvFileName != null ? Icons.check_circle_outline : Icons.upload_outlined,
+                                    color: _cvFileName != null ? AppTheme.accent : AppTheme.primary,
                                   ),
                                   const SizedBox(height: 6),
                                   Text(
@@ -455,9 +373,7 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
-                                      color: _cvFileName != null
-                                          ? AppTheme.accent
-                                          : AppTheme.primary,
+                                      color: _cvFileName != null ? AppTheme.accent : AppTheme.primary,
                                     ),
                                   ),
                                 ],
@@ -468,49 +384,32 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                             const SizedBox(height: 6),
                             const Text(
                               'Add your CV to your profile to auto-fill this field',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppTheme.mutedText,
-                              ),
+                              style: TextStyle(fontSize: 12, color: AppTheme.mutedText),
                             ),
                           ],
                           const SizedBox(height: 16),
-
                           const _FieldLabel(label: 'Cover Letter (Optional)'),
                           const SizedBox(height: 6),
                           _AppTextField(
                             controller: _motivationController,
                             maxLines: 4,
                             maxLength: _motivationMaxLength,
-                            hintText:
-                            "Tell us why you're a great fit for ${widget.programme.title}...",
-                            buildCounter: (
-                                context, {
-                                  required currentLength,
-                                  required isFocused,
-                                  maxLength,
-                                }) =>
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 4),
-                                  child: Text(
-                                    '$currentLength/$maxLength',
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      color: AppTheme.mutedText,
-                                    ),
-                                  ),
-                                ),
+                            hintText: "Tell us why you're a great fit for ${widget.programme.title}...",
+                            buildCounter: (context, {required currentLength, required isFocused, maxLength}) => Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
+                                '$currentLength/$maxLength',
+                                style: const TextStyle(fontSize: 11, color: AppTheme.mutedText),
+                              ),
+                            ),
                           ),
                           const SizedBox(height: 16),
-
-                          const _FieldLabel(
-                              label: 'Previous Experience (Optional)'),
+                          const _FieldLabel(label: 'Previous Experience (Optional)'),
                           const SizedBox(height: 6),
                           _AppTextField(
                             controller: _experienceController,
                             maxLines: 3,
-                            hintText:
-                            'Share any relevant prior experience...',
+                            hintText: 'Share any relevant prior experience...',
                           ),
                           const SizedBox(height: 8),
                         ],
@@ -528,8 +427,7 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primary,
                         foregroundColor: Colors.white,
-                        disabledBackgroundColor:
-                        AppTheme.primary.withOpacity(0.6),
+                        disabledBackgroundColor: AppTheme.primary.withValues(alpha: 0.6),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(28),
@@ -541,17 +439,12 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                         height: 22,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.5,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white,
-                          ),
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
                           : const Text(
                         'Submit Enrolment',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
@@ -564,10 +457,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
     );
   }
 }
-
-// ───────────────────────────────────────────────────────────────────────
-// SECTION 2: SUCCESS SCREEN
-// ───────────────────────────────────────────────────────────────────────
 
 class ProgrammeApplicationSuccessScreen extends StatelessWidget {
   final Programme programme;
@@ -595,34 +484,22 @@ class ProgrammeApplicationSuccessScreen extends StatelessWidget {
                 width: 88,
                 height: 88,
                 decoration: BoxDecoration(
-                  color: AppTheme.accent.withOpacity(0.12),
+                  color: AppTheme.accent.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.check_circle,
-                  color: AppTheme.accent,
-                  size: 52,
-                ),
+                child: const Icon(Icons.check_circle, color: AppTheme.accent, size: 52),
               ),
               const SizedBox(height: 24),
               const Text(
                 'Application Submitted!',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textDark,
-                ),
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.textDark),
               ),
               const SizedBox(height: 8),
               Text(
                 "Your enrolment for ${programme.title} has been received and is now Pending review.",
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: AppTheme.mutedText,
-                  height: 1.5,
-                ),
+                style: const TextStyle(fontSize: 14, color: AppTheme.mutedText, height: 1.5),
               ),
               const SizedBox(height: 28),
               Container(
@@ -636,27 +513,16 @@ class ProgrammeApplicationSuccessScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Status',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: AppTheme.mutedText,
-                      ),
-                    ),
+                    const Text('Status', style: TextStyle(fontSize: 13, color: AppTheme.mutedText)),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.12),
+                        color: Colors.orange.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Text(
                         'Pending',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.orange,
-                        ),
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.orange),
                       ),
                     ),
                   ],
@@ -666,24 +532,14 @@ class ProgrammeApplicationSuccessScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: onViewMyProgrammes ??
-                          () => Navigator.of(context)
-                          .popUntil((route) => route.isFirst),
+                  onPressed: onViewMyProgrammes ?? () => Navigator.of(context).popUntil((route) => route.isFirst),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
                   ),
-                  child: const Text(
-                    'View My Programmes',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: const Text('View My Programmes', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -694,45 +550,20 @@ class ProgrammeApplicationSuccessScreen extends StatelessWidget {
   }
 }
 
-// ───────────────────────────────────────────────────────────────────────
-// SHARED PRESENTATION WIDGETS
-// ───────────────────────────────────────────────────────────────────────
 class _FieldLabel extends StatelessWidget {
   final String label;
   final IconData? icon;
   final bool required;
 
-  const _FieldLabel({
-    required this.label,
-    this.icon,
-    this.required = false,
-  });
+  const _FieldLabel({required this.label, this.icon, this.required = false});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        if (icon != null) ...[
-          Icon(icon, size: 15, color: AppTheme.mutedText),
-          const SizedBox(width: 6),
-        ],
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.textDark,
-          ),
-        ),
-        if (required)
-          const Text(
-            ' *',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.error,
-            ),
-          ),
+        if (icon != null) ...[Icon(icon, size: 15, color: AppTheme.mutedText), const SizedBox(width: 6)],
+        Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textDark)),
+        if (required) const Text(' *', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.error)),
       ],
     );
   }
@@ -772,24 +603,11 @@ class _AppTextField extends StatelessWidget {
         hintStyle: const TextStyle(color: AppTheme.mutedText, fontSize: 13),
         filled: true,
         fillColor: AppTheme.secondary,
-        contentPadding:
-        const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(maxLines > 1 ? 14 : 24),
-          borderSide: BorderSide.none,
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(maxLines > 1 ? 14 : 24),
-          borderSide: const BorderSide(color: AppTheme.error),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(maxLines > 1 ? 14 : 24),
-          borderSide: const BorderSide(color: AppTheme.error, width: 1.5),
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(maxLines > 1 ? 14 : 24), borderSide: BorderSide.none),
+        errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(maxLines > 1 ? 14 : 24), borderSide: const BorderSide(color: AppTheme.error)),
+        focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(maxLines > 1 ? 14 : 24), borderSide: const BorderSide(color: AppTheme.error, width: 1.5)),
       ),
     );
   }
 }
-// ═══════════════════════════════════════════════════════════════════════
-// Lutfeeya-UIUX-012
-// ═══════════════════════════════════════════════════════════════════════

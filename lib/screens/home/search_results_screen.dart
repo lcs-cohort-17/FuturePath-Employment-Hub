@@ -1,31 +1,23 @@
 import 'package:flutter/material.dart';
-
-import 'package:futurepath_employment_hub/core/widgets/loading_overlay.dart';
-import 'package:futurepath_employment_hub/core/widgets/error_message.dart';
-import 'package:futurepath_employment_hub/core/widgets/empty_state.dart';
-import 'package:futurepath_employment_hub/services/search_filter_service.dart';
-import 'package:futurepath_employment_hub/services/sheets_service.dart';
+import '../../core/widgets/loading_overlay.dart';
+import '../../core/widgets/error_message.dart';
+import '../../core/widgets/empty_state.dart';
+import '../../services/sheets_service.dart';
 
 class SearchResultsScreen extends StatefulWidget {
   const SearchResultsScreen({super.key});
 
   @override
-  State<SearchResultsScreen> createState() =>
-      _SearchResultsScreenState();
+  State<SearchResultsScreen> createState() => _SearchResultsScreenState();
 }
 
-class _SearchResultsScreenState
-    extends State<SearchResultsScreen> {
-  final TextEditingController searchController =
-  TextEditingController();
-
+class _SearchResultsScreenState extends State<SearchResultsScreen> {
+  final TextEditingController searchController = TextEditingController();
   bool isLoading = false;
   bool hasError = false;
-
   List programmes = [];
   List opportunities = [];
   List results = [];
-
   final sheetsService = SheetsService();
 
   @override
@@ -48,17 +40,9 @@ class _SearchResultsScreenState
     });
 
     try {
-      programmes =
-      await sheetsService.getProgrammes();
-
-      opportunities =
-      await sheetsService.getOpportunities();
-
-      results = [
-        ...programmes,
-        ...opportunities,
-      ];
-
+      programmes = await sheetsService.getProgrammes();
+      opportunities = await sheetsService.getOpportunities();
+      results = [...programmes, ...opportunities];
       setState(() {
         isLoading = false;
       });
@@ -72,11 +56,22 @@ class _SearchResultsScreenState
 
   void onSearch(String query) {
     setState(() {
-      results = SearchFilterService.searchAll(
-        query: query,
-        programmes: programmes,
-        opportunities: opportunities,
-      );
+      if (query.isEmpty) {
+        results = [...programmes, ...opportunities];
+      } else {
+        final lowerQuery = query.toLowerCase();
+        results = [
+          ...programmes.where((p) =>
+          (p['title']?.toString().toLowerCase().contains(lowerQuery) ?? false) ||
+              (p['description']?.toString().toLowerCase().contains(lowerQuery) ?? false)
+          ),
+          ...opportunities.where((o) =>
+          (o['title']?.toString().toLowerCase().contains(lowerQuery) ?? false) ||
+              (o['company']?.toString().toLowerCase().contains(lowerQuery) ?? false) ||
+              (o['description']?.toString().toLowerCase().contains(lowerQuery) ?? false)
+          ),
+        ];
+      }
     });
   }
 
@@ -89,9 +84,7 @@ class _SearchResultsScreenState
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Scaffold(
-        body: LoadingOverlay(),
-      );
+      return const Scaffold(body: LoadingOverlay());
     }
 
     if (hasError) {
@@ -104,9 +97,7 @@ class _SearchResultsScreenState
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Search"),
-      ),
+      appBar: AppBar(title: const Text("Search")),
       body: Column(
         children: [
           Padding(
@@ -114,41 +105,25 @@ class _SearchResultsScreenState
             child: TextField(
               controller: searchController,
               decoration: const InputDecoration(
-                hintText:
-                "Search programmes and jobs...",
+                hintText: "Search programmes and jobs...",
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.search),
               ),
               onChanged: onSearch,
             ),
           ),
-
           Expanded(
             child: results.isEmpty
-                ? const EmptyState(
-              message:
-              "No results found",
-            )
+                ? const EmptyState(message: "No results found")
                 : ListView.builder(
-              itemCount:
-              results.length,
-              itemBuilder:
-                  (context, index) {
-                final item =
-                results[index];
-
+              itemCount: results.length,
+              itemBuilder: (context, index) {
+                final item = results[index];
                 return Card(
                   child: ListTile(
-                    title: Text(
-                      item["title"]
-                          .toString(),
-                    ),
+                    title: Text(item["title"]?.toString() ?? ''),
                     trailing: Chip(
-                      label: Text(
-                        item["type"]
-                            ?.toString() ??
-                            "Item",
-                      ),
+                      label: Text(item["type"]?.toString() ?? "Item"),
                     ),
                     onTap: () {
                       // NAV-004 handles navigation

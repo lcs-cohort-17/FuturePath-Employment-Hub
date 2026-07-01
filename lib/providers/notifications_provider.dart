@@ -1,66 +1,84 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
 import 'package:futurepath_employment_hub/models/notification_item.dart';
 
-class NotificationsNotifier extends Notifier<List<NotificationItem>> {
-  @override
-  List<NotificationItem> build() {
-    return [
-      NotificationItem(
-        id: '1',
-        type: 'Accepted',
-        referenceId: 'app_001',
-        title: 'Application Accepted',
-        body: 'Your application for Digital Marketing Assistant has been accepted.',
-        timestamp: '2 hours ago',
-        isRead: false,
-      ),
-      NotificationItem(
-        id: '2',
-        type: 'Update',
-        referenceId: 'user_001',
-        title: 'Profile View',
-        body: 'TechNova Solutions viewed your profile recently.',
-        timestamp: '5 hours ago',
-        isRead: false,
-      ),
-      NotificationItem(
-        id: '3',
-        type: 'Submitted',
-        referenceId: 'app_002',
-        title: 'Application Submitted',
-        body: 'You have successfully applied for Junior Flutter Developer.',
-        timestamp: '1 day ago',
-        isRead: true,
-      ),
-    ];
-  }
+class NotificationsProvider extends ChangeNotifier {
+  List<NotificationItem> _notifications = [
+    NotificationItem(
+      id: 'notif_prog_001',
+      type: 'programme',
+      referenceId: 'prog_001',
+      title: 'New Programme Available',
+      body: 'A new Flutter Mobile Development programme is now open for applications.',
+      timestamp: '10 mins ago',
+      isRead: false,
+    ),
+    NotificationItem(
+      id: 'notif_job_001',
+      type: 'job',
+      referenceId: '1',
+      title: 'Job Opening Match',
+      body: 'A Junior Flutter Developer role is available that matches your profile.',
+      timestamp: 'Yesterday',
+      isRead: true,
+    ),
+    NotificationItem(
+      id: 'notif_app_001',
+      type: 'application',
+      referenceId: 'app_001',
+      title: 'Application Progress Update',
+      body: 'Your application has moved to the next stage.',
+      timestamp: '2 days ago',
+      isRead: true,
+    ),
+    NotificationItem(
+      id: 'notif_sys_001',
+      type: 'system',
+      referenceId: '',
+      title: 'System Security Update',
+      body: 'Your local platform device authorization keys were updated successfully.',
+      timestamp: '4 days ago',
+      isRead: true,
+    ),
+    NotificationItem(
+      id: 'notif_app_002',
+      type: 'application',
+      referenceId: 'app_002',
+      title: 'Application Logged',
+      body: 'Your application for UI/UX Design Apprentice has been routed into the recruitment pipeline.',
+      timestamp: '1 week ago',
+      isRead: true,
+    )
+  ];
+
+  List<NotificationItem> get notifications => _notifications;
+
+  int get unreadCount => _notifications.where((n) => !n.isRead).length;
 
   void markAsRead(String id) {
-    state = [
-      for (final item in state)
-        if (item.id == id)
-          item.copyWith(isRead: true)
-        else
-          item,
-    ];
+    final index = _notifications.indexWhere((n) => n.id == id);
+    if (index != -1) {
+      _notifications[index] = _notifications[index].copyWith(isRead: true);
+      notifyListeners();
+    }
   }
 
   void markAllAsRead() {
-    state = [
-      for (final item in state)
-        item.copyWith(isRead: true)
-    ];
+    _notifications = _notifications.map((n) => n.copyWith(isRead: true)).toList();
+    notifyListeners();
   }
 
   void addNotification(NotificationItem item) {
-    state = [item, ...state];
+    _notifications.insert(0, item);
+    notifyListeners();
+  }
+
+  void removeNotification(String id) {
+    _notifications.removeWhere((n) => n.id == id);
+    notifyListeners();
   }
 
   void clearNotifications() {
-    state = [];
+    _notifications = [];
+    notifyListeners();
   }
 }
-
-final notificationsProvider = NotifierProvider<NotificationsNotifier, List<NotificationItem>>(() {
-  return NotificationsNotifier();
-});

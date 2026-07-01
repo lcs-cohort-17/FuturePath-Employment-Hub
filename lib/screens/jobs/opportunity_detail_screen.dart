@@ -9,6 +9,8 @@
 // =============================================================================
 
 import 'package:flutter/material.dart';
+import '../../models/employer.dart';
+import '../../router/app_router.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/core/widgets/skill_chip.dart';
 import 'package:futurepath_employment_hub/screens/jobs/opportunity_list_screen.dart'
@@ -207,12 +209,40 @@ class _OpportunityDetailScreenState extends State<OpportunityDetailScreen> {
                 ),
               ),
               const SizedBox(height: 4),
-              Text(
-                opportunity.company,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: AppTheme.accent,
-                  fontWeight: FontWeight.w600,
+              // 💡 MAKE COMPANY NAME TAP-ROUTABLE:
+              InkWell(
+                onTap: () {
+                  // Transform available details cleanly into an EmployerModel
+                  final employerData = EmployerModel(
+                    id: opportunity.company.toLowerCase().replaceAll(' ', '_'),
+                    companyName: opportunity.company,
+                    industry: opportunity.companyIndustry,
+                    location: opportunity.location,
+                    activeOpeningsCount: 1, // Fallback base context value
+                    email: null, // Will be filled dynamically by sheets_service
+                    website: null,
+                    bio: null,
+                  );
+
+                  // Trigger navigation using the structured AppRouter route definition
+                  Navigator.pushNamed(
+                    context,
+                    AppRouter.employerDetail,
+                    arguments: employerData,
+                  );
+                },
+                borderRadius: BorderRadius.circular(4),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+                  child: Text(
+                    opportunity.company,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppTheme.accent,
+                      fontWeight: FontWeight.w600,
+                      decoration: TextDecoration.underline, // Visual indicator to show it's interactable
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 4),

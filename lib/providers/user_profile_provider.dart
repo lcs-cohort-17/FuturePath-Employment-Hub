@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
 import 'package:futurepath_employment_hub/models/user_profile.dart';
 import 'package:futurepath_employment_hub/models/programme.dart';
 
@@ -15,14 +15,14 @@ final mockUserProfile = UserProfile(
   bio: 'Hardworking high school graduate looking for entry-level opportunities in tech and logistics.',
   skills: ['Customer Service', 'Basic Computer Skills', 'Communication'],
   completedProgrammes: [
-    Programme(
+    const Programme(
       id: '1',
       title: 'Computer Literacy Certificate',
       status: 'Certificate issued',
       isCompleted: true,
       progress: 1.0,
     ),
-    Programme(
+    const Programme(
       id: '2',
       title: 'Customer Service Training',
       status: 'Certificate issued',
@@ -31,7 +31,7 @@ final mockUserProfile = UserProfile(
     ),
   ],
   enrolledProgrammes: [
-    Programme(
+    const Programme(
       id: '3',
       title: 'Introduction to Logistics',
       status: 'In progress',
@@ -41,77 +41,84 @@ final mockUserProfile = UserProfile(
   ],
 );
 
-class UserProfileNotifier extends Notifier<UserProfile> {
-  @override
-  UserProfile build() {
-    return mockUserProfile;
-  }
+class UserProfileProvider extends ChangeNotifier {
+  UserProfile _profile = mockUserProfile;
+
+  UserProfile get profile => _profile;
 
   void setUserProfile(UserProfile profile) {
-    state = profile;
+    _profile = profile;
+    notifyListeners();
   }
 
   void updateProfile(UserProfile updatedProfile) {
-    state = updatedProfile;
+    _profile = updatedProfile;
+    notifyListeners();
   }
 
   void addSkill(String skill) {
     final trimmed = skill.trim();
-    if (trimmed.isNotEmpty && !state.skills.contains(trimmed)) {
-      state = state.copyWith(
-        skills: [...state.skills, trimmed],
+    if (trimmed.isNotEmpty && !_profile.skills.contains(trimmed)) {
+      _profile = _profile.copyWith(
+        skills: [..._profile.skills, trimmed],
       );
+      notifyListeners();
     }
   }
 
   void removeSkill(String skill) {
-    state = state.copyWith(
-      skills: state.skills.where((s) => s != skill).toList(),
+    _profile = _profile.copyWith(
+      skills: _profile.skills.where((s) => s != skill).toList(),
     );
+    notifyListeners();
   }
 
   void updateHiredStatus(bool isHired) {
-    state = state.copyWith(isHired: isHired);
+    _profile = _profile.copyWith(isHired: isHired);
+    notifyListeners();
   }
 
   void updateEmploymentStatus(String status) {
-    state = state.copyWith(employmentStatus: status);
+    _profile = _profile.copyWith(employmentStatus: status);
+    notifyListeners();
   }
 
   void addSavedProgramme(Programme programme) {
-    final updatedSaved = List<Programme>.from(state.savedProgrammes)..add(programme);
-    state = state.copyWith(savedProgrammes: updatedSaved);
+    final updatedSaved = List<Programme>.from(_profile.savedProgrammes)..add(programme);
+    _profile = _profile.copyWith(savedProgrammes: updatedSaved);
+    notifyListeners();
   }
 
   void removeSavedProgramme(String programmeId) {
-    final updatedSaved = state.savedProgrammes
+    final updatedSaved = _profile.savedProgrammes
         .where((p) => p.id != programmeId)
         .toList();
-    state = state.copyWith(savedProgrammes: updatedSaved);
+    _profile = _profile.copyWith(savedProgrammes: updatedSaved);
+    notifyListeners();
   }
 
   void addEnrolledProgramme(Programme programme) {
-    final updatedEnrolled = List<Programme>.from(state.enrolledProgrammes)..add(programme);
-    state = state.copyWith(enrolledProgrammes: updatedEnrolled);
+    final updatedEnrolled = List<Programme>.from(_profile.enrolledProgrammes)..add(programme);
+    _profile = _profile.copyWith(enrolledProgrammes: updatedEnrolled);
+    notifyListeners();
   }
 
   void removeEnrolledProgramme(String programmeId) {
-    final updatedEnrolled = state.enrolledProgrammes
+    final updatedEnrolled = _profile.enrolledProgrammes
         .where((p) => p.id != programmeId)
         .toList();
-    state = state.copyWith(enrolledProgrammes: updatedEnrolled);
+    _profile = _profile.copyWith(enrolledProgrammes: updatedEnrolled);
+    notifyListeners();
   }
 
   void addCompletedProgramme(Programme programme) {
-    final updatedCompleted = List<Programme>.from(state.completedProgrammes)..add(programme);
-    state = state.copyWith(completedProgrammes: updatedCompleted);
+    final updatedCompleted = List<Programme>.from(_profile.completedProgrammes)..add(programme);
+    _profile = _profile.copyWith(completedProgrammes: updatedCompleted);
+    notifyListeners();
   }
 
   void clearProfile() {
-    state = mockUserProfile;
+    _profile = mockUserProfile;
+    notifyListeners();
   }
 }
-
-final userProfileProvider = NotifierProvider<UserProfileNotifier, UserProfile>(() {
-  return UserProfileNotifier();
-});

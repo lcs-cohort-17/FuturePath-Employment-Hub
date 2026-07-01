@@ -9,6 +9,10 @@ import 'package:futurepath_employment_hub/router/app_router.dart';
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
 
+  static final GlobalKey<_AppShellState> globalKey = GlobalKey<_AppShellState>();
+
+  static int get currentIndex => globalKey.currentState?.currentIndex ?? 0;
+
   @override
   State<AppShell> createState() => _AppShellState();
 }
