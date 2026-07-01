@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+//import 'package:futurepath/theme.dart';
+import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 
 class ErrorMessage extends StatelessWidget {
   final String message;
@@ -13,42 +15,61 @@ class ErrorMessage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.red.shade50,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.red.shade200),
+        color: AppTheme.errorLow,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: AppTheme.error.withOpacity(0.3),
+          width: 0.5,
+        ),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // This Row keeps your original icon + text layout
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.error_outline, color: Colors.red.shade700, size: 24),
-              const SizedBox(width: 12),
+              Icon(
+                Icons.error_outline,
+                color: AppTheme.error,
+                size: 14,
+              ),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   message,
-                  style: TextStyle(color: Colors.red.shade700, fontSize: 14),
+                  style: const TextStyle(
+                    color: AppTheme.error,
+                    fontSize: 11,
+                    height: 1.5,
+                  ),
                 ),
-              ), // <-- Correctly closed Expanded here
+              ),
             ],
           ),
-          // This adds the Retry button below the text if onRetry is provided
           if (onRetry != null) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton.icon(
+              child: ElevatedButton(
                 onPressed: onRetry,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red.shade700,
+                  backgroundColor: AppTheme.error,
                   foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  textStyle: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  elevation: 0,
                 ),
+                child: const Text('Retry'),
               ),
             ),
           ],

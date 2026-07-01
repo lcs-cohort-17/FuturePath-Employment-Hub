@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/core/widgets/skill_chip.dart';
 import 'package:futurepath_employment_hub/providers/search_filter_provider.dart';
-import 'opportunity_detail_screen.dart';
+// import 'opportunity_detail_screen.dart';
 
 class Opportunity {
   final String id;
@@ -413,35 +413,35 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
                   ),
                 )
               else
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                      return Padding(
-                        padding: EdgeInsets.fromLTRB(16, index == 0 ? 4 : 0, 16, 12),
-                        child: _OpportunityCard(
-                          opportunity: filtered[index],
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => OpportunityDetailScreen(
-                                opportunity: filtered[index],
-                              ),
-                            ),
-                          ),
-                          onCompanyTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const _PlaceholderScreen(
-                                message: 'Employer Detail Screen - coming soon',
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                    childCount: filtered.length,
-                  ),
-                ),
+                // SliverList(
+                //   delegate: SliverChildBuilderDelegate(
+                //         (context, index) {
+                //       return Padding(
+                //         padding: EdgeInsets.fromLTRB(16, index == 0 ? 4 : 0, 16, 12),
+                //         child: _OpportunityCard(
+                //           opportunity: filtered[index],
+                //           onTap: () => Navigator.push(
+                //             context,
+                //             MaterialPageRoute(
+                //               builder: (context) => OpportunityDetailScreen(
+                //                 opportunity: filtered[index],
+                //               ),
+                //             ),
+                //           ),
+                //           onCompanyTap: () => Navigator.push(
+                //             context,
+                //             MaterialPageRoute(
+                //               builder: (context) => const _PlaceholderScreen(
+                //                 message: 'Employer Detail Screen - coming soon',
+                //               ),
+                //             ),
+                //           ),
+                //         ),
+                //       );
+                //     },
+                //     childCount: filtered.length,
+                //   ),
+                // ),
               const SliverToBoxAdapter(child: SizedBox(height: 20)),
             ],
           ),

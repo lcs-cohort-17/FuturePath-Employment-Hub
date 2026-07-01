@@ -1,34 +1,132 @@
+/// Employer model.
+///
+/// Field names mirror the expected Supabase column names so that
+/// [Employer.fromMap] can be called directly on a Supabase row response
+/// and [toMap] can be passed directly to an insert / update call.
+class Employer {
+  final String id;
+  final String companyName;
+  final String industry;
+  final String location;
+  final String? contactEmail;
+  final String? contactPhone;
+  final String? website;
+  final String? description;
+  final DateTime? createdAt;
+
+  const Employer({
+    required this.id,
+    required this.companyName,
+    required this.industry,
+    required this.location,
+    this.contactEmail,
+    this.contactPhone,
+    this.website,
+    this.description,
+    this.createdAt,
+  });
+
+  // ── Supabase-compatible deserialization ──────────────────────────────────
+
+  factory Employer.fromMap(Map<String, dynamic> map) {
+    return Employer(
+      id: map['id']?.toString() ?? '',
+      companyName: map['company_name']?.toString() ?? '',
+      industry: map['industry']?.toString() ?? '',
+      location: map['location']?.toString() ?? '',
+      contactEmail: map['contact_email']?.toString(),
+      contactPhone: map['contact_phone']?.toString(),
+      website: map['website']?.toString(),
+      description: map['description']?.toString(),
+      createdAt: map['created_at'] != null
+          ? DateTime.tryParse(map['created_at'].toString())
+          : null,
+    );
+  }
+
+  // ── Supabase-compatible serialization ────────────────────────────────────
+
+  Map<String, dynamic> toMap() {
+    return {
+      'company_name': companyName,
+      'industry': industry,
+      'location': location,
+      if (contactEmail != null && contactEmail!.isNotEmpty)
+        'contact_email': contactEmail,
+      if (contactPhone != null && contactPhone!.isNotEmpty)
+        'contact_phone': contactPhone,
+      if (website != null && website!.isNotEmpty) 'website': website,
+      if (description != null && description!.isNotEmpty)
+        'description': description,
+    };
+  }
+
+  // ── Immutable update helper ───────────────────────────────────────────────
+
+  Employer copyWith({
+    String? id,
+    String? companyName,
+    String? industry,
+    String? location,
+    String? contactEmail,
+    String? contactPhone,
+    String? website,
+    String? description,
+    DateTime? createdAt,
+  }) {
+    return Employer(
+      id: id ?? this.id,
+      companyName: companyName ?? this.companyName,
+      industry: industry ?? this.industry,
+      location: location ?? this.location,
+      contactEmail: contactEmail ?? this.contactEmail,
+      contactPhone: contactPhone ?? this.contactPhone,
+      website: website ?? this.website,
+      description: description ?? this.description,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  String toString() =>
+      'Employer(id: $id, companyName: $companyName, industry: $industry, location: $location)';
+}
+
+/// A UI-facing model used by the Employer Detail screen.
+///
+/// [EmployerModel] provides the data structure required by the
+/// Employer Detail screen and its corresponding tests.
 class EmployerModel {
   final String id;
   final String companyName;
   final String industry;
   final String location;
-  final String? website;
   final String? email;
+  final String? website;
   final String? bio;
   final int activeOpeningsCount;
 
-  EmployerModel({
+  const EmployerModel({
     required this.id,
     required this.companyName,
     required this.industry,
     required this.location,
-    this.website,
     this.email,
+    this.website,
     this.bio,
-    required this.activeOpeningsCount,
+    this.activeOpeningsCount = 0,
   });
 
   factory EmployerModel.fromJson(Map<String, dynamic> json) {
     return EmployerModel(
-      id: json['id'] ?? '',
-      companyName: json['company_name'] ?? '',
-      industry: json['industry'] ?? '',
-      location: json['location'] ?? '',
-      website: json['website'],
-      email: json['email'],
-      bio: json['bio'],
-      activeOpeningsCount: json['active_openings_count'] ?? 0,
+      id: json['id']?.toString() ?? '',
+      companyName: json['company_name']?.toString() ?? '',
+      industry: json['industry']?.toString() ?? '',
+      location: json['location']?.toString() ?? '',
+      email: json['email']?.toString(),
+      website: json['website']?.toString(),
+      bio: json['bio']?.toString(),
+      activeOpeningsCount: json['active_openings_count'] as int? ?? 0,
     );
   }
 }
