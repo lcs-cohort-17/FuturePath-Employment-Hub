@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/core/widgets/skill_chip.dart';
 import 'package:futurepath_employment_hub/providers/search_filter_provider.dart';
+import 'package:futurepath_employment_hub/models/employer.dart';
+import 'employer_detail_screen.dart';
 import 'opportunity_detail_screen.dart';
 
 class Opportunity {
@@ -218,7 +220,6 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) => Consumer(
         builder: (context, ref, child) {
-          // Get both state and notifier
           final filterState = ref.watch(searchFilterProvider);
           final filterNotifier = ref.watch(searchFilterProvider.notifier);
 
@@ -273,7 +274,6 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
                         label: location,
                         selected: isSelected,
                         onTap: () {
-                          // Use notifier to call method
                           filterNotifier.toggleLocation(location);
                         },
                       );
@@ -334,7 +334,6 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
                       Expanded(
                         child: OutlinedButton(
                           onPressed: () {
-                            // Use notifier to call method
                             filterNotifier.clearFilters();
                             setState(() {
                               _selectedJobType = 'All Types';
@@ -431,8 +430,14 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
                           onCompanyTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const _PlaceholderScreen(
-                                message: 'Employer Detail Screen - coming soon',
+                              builder: (context) => EmployerDetailScreen(
+                                employerData: EmployerModel(
+                                  id: filtered[index].id,
+                                  companyName: filtered[index].company,
+                                  industry: filtered[index].companyIndustry,
+                                  location: filtered[index].location,
+                                  activeOpeningsCount: filtered[index].positions,
+                                ),
                               ),
                             ),
                           ),
@@ -468,7 +473,6 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
             children: [
               Consumer(
                 builder: (context, ref, child) {
-                  // Get state only (for reading properties)
                   final filterState = ref.watch(searchFilterProvider);
                   return Stack(
                     children: [
@@ -680,13 +684,11 @@ class _FilterChipItem extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback onTap;
-  final bool outlined;
 
   const _FilterChipItem({
     required this.label,
     required this.selected,
     required this.onTap,
-    this.outlined = false,
   });
 
   @override
@@ -697,13 +699,11 @@ class _FilterChipItem extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: selected ? AppTheme.accent : (outlined ? Colors.transparent : AppTheme.card),
+          color: selected ? AppTheme.accent : AppTheme.card,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: selected
                 ? AppTheme.accent
-                : outlined
-                ? AppTheme.mutedText.withValues(alpha: 0.4)
                 : AppTheme.mutedText.withValues(alpha: 0.2),
           ),
         ),
@@ -894,37 +894,6 @@ class _OpportunityCard extends StatelessWidget {
               ],
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PlaceholderScreen extends StatelessWidget {
-  final String message;
-
-  const _PlaceholderScreen({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: AppTheme.primary,
-        foregroundColor: Colors.white,
-        title: const Text('Coming Soon'),
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text(
-            message,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppTheme.mutedText,
-              fontSize: 16,
-            ),
-          ),
         ),
       ),
     );
