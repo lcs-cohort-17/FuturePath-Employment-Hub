@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import '../../router/app_router.dart';
 
 // ---------------------------------------------------------------------------
 // Mock model — replace with real AdminProfile from your data layer (AUTH-007)
@@ -120,8 +121,12 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     try {
       await _service.signOut();
       if (!mounted) return;
-      // [AUTH-007] — After real sign-out, replace this with a router redirect
-      // to the login screen, e.g. context.go('/login') if using go_router.
+      
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        AppRouter.login,
+        (route) => false,
+      );
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Signed out successfully'),

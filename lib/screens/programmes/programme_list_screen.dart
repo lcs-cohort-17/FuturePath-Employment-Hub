@@ -4,109 +4,12 @@
 import 'package:flutter/material.dart';
 
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
+import 'package:futurepath_employment_hub/models/programme.dart';
 import '../../services/sheets_service.dart';
 import '../../core/widgets/loading_overlay.dart';
 import '../../core/widgets/error_message.dart';
 import '../../core/widgets/empty_state.dart';
 import 'programme_detail_screen.dart';
-
-/// ─────────────────────────────────────────────────────────────
-/// DATA MODEL
-/// ─────────────────────────────────────────────────────────────
-class Programme {
-  final String id;
-  final String title;
-  final String provider;
-  final String category;
-  final String level;
-  final String status;
-  final String description;
-  final String startDate;
-  final String endDate;
-  final String duration;
-  final int enrolledCount;
-  final int capacity;
-  final List<String> skills;
-  final String careerOpportunities;
-  final String imageUrl;
-
-  const Programme({
-    required this.id,
-    required this.title,
-    required this.provider,
-    required this.category,
-    required this.level,
-    required this.status,
-    required this.description,
-    required this.startDate,
-    required this.endDate,
-    required this.duration,
-    required this.enrolledCount,
-    required this.capacity,
-    required this.skills,
-    required this.careerOpportunities,
-    required this.imageUrl,
-  });
-
-  int get spotsRemaining => capacity - enrolledCount;
-}
-
-// ═══════════════════════════════════════════════════════════════
-// MOCK DATA
-// ═══════════════════════════════════════════════════════════════
-const List<Programme> mockProgrammes = [
-  Programme(
-    id: 'prog_001',
-    title: 'Flutter Mobile Development',
-    provider: 'TechNova Solutions',
-    category: 'Technology',
-    level: 'Beginner-Intermediate',
-    status: 'Open',
-    description: 'Build cross-platform mobile apps using Flutter & Dart for iOS and Android.',
-    startDate: '01 Jul 2026',
-    endDate: '01 Oct 2026',
-    duration: '3 months',
-    enrolledCount: 24,
-    capacity: 30,
-    skills: ['Flutter', 'Dart', 'Mobile UI', 'State Management'],
-    careerOpportunities: 'Completing this programme can qualify you for roles such as mobile developer and app engineer.',
-    imageUrl: 'assets/images/programmes/flutter_mobile.jpg',
-  ),
-  Programme(
-    id: 'prog_002',
-    title: 'Salesforce Administration',
-    provider: 'FutureTech Africa',
-    category: 'Business',
-    level: 'Beginner',
-    status: 'Open',
-    description: 'This 3-month programme covers user management, security configuration, data management.',
-    startDate: '15 Jul 2026',
-    endDate: '15 Oct 2026',
-    duration: '3 months',
-    enrolledCount: 20,
-    capacity: 25,
-    skills: ['Salesforce', 'CRM', 'Data Management', 'Automation'],
-    careerOpportunities: 'Completing this programme can qualify you for roles in business.',
-    imageUrl: 'assets/images/programmes/salesforce_admin.jpg',
-  ),
-  Programme(
-    id: 'prog_003',
-    title: 'Digital Marketing Fundamentals',
-    provider: 'GrowthLab Academy',
-    category: 'Marketing',
-    level: 'Beginner',
-    status: 'Open',
-    description: 'Learn SEO, social media marketing, content strategy and paid advertising fundamentals.',
-    startDate: '10 Jul 2026',
-    endDate: '10 Sep 2026',
-    duration: '2 months',
-    enrolledCount: 18,
-    capacity: 20,
-    skills: ['SEO', 'Social Media', 'Content Strategy', 'Google Ads'],
-    careerOpportunities: 'Completing this programme can qualify you for roles such as marketing assistant.',
-    imageUrl: 'assets/images/programmes/digital_marketing.jpg',
-  ),
-];
 
 /// ─────────────────────────────────────────────────────────────
 /// SCREEN
@@ -162,6 +65,7 @@ class _ProgrammeListScreenState extends State<ProgrammeListScreen> {
 
     await Future.delayed(const Duration(milliseconds: 500));
 
+    // Use mockProgrammes from models/programme.dart
     programmes = mockProgrammes;
     lastUpdated = DateTime.now();
 
@@ -499,7 +403,7 @@ class ProgrammeCard extends StatelessWidget {
     final spotsLeft = programme.spotsRemaining;
     final progress = programme.capacity == 0
         ? 0.0
-        : programme.enrolledCount / programme.capacity;
+        : (programme.enrolledCount / programme.capacity);
 
     final bool almostFull = progress >= 0.9;
     final bool notStarted = programme.enrolledCount == 0;
@@ -563,7 +467,7 @@ class ProgrammeCard extends StatelessWidget {
                   child: Icon(
                     _bannerIcon(programme.category),
                     size: 32,
-                    color: Colors.white.withOpacity(0.15),
+                    color: Colors.white.withValues(alpha: 0.15),
                   ),
                 ),
                 // Category badge — top left
@@ -574,7 +478,7 @@ class ProgrammeCard extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 7, vertical: 2),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.5),
+                      color: Colors.black.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -645,7 +549,7 @@ class ProgrammeCard extends StatelessWidget {
                     color: AppTheme.surface3,
                     child: FractionallySizedBox(
                       alignment: Alignment.centerLeft,
-                      widthFactor: progress,
+                      widthFactor: progress.clamp(0.0, 1.0),
                       child: Container(color: AppTheme.primary),
                     ),
                   ),

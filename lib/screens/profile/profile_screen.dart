@@ -4,6 +4,7 @@ import '../../core/theme/app_theme.dart';
 import '../../providers/user_profile_provider.dart';
 import '../../services/auth_services.dart';
 import '../../models/user_profile.dart';
+import '../../router/app_router.dart';
 import 'cv_screen.dart';
 import '../../core/errors/delete_account_error.dart';
 import '../../core/widgets/delete_account_dialog.dart';
@@ -24,7 +25,7 @@ class ProfileScreen extends ConsumerWidget {
         try {
           await authService.logout();
           if (context.mounted) {
-            Navigator.pushReplacementNamed(context, '/login');
+            Navigator.pushReplacementNamed(context, AppRouter.login);
           }
         } catch (e) {
           if (context.mounted) {

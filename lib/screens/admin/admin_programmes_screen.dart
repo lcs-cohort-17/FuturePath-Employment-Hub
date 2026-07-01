@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../router/app_router.dart';
-import '../programmes/programme_list_screen.dart'; // To reuse the Programme model
+import '../../models/programme.dart';
 
 /// Admin screen to view and manage all programmes.
 /// [UIUX-017 / UIUX-021]

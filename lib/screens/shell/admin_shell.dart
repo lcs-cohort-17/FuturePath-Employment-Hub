@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
+import '../../providers/admin_nav_provider.dart';
 import '../admin/admin_dashboard_screen.dart';
 import '../admin/admin_activity_screen.dart';
 import '../admin/admin_applicants_screen.dart';
@@ -8,35 +10,24 @@ import '../admin/admin_profile_screen.dart';
 
 /// The shell for the Admin role, containing the bottom navigation.
 /// [NAV-010]
-class AdminShell extends StatefulWidget {
+class AdminShell extends ConsumerWidget {
   const AdminShell({super.key});
 
-  @override
-  State<AdminShell> createState() => _AdminShellState();
-}
-
-class _AdminShellState extends State<AdminShell> {
-  int _currentIndex = 0;
-
-  final List<Widget> _screens = [
-    const AdminDashboardScreen(),
-    const AdminActivityScreen(),
-    const AdminProgrammesScreen(),
-    const AdminApplicantsScreen(),
-    const AdminProfileScreen(),
+  final List<Widget> _screens = const [
+    AdminDashboardScreen(),
+    AdminActivityScreen(),
+    AdminProgrammesScreen(),
+    AdminApplicantsScreen(),
+    AdminProfileScreen(),
   ];
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-  }
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentIndex = ref.watch(adminNavProvider);
+
     return Scaffold(
       body: IndexedStack(
-        index: _currentIndex,
+        index: currentIndex,
         children: _screens,
       ),
       bottomNavigationBar: Container(
@@ -44,8 +35,8 @@ class _AdminShellState extends State<AdminShell> {
           border: Border(top: BorderSide(color: AppTheme.border, width: 0.5)),
         ),
         child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: _onItemTapped,
+          currentIndex: currentIndex,
+          onTap: (index) => ref.read(adminNavProvider.notifier).state = index,
           type: BottomNavigationBarType.fixed,
           backgroundColor: AppTheme.surface,
           selectedItemColor: AppTheme.primary,

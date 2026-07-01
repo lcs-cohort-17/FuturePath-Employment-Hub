@@ -3,8 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════════
 import 'package:flutter/material.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
-import 'package:futurepath_employment_hub/screens/programmes/programme_list_screen.dart'
-    show Programme;
+import 'package:futurepath_employment_hub/models/programme.dart';
 import 'programme_application_screen.dart';
 
 class ProgrammeDetailScreen extends StatelessWidget {

@@ -9,8 +9,10 @@
 // [NAV-011] — AdminRoleRouting gates navigation to this screen for admin users only.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import '../../services/admin_dashboard_service.dart';
+import '../../providers/admin_nav_provider.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -71,10 +73,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   ? const _LoadingState()
                   : _error != null
                   ? _ErrorState(message: _error!, onRetry: _load)
-                  : _DashboardBody(
-                stats: _stats!,
-                feed: _feed!,
-              ),
+                  : Consumer(
+                      builder: (context, ref, child) => _DashboardBody(
+                        stats: _stats!,
+                        feed: _feed!,
+                        ref: ref,
+                      ),
+                    ),
             ),
           ],
         ),
@@ -243,8 +248,9 @@ class _ErrorState extends StatelessWidget {
 class _DashboardBody extends StatelessWidget {
   final AdminDashboardStats stats;
   final List<ActivityFeedItem> feed;
+  final WidgetRef ref;
 
-  const _DashboardBody({required this.stats, required this.feed});
+  const _DashboardBody({required this.stats, required this.feed, required this.ref});
 
   @override
   Widget build(BuildContext context) {
@@ -306,12 +312,16 @@ class _DashboardBody extends StatelessWidget {
           _SystemHealthGrid(items: stats.health),
 
           // ── Section 3: Anonymized Activity Feed ───────────────────────────
-          _SectionHeader(label: 'Anonymized Activity', actionLabel: 'Full log ›'),
+          _SectionHeader(
+            label: 'Anonymized Activity',
+            actionLabel: 'Full log ›',
+            onActionTap: () => ref.read(adminNavProvider.notifier).state = 1,
+          ),
           ...feed.map((item) => _ActivityFeedTile(item: item)),
 
           // ── Section 4: Quick Navigation ───────────────────────────────────
           _SectionHeader(label: 'Quick Navigation'),
-          _QuickNavGrid(),
+          _QuickNavGrid(ref: ref),
 
           const SizedBox(height: 20),
         ],
@@ -327,8 +337,9 @@ class _DashboardBody extends StatelessWidget {
 class _SectionHeader extends StatelessWidget {
   final String label;
   final String? actionLabel;
+  final VoidCallback? onActionTap;
 
-  const _SectionHeader({required this.label, this.actionLabel});
+  const _SectionHeader({required this.label, this.actionLabel, this.onActionTap});
 
   @override
   Widget build(BuildContext context) {
@@ -359,11 +370,14 @@ class _SectionHeader extends StatelessWidget {
             ],
           ),
           if (actionLabel != null)
-            Text(
-              actionLabel!,
-              style: const TextStyle(
-                fontSize: 11,
-                color: AppTheme.primary,
+            GestureDetector(
+              onTap: onActionTap,
+              child: Text(
+                actionLabel!,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: AppTheme.primary,
+                ),
               ),
             ),
         ],
@@ -652,7 +666,8 @@ class _ActivityIconProps {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _QuickNavGrid extends StatelessWidget {
-  const _QuickNavGrid();
+  final WidgetRef ref;
+  const _QuickNavGrid({required this.ref});
 
   @override
   Widget build(BuildContext context) {
@@ -662,32 +677,28 @@ class _QuickNavGrid extends StatelessWidget {
         iconColor: AppTheme.primary,
         label: 'Activity Log',
         subtitle: 'Anonymized events',
-        // [NAV-010] / [NAV-011] — Wire onTap to AdminShell tab index 1 (Activity)
-        onTap: () {},
+        onTap: () => ref.read(adminNavProvider.notifier).state = 1,
       ),
       _QuickNavItem(
-        icon: Icons.bar_chart_outlined,
+        icon: Icons.school_outlined,
         iconColor: AppTheme.success,
-        label: 'Performance',
-        subtitle: 'Content analytics',
-        // [NAV-010] / [NAV-011] — Wire onTap to AdminShell tab index 2 (Performance)
-        onTap: () {},
+        label: 'Programmes',
+        subtitle: 'Manage directory',
+        onTap: () => ref.read(adminNavProvider.notifier).state = 2,
       ),
       _QuickNavItem(
         icon: Icons.group_outlined,
         iconColor: AppTheme.info,
         label: 'Staff Mgmt',
         subtitle: 'Approve / Reject',
-        // [NAV-010] / [NAV-011] — Wire onTap to AdminShell tab index 3 (Staff Mgmt)
-        onTap: () {},
+        onTap: () => ref.read(adminNavProvider.notifier).state = 3,
       ),
       _QuickNavItem(
-        icon: Icons.settings_outlined,
+        icon: Icons.person_outline,
         iconColor: AppTheme.warning,
-        label: 'System',
-        subtitle: 'Settings & health',
-        // [NAV-010] / [NAV-011] — Wire onTap to AdminShell tab index 4 (System/Tools)
-        onTap: () {},
+        label: 'Profile',
+        subtitle: 'Admin settings',
+        onTap: () => ref.read(adminNavProvider.notifier).state = 4,
       ),
     ];
 
