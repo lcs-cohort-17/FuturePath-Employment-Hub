@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:futurepath_employment_hub/screens/profile/profile_screen.dart';
 import 'package:futurepath_employment_hub/screens/profile/cv_screen.dart';
-import 'package:futurepath_employment_hub/providers/user_profile_provider.dart';
 import 'package:futurepath_employment_hub/services/auth_services.dart';
 
 void main() {
@@ -54,20 +54,21 @@ void main() {
     //   expect(find.text("You're Hired!"), findsOneWidget);
     // });
 
-    testWidgets('Hired banner should NOT appear when user is not hired', (tester) async {
-      await tester.pumpWidget(
-        const ProviderScope(
-          child: MaterialApp(
-            home: ProfileScreen(),
-          ),
-        ),
-      );
+    testWidgets('Hired banner should NOT appear when user is not hired',
+            (tester) async {
+          await tester.pumpWidget(
+            const ProviderScope(
+              child: MaterialApp(
+                home: ProfileScreen(),
+              ),
+            ),
+          );
 
-      await tester.pumpAndSettle();
+          await tester.pumpAndSettle();
 
-      // Check if hired banner does NOT appear
-      expect(find.text("You're Hired!"), findsNothing);
-    });
+          // Check if hired banner does NOT appear
+          expect(find.text("You're Hired!"), findsNothing);
+        });
 
     testWidgets('CV/Resume card should navigate to CV screen', (tester) async {
       await tester.pumpWidget(
@@ -178,15 +179,71 @@ void main() {
   });
 }
 
-// Mock AuthService for testing
-// class _MockAuthService {extends} AuthService {
+// ---------------------------------------------------------------------------
+// Mock AuthService
+// Implements every member of AuthService so the compiler is satisfied.
+// Only logout() has real behaviour (the onLogout callback) — all other
+// methods return safe no-op stubs since no test exercises them here.
+//
+// NOTE: AuthService uses a singleton factory constructor (factory AuthService())
+// which means it cannot be subclassed or extended — `implements` is the
+// correct approach here. All interface members must be provided.
+// ---------------------------------------------------------------------------
 class _MockAuthService implements AuthService {
   final VoidCallback onLogout;
 
   _MockAuthService(this.onLogout);
 
+  // ── Getters ───────────────────────────────────────────────────────────────
+
+  @override
+  bool get isLoggedIn => false;
+
+  @override
+  String? get userEmail => null;
+
+  @override
+  User? get currentUser => null;
+
+  @override
+  Stream<AuthState> get authStateChanges => const Stream.empty();
+
+  // ── Methods ───────────────────────────────────────────────────────────────
+
   @override
   Future<void> logout() async {
     onLogout();
+  }
+
+  @override
+  Future<void> signOut() async {
+    onLogout();
+  }
+
+  @override
+  Future<AuthResponse> signIn({
+    required String email,
+    required String password,
+  }) async {
+    return AuthResponse();
+  }
+
+  @override
+  Future<AuthResponse> signUp({
+    required String email,
+    required String password,
+  }) async {
+    return AuthResponse();
+  }
+
+  @override
+  Future<void> resetPassword({
+    required String email,
+    required String redirectTo,
+  }) async {}
+
+  @override
+  Future<UserResponse> updatePassword(String newPassword) async {
+    throw UnimplementedError('updatePassword not needed in this test mock');
   }
 }

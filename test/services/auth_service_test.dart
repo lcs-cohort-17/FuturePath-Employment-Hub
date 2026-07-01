@@ -23,8 +23,10 @@ void main() {
       await expectLater(authService.logout(), completes);
     });
 
-    test('isLoggedIn should return a boolean', () async {
-      final result = await AuthService.isLoggedIn();
+    test('isLoggedIn should return a boolean', () {
+      // isLoggedIn is a synchronous bool getter on an AuthService instance —
+      // not static, not a method, not async.
+      final result = AuthService().isLoggedIn;
       expect(result, isA<bool>());
     });
 
