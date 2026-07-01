@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 import '../../services/auth_services.dart ';
 import '../../router/app_router.dart';
-import '../../theme.dart';
+import '../../core/theme/app_theme.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});

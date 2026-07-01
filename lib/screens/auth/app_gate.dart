@@ -4,7 +4,7 @@ import '../../services/auth_services.dart';
 import '../home/home_screen.dart';
 import '../auth/login_screen.dart';
 import '../auth/reset_password_screen.dart';
-import '../../theme.dart';
+import '../../core/theme/app_theme.dart';
 
 /// The first widget the app mounts.
 /// Routes to HomeScreen, LoginScreen, or ResetPasswordScreen

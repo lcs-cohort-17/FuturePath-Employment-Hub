@@ -3,7 +3,7 @@ import '../home/home_screen.dart';
 import '../programmes/programme_list_screen.dart';
 import '../jobs/job_list_screen.dart';
 import '../profile/profile_screen.dart';
-import '../../theme.dart';
+import '../../core/theme/app_theme.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});

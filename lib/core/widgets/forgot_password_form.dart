@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/auth_services.dart';
 import 'loading_indicator.dart';
 import 'error_message.dart';
-import '../../theme/app_theme.dart';
+import '../../core/theme/app_theme.dart';
 
 class ForgotPasswordForm extends StatefulWidget {
   const ForgotPasswordForm({super.key});

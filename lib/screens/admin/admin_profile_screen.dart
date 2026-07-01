@@ -745,21 +745,6 @@ class _SignOutButton extends StatelessWidget {
 
 
 
-///admin shell
-// [NAV-010] — Profile tab destination for admin shell
-import '../admin/admin_profile_screen.dart';
+
 
 // Inside your destinations/screens list at the Profile index:
-const AdminProfileScreen(),
-
-
-//approuter
-// Admin profile route (UIUX-023)
-GoRoute(
-  path: '/admin/profile',
-  builder: (context, state) => const AdminProfileScreen(),
-),
-
-//app router import
-import '../screens/admin/admin_profile_screen.dart';
-

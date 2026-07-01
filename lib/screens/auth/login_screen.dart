@@ -65,6 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
         AppRouter.home,
             (route) => false,
       );
+
     } on AuthException catch (e) {
       if (!mounted) return;
       setState(() => _loginErrorMessage = e.message);

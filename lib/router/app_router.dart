@@ -8,6 +8,7 @@ import '../screens/admin/admin_job_applications_screen.dart';
 import '../screens/admin/admin_applicants_screen.dart';
 import '../screens/admin/admin_enrolments_screen.dart';
 import '../screens/admin/admin_activity_screen.dart';
+import '../screens/admin/admin_navigation_screen.dart';
 
 class AppRouter {
   static const String login = '/login';
@@ -19,6 +20,8 @@ class AppRouter {
   static const String adminApplicants = '/admin/applicants';
   static const String adminEnrolments = '/admin/enrolments';
   static const String adminActivity = '/admin/activity';
+  static const String adminHome = '/admin/home';
+  static const staffRegister = '/staff-register';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -82,6 +85,14 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => const AdminActivityScreen(),
         );
+
+        // Lina ticket 010 - navigation
+      case adminHome:
+        return MaterialPageRoute(
+          builder: (_) => const AdminNavigationScreen(),
+          settings: settings,
+        );
+
 // Antonio ticket 017 ends here
 
       default:
