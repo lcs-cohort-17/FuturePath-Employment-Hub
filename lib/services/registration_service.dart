@@ -36,7 +36,6 @@ class RegistrationService {
     }
 
     // 3. Build the payload matching the schema image columns exactly
-    // Note: We use the most likely column names from the schema image provided.
     final applicantData = {
       'user_id': user.id,
       'first_name': firstName,
@@ -48,7 +47,7 @@ class RegistrationService {
       'residential_area': residentialArea,
       'highest_qualification': highestQualification,
       'current_employment_status': employmentStatus,
-      'skills': skills.join(', '), // Changed from List to String to be safer
+      'skills': skills, // ✅ FIXED: Pass List<String> directly — Supabase converts to array
       'role': 'applicant',
       'updated_at': DateTime.now().toIso8601String(),
     };
