@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/app_theme.dart';
 import '../../router/app_router.dart';
 import '../../models/programme.dart';
@@ -13,14 +14,37 @@ class AdminProgrammesScreen extends StatefulWidget {
 }
 
 class _AdminProgrammesScreenState extends State<AdminProgrammesScreen> {
-  final List<Programme> _programmes = mockProgrammes;
+  final _supabase = Supabase.instance.client;
+  List<Programme> _programmes = [];
+  bool _loading = true;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _load() async {
+    setState(() => _loading = true);
+    try {
+      final response = await _supabase.from('opportunities').select().eq('category', 'Programme');
+      final data = List<Map<String, dynamic>>.from(response);
+      setState(() {
+        _programmes = data.map((m) => Programme.fromJson(m)).toList();
+        _loading = false;
+      });
+    } catch (e) {
+      print('❌ Error loading programmes: $e');
+      setState(() => _loading = false);
+    }
   }
 
   List<Programme> get _filteredProgrammes {

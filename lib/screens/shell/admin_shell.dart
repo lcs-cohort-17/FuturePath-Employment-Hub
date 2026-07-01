@@ -7,6 +7,7 @@ import '../admin/admin_activity_screen.dart';
 import '../admin/admin_applicants_screen.dart';
 import '../admin/admin_programmes_screen.dart';
 import '../admin/admin_profile_screen.dart';
+import '../admin/admin_staff_mgmt_screen.dart';
 
 /// The shell for the Admin role, containing the bottom navigation.
 /// [NAV-010]
@@ -17,6 +18,7 @@ class AdminShell extends ConsumerWidget {
     AdminDashboardScreen(),
     AdminActivityScreen(),
     AdminProgrammesScreen(),
+    AdminStaffMgmtScreen(),
     AdminApplicantsScreen(),
     AdminProfileScreen(),
   ];
@@ -41,8 +43,9 @@ class AdminShell extends ConsumerWidget {
           backgroundColor: AppTheme.surface,
           selectedItemColor: AppTheme.primary,
           unselectedItemColor: AppTheme.mutedText,
-          selectedFontSize: 10,
-          unselectedFontSize: 10,
+          selectedFontSize: 9,
+          unselectedFontSize: 9,
+          iconSize: 20,
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.dashboard_outlined),
@@ -58,6 +61,11 @@ class AdminShell extends ConsumerWidget {
               icon: Icon(Icons.school_outlined),
               activeIcon: Icon(Icons.school),
               label: 'Programmes',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.group_outlined),
+              activeIcon: Icon(Icons.group),
+              label: 'Staff Mgmt',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.people_outline),

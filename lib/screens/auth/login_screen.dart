@@ -113,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
           }
           return;
         } else if (role == 'admin') {
-          Navigator.of(context).pushNamedAndRemoveUntil(AppRouter.adminStaffMgmt, (route) => false);
+          Navigator.of(context).pushNamedAndRemoveUntil(AppRouter.adminHome, (route) => false);
           return;
         }
       }

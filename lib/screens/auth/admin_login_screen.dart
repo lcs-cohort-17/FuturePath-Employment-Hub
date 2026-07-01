@@ -58,7 +58,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
         
         if (role == 'admin') {
           Navigator.of(context).pushNamedAndRemoveUntil(
-            AppRouter.adminStaffMgmt, 
+            AppRouter.adminHome,
             (route) => false,
           );
           return;

@@ -698,7 +698,7 @@ class _QuickNavGrid extends StatelessWidget {
         iconColor: AppTheme.warning,
         label: 'Profile',
         subtitle: 'Admin settings',
-        onTap: () => ref.read(adminNavProvider.notifier).state = 4,
+        onTap: () => ref.read(adminNavProvider.notifier).state = 5,
       ),
     ];
 
