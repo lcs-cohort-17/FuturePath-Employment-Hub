@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_profile.dart';
 import '../models/programme.dart';
-
+import '../core/errors/delete_account_error.dart';
+import '../services/user_profile_service.dart';
 // Mock data for development
 final mockUserProfile = UserProfile(
   id: '1',
@@ -106,6 +107,50 @@ class UserProfileNotifier extends StateNotifier<UserProfile> {
 
   void clearProfile() {
     state = mockUserProfile;
+  }
+  // ── Delete-account state ────────────────────────────────────────────────
+
+  bool _isDeletingAccount = false;
+  bool get isDeletingAccount => _isDeletingAccount;
+
+  DeleteAccountException? _deleteAccountError;
+  DeleteAccountException? get deleteAccountError => _deleteAccountError;
+
+  /// Deletes the account for [userId] then clears local profile state.
+  ///
+  /// Returns `true` on success so the caller can navigate away.
+  /// On failure, populates [deleteAccountError] and returns `false`.
+  ///
+  /// AUTH-007 — wire the signOut call to AuthService when that ticket lands.
+  /// INT-013  — deleteUserAccount() mock will be replaced with real Supabase calls.
+  Future<bool> deleteAccount(String userId) async {
+    _isDeletingAccount = true;
+    _deleteAccountError = null;
+
+    try {
+      await UserProfileService().deleteUserAccount(userId);
+      clearProfile();
+      _isDeletingAccount = false;
+      return true;
+    } on DeleteAccountException catch (e) {
+      _deleteAccountError = e;
+      _isDeletingAccount = false;
+      return false;
+    } catch (e) {
+      _deleteAccountError = DeleteAccountException(
+        code: DeleteAccountErrorCode.unknown,
+        userMessage: 'An unexpected error occurred.',
+        technicalDetail: e.toString(),
+      );
+      _isDeletingAccount = false;
+      return false;
+    }
+  }
+
+  /// Clears residual delete-account error state after the error sheet
+  /// is dismissed without retrying.
+  void clearDeleteAccountError() {
+    _deleteAccountError = null;
   }
 }
 

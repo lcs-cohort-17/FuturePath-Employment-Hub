@@ -1,6 +1,7 @@
 //track profile.dart
 import 'package:flutter/material.dart';
-import 'package:futurepath/theme.dart';
+// import 'package:futurepath/theme.dart';
+import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 
 class TrackApplicationsScreen extends StatefulWidget {
   final List<Map<String, dynamic>> applications;

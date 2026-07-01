@@ -14,6 +14,9 @@ class AppRouter {
   static const String signup = '/signup';
   static const String forgotPassword = '/forgot-password';
   static const String home = '/home';
+//Abdul is testing this out- eventually
+  static const String staffRegister = '/staff-register';
+
   static const String adminJobApplications = '/admin/job-applications';
   static const String adminEmployers = '/admin/employers';
   static const String adminApplicants = '/admin/applicants';
@@ -47,6 +50,12 @@ class AppRouter {
           builder: (_) => const AdminEmployersScreen(),
           settings: settings,
         );
+      // case staffRegister:
+      //   return MaterialPageRoute(
+      //     builder: (_) => const SignUpScreen(), // Or whatever your staff screen widget is named
+      //     settings: settings,
+      //   );
+
 // Sisonke sprint 2 Ticket UIUX-019
       case adminApplicants:
         return MaterialPageRoute(
