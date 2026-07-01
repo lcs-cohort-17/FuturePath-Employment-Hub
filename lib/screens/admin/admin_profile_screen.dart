@@ -375,7 +375,7 @@ class _ProfileHeader extends StatelessWidget {
                   color: AppTheme.primaryLow,
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(
-                    color: AppTheme.primary.withOpacity(0.2),
+                    color: AppTheme.primary.withValues(alpha: 0.2),
                     width: 0.5,
                   ),
                 ),
@@ -418,7 +418,7 @@ class _AccessBanner extends StatelessWidget {
         color: AppTheme.primaryLow,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppTheme.primary.withOpacity(0.2),
+          color: AppTheme.primary.withValues(alpha: 0.2),
           width: 0.5,
         ),
       ),
@@ -707,7 +707,7 @@ class _SignOutButton extends StatelessWidget {
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: AppTheme.primary.withOpacity(0.3),
+            color: AppTheme.primary.withValues(alpha: 0.3),
             width: 0.5,
           ),
         ),
@@ -740,26 +740,4 @@ class _SignOutButton extends StatelessWidget {
     );
   }
 }
-
-
-
-
-
-///admin shell
-// [NAV-010] — Profile tab destination for admin shell
-import '../admin/admin_profile_screen.dart';
-
-// Inside your destinations/screens list at the Profile index:
-const AdminProfileScreen(),
-
-
-//approuter
-// Admin profile route (UIUX-023)
-GoRoute(
-  path: '/admin/profile',
-  builder: (context, state) => const AdminProfileScreen(),
-),
-
-//app router import
-import '../screens/admin/admin_profile_screen.dart';
 

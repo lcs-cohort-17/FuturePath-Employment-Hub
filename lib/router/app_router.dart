@@ -7,7 +7,10 @@ import '../screens/admin/admin_employers_screen.dart';
 import '../screens/admin/admin_job_applications_screen.dart';
 import '../screens/admin/admin_applicants_screen.dart';
 import '../screens/admin/admin_enrolments_screen.dart';
+import '../screens/shell/admin_shell.dart';
 import '../screens/admin/admin_activity_screen.dart';
+import '../screens/admin/admin_programmes_screen.dart';
+import '../screens/admin/admin_profile_screen.dart';
 
 class AppRouter {
   static const String login = '/login';
@@ -17,11 +20,14 @@ class AppRouter {
 //Abdul is testing this out- eventually
   static const String staffRegister = '/staff-register';
 
+  static const String adminHome = '/admin/home';
   static const String adminJobApplications = '/admin/job-applications';
   static const String adminEmployers = '/admin/employers';
   static const String adminApplicants = '/admin/applicants';
   static const String adminEnrolments = '/admin/enrolments';
   static const String adminActivity = '/admin/activity';
+  static const String adminProgrammes = '/admin/programmes';
+  static const String adminProfile = '/admin/profile';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -44,7 +50,12 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => const AppShell(),
           settings: settings,
-        ); //marco added the work below
+        );
+      case adminHome:
+        return MaterialPageRoute(
+          builder: (_) => const AdminShell(),
+          settings: settings,
+        );
       case adminEmployers:
         return MaterialPageRoute(
           builder: (_) => const AdminEmployersScreen(),
@@ -92,6 +103,18 @@ class AppRouter {
           builder: (_) => const AdminActivityScreen(),
         );
 // Antonio ticket 017 ends here
+
+// UIUX-017 / UIUX-021 — Admin Programmes
+      case adminProgrammes:
+        return MaterialPageRoute(
+          builder: (_) => const AdminProgrammesScreen(),
+        );
+
+// UIUX-025 — Admin Profile
+      case adminProfile:
+        return MaterialPageRoute(
+          builder: (_) => const AdminProfileScreen(),
+        );
 
       default:
         return MaterialPageRoute(
