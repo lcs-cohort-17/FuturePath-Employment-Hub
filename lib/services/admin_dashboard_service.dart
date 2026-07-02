@@ -66,9 +66,9 @@ class AdminDashboardService {
   Future<AdminDashboardStats> fetchStats() async {
     try {
       // Fetch counts from Supabase tables
-      final usersCount = await _supabase.from('applicants').count(CountOption.exact);
-      final jobsCount = await _supabase.from('opportunities').count(CountOption.exact); // Assuming table name
-      final appsCount = await _supabase.from('applications').count(CountOption.exact);
+      final usersCount = await _supabase.from('Applicant').count(CountOption.exact);
+      final jobsCount = await _supabase.from('Employment Opportunity').count(CountOption.exact); // Assuming table name
+      final appsCount = await _supabase.from('job_applications').count(CountOption.exact);
 
       return AdminDashboardStats(
         stats: [

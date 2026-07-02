@@ -9,40 +9,40 @@ class StaffDashboardService {
 
   static Future<Map<String, dynamic>> getDashboardStats(String userId) async {
     try {
-      // Get jobs count — filter by created_by and opportunity_status
+      // Get jobs count — filter by Created_By and Opportunity_Status
       final jobs = await _supabase
-          .from('employment_opportunities')
-          .select('opportunity_status')
-          .eq('created_by', userId);
+          .from('Employment Opportunity')
+          .select('Opportunity_Status')
+          .eq('Created_By', userId);
 
       final totalJobs = jobs.length;
-      final activeJobs = jobs.where((j) => j['opportunity_status'] == 'open').length;
+      final activeJobs = jobs.where((j) => j['Opportunity_Status'] == 'open').length;
 
       // Get programmes count
       final programmes = await _supabase
-          .from('training_programmes')
-          .select('programme_status')
+          .from('Training Programme')
+          .select('Programme_Status')
           .eq('created_by', userId);
 
       final totalProgrammes = programmes.length;
-      final activeProgrammes = programmes.where((p) => p['programme_status'] == 'open').length;
+      final activeProgrammes = programmes.where((p) => p['Programme_Status'] == 'open').length;
 
       // Get applications (for jobs created by this staff)
       final applications = await _supabase
           .from('job_applications')
-          .select('*, employment_opportunities!inner(created_by)')
-          .eq('employment_opportunities.created_by', userId);
+          .select('*, "Employment Opportunity"!inner(Created_By)')
+          .eq('"Employment Opportunity".Created_By', userId);
 
       final totalApplications = applications.length;
 
       // Get enrollments (for programmes created by this staff)
       final enrollments = await _supabase
           .from('programme_enrollments')
-          .select('*, training_programmes!inner(created_by)')
-          .eq('training_programmes.created_by', userId);
+          .select('*, "Training Programme"!inner(created_by)')
+          .eq('"Training Programme".created_by', userId);
 
       final totalEnrollments = enrollments.length;
-      final completed = enrollments.where((e) => e['status'] == 'completed').length;
+      final completed = enrollments.where((e) => e['enrolment_status'] == 'completed').length;
       final completionRate = totalEnrollments > 0
           ? (completed / totalEnrollments * 100).round()
           : 0;

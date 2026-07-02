@@ -11,6 +11,7 @@ import 'package:futurepath_employment_hub/core/widgets/loading_indicator.dart';
 
 class Applicant {
   final String applicantId;
+  final String idNumber;
   final List<String> skills;
   final String qualification;
   final String employmentStatus;
@@ -20,6 +21,7 @@ class Applicant {
 
   const Applicant({
     required this.applicantId,
+    required this.idNumber,
     required this.skills,
     required this.qualification,
     required this.employmentStatus,
@@ -31,9 +33,10 @@ class Applicant {
   factory Applicant.fromMap(Map<String, dynamic> map) {
     return Applicant(
       applicantId: map['user_id']?.toString().substring(0, 8).toUpperCase() ?? 'APP-UNK',
-      skills: (map['skills'] as List?)?.map((e) => e.toString()).toList() ?? [],
-      qualification: map['highest_qualification'] ?? 'N/A',
-      employmentStatus: map['employment_status'] ?? 'N/A',
+      idNumber: map['id_number']?.toString() ?? 'N/A',
+      skills: (map['Skills'] as List?)?.map((e) => e.toString()).toList() ?? (map['skills'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      qualification: map['Highest_Qualification'] ?? map['highest_qualification'] ?? 'N/A',
+      employmentStatus: map['Current_Employment_Status'] ?? map['employment_status'] ?? 'N/A',
       programmeEnrolled: 'N/A', // Would need join with enrolments
       applicationsSubmitted: 0, // Would need join/count from applications
       registeredDate: map['updated_at'] != null 
@@ -118,7 +121,7 @@ class _AdminApplicantsScreenState extends State<AdminApplicantsScreen> {
     });
     try {
       final response = await _supabase
-          .from('applicants')
+          .from('Applicant')
           .select()
           .eq('role', 'job_seeker'); // Only fetch job seekers
 
