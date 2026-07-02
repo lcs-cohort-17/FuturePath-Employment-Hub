@@ -41,6 +41,8 @@ final mockUserProfile = UserProfile(
       progress: 0.6,
     ),
   ],
+  role: 'applicant',
+  status: 'pending_approval',
 );
 
 class UserProfileNotifier extends Notifier<UserProfile> {
@@ -111,6 +113,29 @@ class UserProfileNotifier extends Notifier<UserProfile> {
 
   void clearProfile() {
     state = mockUserProfile;
+  }
+
+  // ── Real-profile loading (NAV-011) ──────────────────────────────────────
+
+  bool _isLoadingProfile = false;
+  bool get isLoadingProfile => _isLoadingProfile;
+
+  /// Fetches the real Applicant row from Supabase (including role/status)
+  /// and replaces the current (mock or stale) state with it.
+  ///
+  /// Call this right after a successful AuthService.signIn, and on app
+  /// startup if a session already exists, so AdminGuard and other role
+  /// checks see real data instead of mockUserProfile.
+  Future<void> loadRealProfile(String userId) async {
+    _isLoadingProfile = true;
+    try {
+      final profile = await UserProfileService().fetchUserProfile(userId);
+      if (profile != null) {
+        state = profile;
+      }
+    } finally {
+      _isLoadingProfile = false;
+    }
   }
 
   // ── Delete-account state ────────────────────────────────────────────────

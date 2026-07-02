@@ -17,6 +17,7 @@ import '../providers/notifications_provider.dart';
 import '../screens/auth/admin_login_screen.dart';
 import '../screens/auth/staff_registration_screen.dart';
 import '../screens/admin/admin_staff_mgmt_screen.dart';
+import '../core/widgets/admin_guarded_screen.dart';
 // Staff imports
 import '../screens/staff/staff_shell.dart';
 import '../screens/staff/staff_add_job.dart';
@@ -67,7 +68,9 @@ class AppRouter {
         );
       case adminStaffMgmt:
         return MaterialPageRoute(
-          builder: (_) => const AdminStaffMgmtScreen(),
+          builder: (_) => const AdminGuardedScreen(
+            child: AdminStaffMgmtScreen(),
+          ),
           settings: settings,
         );
       case signup:
@@ -109,53 +112,71 @@ class AppRouter {
         );
       case adminHome:
         return MaterialPageRoute(
-          builder: (_) => const AdminShell(),
+          builder: (_) => const AdminGuardedScreen(
+            child: AdminShell(),
+          ),
           settings: settings,
         );
       case staffRegister:
         return MaterialPageRoute(
-          builder: (_) => const AdminShell(),
+          builder: (_) => const AdminGuardedScreen(
+            child: AdminShell(),
+          ),
           settings: settings,
         );
       case adminEmployers:
         return MaterialPageRoute(
-          builder: (_) => const AdminEmployersScreen(),
+          builder: (_) => const AdminGuardedScreen(
+            child: AdminEmployersScreen(),
+          ),
           settings: settings,
         );
       case adminApplicants:
         return MaterialPageRoute(
-          builder: (_) => const AdminApplicantsScreen(),
+          builder: (_) => const AdminGuardedScreen(
+            child: AdminApplicantsScreen(),
+          ),
           settings: settings,
         );
       case '/admin/job-applications':
         final args = settings.arguments as Map<String, String>;
         return MaterialPageRoute(
-          builder: (_) => AdminJobApplicationsScreen(
-            jobId: args['jobId']!,
-            jobTitle: args['jobTitle']!,
+          builder: (_) => AdminGuardedScreen(
+            child: AdminJobApplicationsScreen(
+              jobId: args['jobId']!,
+              jobTitle: args['jobTitle']!,
+            ),
           ),
           settings: settings,
         );
       case adminEnrolments:
         final args = settings.arguments as Map<String, String>;
         return MaterialPageRoute(
-          builder: (_) => AdminEnrolmentsScreen(
-            programmeId: args['programmeId']!,
-            programmeName: args['programmeName'] ?? 'Programme',
+          builder: (_) => AdminGuardedScreen(
+            child: AdminEnrolmentsScreen(
+              programmeId: args['programmeId']!,
+              programmeName: args['programmeName'] ?? 'Programme',
+            ),
           ),
           settings: settings,
         );
       case adminActivity:
         return MaterialPageRoute(
-          builder: (_) => const AdminActivityScreen(),
+          builder: (_) => const AdminGuardedScreen(
+            child: AdminActivityScreen(),
+          ),
         );
       case adminProgrammes:
         return MaterialPageRoute(
-          builder: (_) => const AdminProgrammesScreen(),
+          builder: (_) => const AdminGuardedScreen(
+            child: AdminProgrammesScreen(),
+          ),
         );
       case adminProfile:
         return MaterialPageRoute(
-          builder: (_) => const AdminProfileScreen(),
+          builder: (_) => const AdminGuardedScreen(
+            child: AdminProfileScreen(),
+          ),
         );
       case staffAddJob:
         return MaterialPageRoute(

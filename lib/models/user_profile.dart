@@ -19,6 +19,8 @@ class UserProfile {
   final String? profileImageUrl; // Added for compatibility
   final String? education; // Added for compatibility
   final String? experience; // Added for compatibility
+  final String role; // NEW — matches Applicant.role in Supabase
+  final String status; // NEW — matches Applicant.status in Supabase
 
   UserProfile({
     required this.id,
@@ -38,7 +40,12 @@ class UserProfile {
     this.profileImageUrl,
     this.education,
     this.experience,
+    this.role = 'applicant',
+    this.status = 'pending_approval',
   });
+
+  /// Convenience getter used by AdminGuard and other role checks.
+  bool get isAdmin => role == 'admin';
 
   // Copy with for updates
   UserProfile copyWith({
@@ -58,6 +65,8 @@ class UserProfile {
     String? profileImageUrl,
     String? education,
     String? experience,
+    String? role,
+    String? status,
   }) {
     return UserProfile(
       id: id,
@@ -77,10 +86,12 @@ class UserProfile {
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       education: education ?? this.education,
       experience: experience ?? this.experience,
+      role: role ?? this.role,
+      status: status ?? this.status,
     );
   }
 
-  // Factory method to create from JSON
+  // Factory method to create from JSON (local/mock data)
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
       id: json['id'] ?? '',
@@ -106,10 +117,42 @@ class UserProfile {
       profileImageUrl: json['profileImageUrl'],
       education: json['education'],
       experience: json['experience'],
+      role: json['role'] ?? 'applicant',
+      status: json['status'] ?? 'pending_approval',
     );
   }
 
-  // Convert to JSON
+  /// Factory method to create from a raw Supabase 'Applicant' table row.
+  /// Column names here match the Supabase schema exactly (PascalCase mix).
+  factory UserProfile.fromSupabase(Map<String, dynamic> row) {
+    final firstName = row['First_Name'] ?? '';
+    final lastName = row['Last_Name'] ?? '';
+    final fullName = '$firstName $lastName'.trim();
+
+    return UserProfile(
+      id: row['id'].toString(),
+      name: fullName,
+      displayName: fullName,
+      userId: row['user_id'],
+      location: row['Residential_Area'] ?? '',
+      employmentStatus: row['Current_Employment_Status'] ?? 'Unemployed',
+      isHired: false,
+      email: row['Email'] ?? '',
+      phone: row['contact_number'],
+      bio: null,
+      skills: row['Skills'] != null ? List<String>.from(row['Skills']) : const [],
+      completedProgrammes: const [],
+      enrolledProgrammes: const [],
+      savedProgrammes: const [],
+      profileImageUrl: null,
+      education: row['Highest_Qualification'],
+      experience: null,
+      role: row['role'] ?? 'applicant',
+      status: row['status'] ?? 'pending_approval',
+    );
+  }
+
+  // Convert to JSON (local/mock data)
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -129,6 +172,8 @@ class UserProfile {
       'profileImageUrl': profileImageUrl,
       'education': education,
       'experience': experience,
+      'role': role,
+      'status': status,
     };
   }
 }
