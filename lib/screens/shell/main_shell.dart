@@ -6,15 +6,17 @@ import '../admin/admin_staff_management_screen.dart';
 import '../admin/admin_system_settings_screen.dart';
 import '../admin/admin_profile_screen.dart';
 
+// ✅ Global Key – accessible from anywhere
+final GlobalKey<MainShellState> mainShellKey = GlobalKey<MainShellState>();
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
 
   @override
-  State<MainShell> createState() => _MainShellState();
+  State<MainShell> createState() => MainShellState();
 }
 
-class _MainShellState extends State<MainShell> {
+class MainShellState extends State<MainShell> {
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
@@ -53,6 +55,14 @@ class _MainShellState extends State<MainShell> {
     ),
   ];
 
+  // ✅ Public method – accessible via the GlobalKey
+  void changeTab(int index) {
+    print('🔄 changeTab called with index: $index'); // Debug
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,6 +79,7 @@ class _MainShellState extends State<MainShell> {
         selectedItemColor: const Color(0xFFE03A2F),
         unselectedItemColor: const Color(0xFF5C5A57),
         type: BottomNavigationBarType.fixed,
+        elevation: 0,
       ),
     );
   }

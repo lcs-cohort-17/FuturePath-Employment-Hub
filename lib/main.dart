@@ -42,7 +42,7 @@ class FuturePathApp extends StatelessWidget {
         initialRoute: '/login',
         routes: {
           '/login': (context) => const LoginScreen(),
-          '/admin/dashboard': (context) => const MainShell(), // ✅ Uses MainShell
+          '/admin/dashboard': (context) => MainShell(key: mainShellKey),
         },
         onUnknownRoute: (settings) {
           return MaterialPageRoute(

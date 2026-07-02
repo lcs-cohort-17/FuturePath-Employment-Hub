@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/admin_provider.dart';
 import '../../core/widgets/stat_card.dart';
 import '../../core/widgets/loading_widget.dart';
+import '../shell/main_shell.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -108,7 +109,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   ),
                 ),
 
-                // Stats cards - 2x3grid
+                // Stats cards - 2x3 grid
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 14),
                   child: GridView.count(
@@ -215,7 +216,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ),
 
                 // Anonymized Activity
-                Padding(
+                 Padding(
                   padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -318,7 +319,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         title: 'Activity Log',
                         subtitle: 'Anonymized events',
                         onTap: () {
-                          Navigator.pushNamed(context, '/admin/activity');
+                          print('🟢 Tapped Activity Log');
+                          print('🔑 mainShellKey: $mainShellKey');
+                          print('📍 currentState: ${mainShellKey.currentState}');
+                          mainShellKey.currentState?.changeTab(1);
                         },
                       ),
                       _QuickNavCard(
@@ -327,7 +331,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         title: 'Performance',
                         subtitle: 'Content analytics',
                         onTap: () {
-                          Navigator.pushNamed(context, '/admin/performance');
+                          print('🟢 Tapped Performance');
+                          mainShellKey.currentState?.changeTab(2);
                         },
                       ),
                       _QuickNavCard(
@@ -336,7 +341,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         title: 'Staff Mgmt',
                         subtitle: 'Approve / Reject',
                         onTap: () {
-                          Navigator.pushNamed(context, '/admin/staff');
+                          print('🟢 Tapped Staff Mgmt');
+                          mainShellKey.currentState?.changeTab(3);
                         },
                       ),
                       _QuickNavCard(
@@ -345,7 +351,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         title: 'System',
                         subtitle: 'Settings & health',
                         onTap: () {
-                          Navigator.pushNamed(context, '/admin/system');
+                          print('🟢 Tapped System');
+                          mainShellKey.currentState?.changeTab(4);
+                        },
+                      ),
+                      _QuickNavCard(
+                        icon: Icons.person,
+                        iconColor: const Color(0xFF4A9EE8),
+                        title: 'Profile',
+                        subtitle: 'View your account',
+                        onTap: () {
+                          print('🟢 Tapped Profile');
+                          mainShellKey.currentState?.changeTab(5);
                         },
                       ),
                     ],
