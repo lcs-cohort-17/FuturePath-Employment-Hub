@@ -1,4 +1,4 @@
-// ✅ Uses actual column names from training_programmes table
+// ✅ Uses actual column names from Training Programme table
 
 class StaffProgrammeModel {
   final String programmeId;
@@ -42,14 +42,14 @@ class StaffProgrammeModel {
   factory StaffProgrammeModel.fromJson(Map<String, dynamic> json) {
     return StaffProgrammeModel(
       programmeId: json['programme_id'] ?? '',
-      programmeName: json['programme_name'] ?? '',
-      programmeDescription: json['programme_description'],
-      startDate: json['start_date'] != null ? DateTime.parse(json['start_date']) : null,
-      endDate: json['end_date'] != null ? DateTime.parse(json['end_date']) : null,
-      capacity: json['capacity'],
-      programmeStatus: json['programme_status'] ?? 'draft',
-      requiredSkills: json['required_skills'] is List ? List<String>.from(json['required_skills']) : [],
-      programmeCategory: json['programme_category'],
+      programmeName: json['Programme_Name'] ?? '',
+      programmeDescription: json['Programme_Description'],
+      startDate: json['Start_Date'] != null ? DateTime.parse(json['Start_Date']) : null,
+      endDate: json['End_Date'] != null ? DateTime.parse(json['End_Date']) : null,
+      capacity: json['Capacity'],
+      programmeStatus: json['Programme_Status'] ?? 'draft',
+      requiredSkills: json['Required_Skills'] is List ? List<String>.from(json['Required_Skills']) : [],
+      programmeCategory: json['Programme_Category'],
       createdBy: json['created_by'],
       category: json['category'],
       level: json['level'],
@@ -63,15 +63,15 @@ class StaffProgrammeModel {
 
   Map<String, dynamic> toJson() {
     return {
-      'programme_id': programmeId,  // ✅ IMPORTANT: This was missing!
-      'programme_name': programmeName,
-      'programme_description': programmeDescription,
-      'start_date': startDate?.toIso8601String().split('T').first,
-      'end_date': endDate?.toIso8601String().split('T').first,
-      'capacity': capacity,
-      'programme_status': programmeStatus,
-      'required_skills': requiredSkills,
-      'programme_category': programmeCategory,
+      'programme_id': programmeId,
+      'Programme_Name': programmeName,
+      'Programme_Description': programmeDescription,
+      'Start_Date': startDate?.toIso8601String().split('T').first,
+      'End_Date': endDate?.toIso8601String().split('T').first,
+      'Capacity': capacity,
+      'Programme_Status': programmeStatus,
+      'Required_Skills': requiredSkills,
+      'Programme_Category': programmeCategory,
       'created_by': createdBy,
       'category': category,
       'level': level,

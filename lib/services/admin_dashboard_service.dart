@@ -65,19 +65,21 @@ class AdminDashboardService {
   /// Fetches real stats from Supabase or returns defaults if none exist.
   Future<AdminDashboardStats> fetchStats() async {
     try {
-      // Fetch counts from Supabase tables
-      final usersCount = await _supabase.from('applicants').count(CountOption.exact);
-      final jobsCount = await _supabase.from('opportunities').count(CountOption.exact); // Assuming table name
-      final appsCount = await _supabase.from('applications').count(CountOption.exact);
+      // Fetch counts from Supabase tables mapping exactly to the schema
+      final usersCount = await _supabase.from('Applicant').count(CountOption.exact);
+      final jobsCount = await _supabase.from('Employment Opportunity').count(CountOption.exact);
+      final appsCount = await _supabase.from('job_applications').count(CountOption.exact);
+      final programmesCount = await _supabase.from('Training Programme').count(CountOption.exact);
+      final employersCount = await _supabase.from('Employer').count(CountOption.exact);
 
       return AdminDashboardStats(
         stats: [
           AdminStat(label: 'Total Users', value: '$usersCount', variant: StatVariant.neutral),
           const AdminStat(label: 'New Today', value: '0', variant: StatVariant.success),
           AdminStat(label: 'Active Jobs', value: '$jobsCount', variant: StatVariant.info),
-          const AdminStat(label: 'Active Programmes', value: '0', variant: StatVariant.neutral),
+          AdminStat(label: 'Active Programmes', value: '$programmesCount', variant: StatVariant.neutral),
           AdminStat(label: 'Total Applications', value: '$appsCount', variant: StatVariant.brand),
-          const AdminStat(label: 'Active Employers', value: '0', variant: StatVariant.neutral),
+          AdminStat(label: 'Active Employers', value: '$employersCount', variant: StatVariant.neutral),
         ],
         health: const [
           SystemHealthItem(label: 'Supabase', subtitle: 'Connected', status: HealthStatus.ok),
@@ -88,7 +90,7 @@ class AdminDashboardService {
       );
     } catch (e) {
       print('❌ Dashboard Stats Error: $e');
-      // Return empty stats if table fetch fails (e.g. table doesn't exist yet)
+      // Return empty stats if table fetch fails
       return const AdminDashboardStats(
         stats: [
           AdminStat(label: 'Total Users', value: '0'),
@@ -108,8 +110,6 @@ class AdminDashboardService {
   /// Fetches the real activity log (anonymized) from Supabase.
   Future<List<ActivityFeedItem>> fetchActivityLog() async {
     try {
-      // This would normally fetch from an 'audit_log' or 'activity_log' table.
-      // For now, return an empty list until that table is ready.
       return [];
     } catch (e) {
       print('❌ Activity Log Error: $e');

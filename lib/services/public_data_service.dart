@@ -8,9 +8,9 @@ class PublicDataService {
   static Future<List<Map<String, dynamic>>> getApplicationsForJob(String jobId) async {
     try {
       final response = await _supabase
-          .from('applications')
-          .select('id, qualification, status, applied_at, applicant_id')
-          .eq('job_id', jobId);
+          .from('job_applications')
+          .select('Job_Application_id, application_status, application_date, applicant_id')
+          .eq('employment_opportunity_id', jobId);
 
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
@@ -26,9 +26,9 @@ class PublicDataService {
   ) async {
     try {
       await _supabase
-          .from('applications')
-          .update({'status': newStatus})
-          .eq('id', applicationId);
+          .from('job_applications')
+          .update({'application_status': newStatus})
+          .eq('Job_Application_id', applicationId);
     } catch (e) {
       print('❌ Error updating application status: $e');
       rethrow;
@@ -36,14 +36,14 @@ class PublicDataService {
   }
 
   /// Returns enrolments for a given programme. Returns no PII — applicant
-  /// identity is represented only by the anonymised applicant_id_c column.
+  /// identity is represented only by the applicant_id column.
   static Future<List<Map<String, dynamic>>> getEnrolmentsForProgramme(
     String programmeId) async {
     try {
       final response = await _supabase
-          .from('enrolments')
-          .select('applicant_id_c, qualification, status')
-          .eq('programme_id', programmeId);
+          .from('programme_enrollments')
+          .select('applicant_id, enrolment_status')
+          .eq('training_programme_id', programmeId);
 
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
@@ -52,15 +52,14 @@ class PublicDataService {
     }
   }
 
-  /// Updates the status of a single enrolment. Uses only the anonymised
-  /// applicant ID — never PII.
+  /// Updates the status of a single enrolment. Uses only the applicant ID.
   static Future<void> updateEnrolmentStatus(
     String applicantId, String newStatus) async {
     try {
       await _supabase
-          .from('enrolments')
-          .update({'status': newStatus})
-          .eq('applicant_id_c', applicantId);
+          .from('programme_enrollments')
+          .update({'enrolment_status': newStatus})
+          .eq('applicant_id', applicantId);
     } catch (e) {
       print('❌ Error updating enrolment status: $e');
       rethrow;

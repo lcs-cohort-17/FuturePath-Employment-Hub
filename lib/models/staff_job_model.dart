@@ -1,4 +1,4 @@
-// ✅ Uses actual column names from employment_opportunities table
+// ✅ Uses actual column names from Employment Opportunity table
 
 class StaffJobModel {
   final String opportunityId;
@@ -33,14 +33,14 @@ class StaffJobModel {
     return StaffJobModel(
       opportunityId: json['opportunity_id'] ?? '',
       opportunityNumber: json['opportunity_number'],
-      positionTitle: json['position_title'] ?? '',
-      positionDescription: json['position_description'],
-      requiredSkills: json['required_skills'] is List ? List<String>.from(json['required_skills']) : [],
-      closingDate: json['closing_date'] != null ? DateTime.parse(json['closing_date']) : null,
-      opportunityStatus: json['opportunity_status'] ?? 'draft',
-      numberAvailablePositions: json['number_available_positions'],
+      positionTitle: json['Position_Title'] ?? '',
+      positionDescription: json['Position_Description'],
+      requiredSkills: json['Required_Skills'] is List ? List<String>.from(json['Required_Skills']) : [],
+      closingDate: json['Closing_Date'] != null ? DateTime.parse(json['Closing_Date']) : null,
+      opportunityStatus: json['Opportunity_Status'] ?? 'draft',
+      numberAvailablePositions: json['Number_Of_Available_Positions'],
       employerId: json['employer_id'],
-      createdBy: json['created_by'],
+      createdBy: json['Created_By'],
       createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
       updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at']) : null,
     );
@@ -49,15 +49,17 @@ class StaffJobModel {
   Map<String, dynamic> toJson() {
     return {
       'opportunity_id': opportunityId,
-      'opportunity_number': opportunityNumber,
-      'position_title': positionTitle,
-      'position_description': positionDescription,
-      'required_skills': requiredSkills,
-      'closing_date': closingDate?.toIso8601String().split('T').first,
-      'opportunity_status': opportunityStatus,
-      'number_available_positions': numberAvailablePositions,
+      if (opportunityNumber != null)
+        'opportunity_number': opportunityNumber,
+      'Position_Title': positionTitle,
+      'Position_Description': positionDescription,
+      'Required_Skills': requiredSkills,
+      'Closing_Date': closingDate?.toIso8601String().split('T').first,
+      'Opportunity_Status': opportunityStatus,
+      'Number_Of_Available_Positions': numberAvailablePositions,
       'employer_id': employerId,
-      'created_by': createdBy,
+      if (createdBy != null)
+        'Created_By': createdBy,
     };
   }
 }

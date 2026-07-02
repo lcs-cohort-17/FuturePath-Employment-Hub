@@ -10,9 +10,12 @@ class Employer {
   final String location;
   final String? contactEmail;
   final String? contactPhone;
+  final String? contactPerson;
   final String? website;
   final String? description;
   final DateTime? createdAt;
+  final int? activeOpportunities;
+  final String? sfId;
 
   const Employer({
     required this.id,
@@ -21,23 +24,27 @@ class Employer {
     required this.location,
     this.contactEmail,
     this.contactPhone,
+    this.contactPerson,
     this.website,
     this.description,
     this.createdAt,
+    this.activeOpportunities,
+    this.sfId,
   });
 
   // ── Supabase-compatible deserialization ──────────────────────────────────
 
   factory Employer.fromMap(Map<String, dynamic> map) {
     return Employer(
-      id: map['id']?.toString() ?? '',
-      companyName: map['company_name']?.toString() ?? '',
-      industry: map['industry']?.toString() ?? '',
-      location: map['location']?.toString() ?? '',
-      contactEmail: map['contact_email']?.toString(),
-      contactPhone: map['contact_phone']?.toString(),
-      website: map['website']?.toString(),
-      description: map['description']?.toString(),
+      id: map['employer_id']?.toString() ?? '',
+      companyName: map['Company_Name']?.toString() ?? '',
+      industry: map['Industry']?.toString() ?? '',
+      location: map['Company_Location']?.toString() ?? '',
+      contactEmail: map['Email']?.toString(),
+      contactPhone: map['Contact_Number']?.toString(),
+      contactPerson: map['Contact_Person']?.toString(),
+      activeOpportunities: map['active_opportunities'] as int?,
+      sfId: map['sf_id']?.toString(),
       createdAt: map['created_at'] != null
           ? DateTime.tryParse(map['created_at'].toString())
           : null,
@@ -48,16 +55,16 @@ class Employer {
 
   Map<String, dynamic> toMap() {
     return {
-      'company_name': companyName,
-      'industry': industry,
-      'location': location,
-      if (contactEmail != null && contactEmail!.isNotEmpty)
-        'contact_email': contactEmail,
-      if (contactPhone != null && contactPhone!.isNotEmpty)
-        'contact_phone': contactPhone,
-      if (website != null && website!.isNotEmpty) 'website': website,
-      if (description != null && description!.isNotEmpty)
-        'description': description,
+      'Company_Name': companyName,
+      'Industry': industry,
+      'Company_Location': location,
+      'Email': contactEmail ?? '',
+      'Contact_Number': contactPhone ?? '',
+      'Contact_Person': contactPerson ?? '',
+      if (activeOpportunities != null)
+        'active_opportunities': activeOpportunities,
+      if (sfId != null)
+        'sf_id': sfId,
     };
   }
 
@@ -70,9 +77,12 @@ class Employer {
     String? location,
     String? contactEmail,
     String? contactPhone,
+    String? contactPerson,
     String? website,
     String? description,
     DateTime? createdAt,
+    int? activeOpportunities,
+    String? sfId,
   }) {
     return Employer(
       id: id ?? this.id,
@@ -81,9 +91,12 @@ class Employer {
       location: location ?? this.location,
       contactEmail: contactEmail ?? this.contactEmail,
       contactPhone: contactPhone ?? this.contactPhone,
+      contactPerson: contactPerson ?? this.contactPerson,
       website: website ?? this.website,
       description: description ?? this.description,
       createdAt: createdAt ?? this.createdAt,
+      activeOpportunities: activeOpportunities ?? this.activeOpportunities,
+      sfId: sfId ?? this.sfId,
     );
   }
 
@@ -119,14 +132,13 @@ class EmployerModel {
 
   factory EmployerModel.fromJson(Map<String, dynamic> json) {
     return EmployerModel(
-      id: json['id']?.toString() ?? '',
-      companyName: json['company_name']?.toString() ?? '',
-      industry: json['industry']?.toString() ?? '',
-      location: json['location']?.toString() ?? '',
-      email: json['email']?.toString(),
-      website: json['website']?.toString(),
-      bio: json['bio']?.toString(),
-      activeOpeningsCount: json['active_openings_count'] as int? ?? 0,
+      id: json['employer_id']?.toString() ?? '',
+      companyName: json['Company_Name']?.toString() ?? '',
+      industry: json['Industry']?.toString() ?? '',
+      location: json['Company_Location']?.toString() ?? '',
+      email: json['Email']?.toString(),
+      website: json['sf_id']?.toString(),
+      activeOpeningsCount: json['active_opportunities'] as int? ?? 0,
     );
   }
 }

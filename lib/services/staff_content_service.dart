@@ -1,6 +1,3 @@
-// TODO: Replace with final service
-// ✅ Uses actual column names from both tables
-
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/staff_job_model.dart';
 import '../models/staff_programme_model.dart';
@@ -13,9 +10,9 @@ class StaffContentService {
   static Future<List<StaffJobModel>> getMyJobs(String userId) async {
     try {
       final response = await _supabase
-          .from('employment_opportunities')
+          .from('Employment Opportunity')
           .select()
-          .eq('created_by', userId);
+          .eq('Created_By', userId);
 
       return List<StaffJobModel>.from(response.map((j) => StaffJobModel.fromJson(j)));
     } catch (e) {
@@ -27,7 +24,7 @@ class StaffContentService {
   static Future<void> createJob(StaffJobModel job) async {
     try {
       final data = job.toJson();
-      await _supabase.from('employment_opportunities').insert(data);
+      await _supabase.from('Employment Opportunity').insert(data);
       print('✅ Job created');
     } catch (e) {
       print('❌ Error creating job: $e');
@@ -39,7 +36,7 @@ class StaffContentService {
     try {
       final data = job.toJson();
       await _supabase
-          .from('employment_opportunities')
+          .from('Employment Opportunity')
           .update(data)
           .eq('opportunity_id', jobId);
       print('✅ Job updated');
@@ -52,7 +49,7 @@ class StaffContentService {
   static Future<void> deleteJob(String jobId) async {
     try {
       await _supabase
-          .from('employment_opportunities')
+          .from('Employment Opportunity')
           .delete()
           .eq('opportunity_id', jobId);
       print('✅ Job deleted');
@@ -67,7 +64,7 @@ class StaffContentService {
   static Future<List<StaffProgrammeModel>> getMyProgrammes(String userId) async {
     try {
       final response = await _supabase
-          .from('training_programmes')
+          .from('Training Programme')
           .select()
           .eq('created_by', userId);
 
@@ -81,7 +78,7 @@ class StaffContentService {
   static Future<void> createProgramme(StaffProgrammeModel programme) async {
     try {
       final data = programme.toJson();
-      await _supabase.from('training_programmes').insert(data);
+      await _supabase.from('Training Programme').insert(data);
       print('✅ Programme created');
     } catch (e) {
       print('❌ Error creating programme: $e');
@@ -93,7 +90,7 @@ class StaffContentService {
     try {
       final data = programme.toJson();
       await _supabase
-          .from('training_programmes')
+          .from('Training Programme')
           .update(data)
           .eq('programme_id', programmeId);
       print('✅ Programme updated');
@@ -106,7 +103,7 @@ class StaffContentService {
   static Future<void> deleteProgramme(String programmeId) async {
     try {
       await _supabase
-          .from('training_programmes')
+          .from('Training Programme')
           .delete()
           .eq('programme_id', programmeId);
       print('✅ Programme deleted');

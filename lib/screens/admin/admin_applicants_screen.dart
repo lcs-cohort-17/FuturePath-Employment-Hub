@@ -30,14 +30,14 @@ class Applicant {
 
   factory Applicant.fromMap(Map<String, dynamic> map) {
     return Applicant(
-      applicantId: map['user_id']?.toString().substring(0, 8).toUpperCase() ?? 'APP-UNK',
-      skills: (map['skills'] as List?)?.map((e) => e.toString()).toList() ?? [],
-      qualification: map['highest_qualification'] ?? 'N/A',
-      employmentStatus: map['employment_status'] ?? 'N/A',
-      programmeEnrolled: 'N/A', // Would need join with enrolments
-      applicationsSubmitted: 0, // Would need join/count from applications
-      registeredDate: map['updated_at'] != null 
-          ? '${DateTime.parse(map['updated_at']).day} ${DateTime.parse(map['updated_at']).month}' 
+      applicantId: map['sf_id']?.toString() ?? map['user_id']?.toString().substring(0, 8).toUpperCase() ?? 'APP-UNK',
+      skills: (map['Skills'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      qualification: map['Highest_Qualification'] ?? 'N/A',
+      employmentStatus: map['Current_Employment_Status'] ?? 'N/A',
+      programmeEnrolled: map['Programme_History'] ?? 'N/A',
+      applicationsSubmitted: 0, // Would need join/count from job_applications
+      registeredDate: map['updated_at'] != null
+          ? '${DateTime.parse(map['updated_at']).day}/${DateTime.parse(map['updated_at']).month}'
           : 'N/A',
     );
   }
@@ -118,9 +118,9 @@ class _AdminApplicantsScreenState extends State<AdminApplicantsScreen> {
     });
     try {
       final response = await _supabase
-          .from('applicants')
+          .from('Applicant')
           .select()
-          .eq('role', 'job_seeker'); // Only fetch job seekers
+          .eq('role', 'applicant'); // Only fetch applicants
 
       final data = List<Map<String, dynamic>>.from(response);
       setState(() {

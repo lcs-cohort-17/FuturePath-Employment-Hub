@@ -35,7 +35,7 @@ class _AdminProgrammesScreenState extends State<AdminProgrammesScreen> {
   Future<void> _load() async {
     setState(() => _loading = true);
     try {
-      final response = await _supabase.from('opportunities').select().eq('category', 'Programme');
+      final response = await _supabase.from('Training Programme').select();
       final data = List<Map<String, dynamic>>.from(response);
       setState(() {
         _programmes = data.map((m) => Programme.fromJson(m)).toList();
