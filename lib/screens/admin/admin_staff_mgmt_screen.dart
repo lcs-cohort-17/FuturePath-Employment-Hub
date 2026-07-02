@@ -74,11 +74,11 @@ class _AdminStaffMgmtScreenState extends State<AdminStaffMgmtScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('${staff['first_name']} ${staff['last_name']}', 
+          Text('${staff['First_Name'] ?? staff['first_name']} ${staff['Last_Name'] ?? staff['last_name']}', 
               style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
           Text(staff['company_name'] ?? 'Unknown Company', style: const TextStyle(color: Color(0xFFE03A2F), fontSize: 14)),
           const SizedBox(height: 8),
-          Text(staff['email_address'] ?? staff['email'] ?? 'No email', style: const TextStyle(color: Colors.white70, fontSize: 13)),
+          Text(staff['Email'] ?? staff['email_address'] ?? staff['email'] ?? 'No email', style: const TextStyle(color: Colors.white70, fontSize: 13)),
           const SizedBox(height: 20),
           Row(
             children: [

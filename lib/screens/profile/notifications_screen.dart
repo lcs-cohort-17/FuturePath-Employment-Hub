@@ -1,17 +1,18 @@
 //notifications_screen.dart
 import 'package:flutter/material.dart';
-// import 'package:futurepath/theme.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
+import '../../providers/notifications_provider.dart';
 
-class NotificationsScreen extends StatefulWidget {
+class NotificationsScreen extends ConsumerStatefulWidget {
   final List<Map<String, dynamic>> notifications;
   const NotificationsScreen({super.key, required this.notifications});
 
   @override
-  State<NotificationsScreen> createState() => _NotificationsScreenState();
+  ConsumerState<NotificationsScreen> createState() => _NotificationsScreenState();
 }
 
-class _NotificationsScreenState extends State<NotificationsScreen> {
+class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   final Set<String> _expandedIds = {};
   late List<Map<String, dynamic>> _localNotifications;
 
@@ -27,8 +28,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         for (var n in _localNotifications) {
           n['isRead'] = true;
         }
+        ref.read(notificationsProvider.notifier).markAllAsRead();
       } else {
         item['isRead'] = true;
+        ref.read(notificationsProvider.notifier).markAsRead(item['id']);
       }
     });
   }

@@ -3,23 +3,18 @@
 // ═══════════════════════════════════════════════════════════════════════
 import 'package:flutter/material.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
-import 'package:futurepath_employment_hub/screens/programmes/programme_list_screen.dart'
-    show Programme, mockProgrammes;
+import 'package:futurepath_employment_hub/models/programme.dart';
 
 // ───────────────────────────────────────────────────────────────────────
 // MODELS
 // ───────────────────────────────────────────────────────────────────────
 
-/// Local typed stand-in for the real applicant profile service.
-/// Replace `mockApplicantProfile` with the real injected profile once
-/// available — the shape (full name, SA ID, email, phone, CV) should
-/// stay stable since application_service.dart will expect these fields.
 class ApplicantProfile {
   final String fullName;
   final String saIdNumber;
   final String email;
   final String phone;
-  final String? cvFileName; // null if no CV on file yet
+  final String? cvFileName;
 
   const ApplicantProfile({
     required this.fullName,
@@ -38,12 +33,8 @@ const ApplicantProfile mockApplicantProfile = ApplicantProfile(
   cvFileName: null,
 );
 
-/// Status values tracked for a programme application, per acceptance
-/// criteria #6. Kept as a simple enum here — application_service.dart's
-/// real backing type should mirror these three states.
 enum ProgrammeApplicationStatus { pending, accepted, completed }
 
-/// Payload submitted to application_service.dart with type: "programme".
 class ProgrammeApplicationData {
   final String programmeId;
   final String fullName;
@@ -51,8 +42,8 @@ class ProgrammeApplicationData {
   final String email;
   final String phone;
   final String? cvFileName;
-  final String? motivationStatement; // optional
-  final String? previousExperience; // optional
+  final String? motivationStatement;
+  final String? previousExperience;
   final ProgrammeApplicationStatus status;
 
   const ProgrammeApplicationData({
@@ -67,9 +58,6 @@ class ProgrammeApplicationData {
     this.status = ProgrammeApplicationStatus.pending,
   });
 
-  // TODO(application_service): map this to the real request body once
-  // application_service.dart exposes its "programme" type schema, e.g.:
-  //   application_service.submit(type: "programme", payload: toJson());
   Map<String, dynamic> toJson() => {
     'type': 'programme',
     'programmeId': programmeId,
@@ -84,7 +72,6 @@ class ProgrammeApplicationData {
   };
 }
 
-/// Result returned by the (mock or real) submission call.
 class ApplicationResult {
   final bool success;
   final String? errorMessage;
@@ -104,14 +91,14 @@ class ProgrammeApplyScreen extends StatefulWidget {
   final void Function(ProgrammeApplicationData data)? onSuccess;
   final VoidCallback? onClose;
 
-  ProgrammeApplyScreen({
+  const ProgrammeApplyScreen({
     super.key,
-    Programme? programme,
+    required this.programme,
     this.applicantProfile = mockApplicantProfile,
     this.onSubmit,
     this.onSuccess,
     this.onClose,
-  }) : programme = programme ?? mockProgrammes[1];
+  });
 
   @override
   State<ProgrammeApplyScreen> createState() => _ProgrammeApplyScreenState();
@@ -129,7 +116,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
 
   String? _cvFileName;
   bool _isSubmitting = false;
-  // [UIUX-PRIV-004] — consent must be true before submission is permitted
   bool _privacyConsentGiven = false;
 
   static const int _motivationMaxLength = 500;
@@ -137,7 +123,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
   @override
   void initState() {
     super.initState();
-    // Auto-fill applicant fields from profile, per acceptance criteria #2.
     _fullNameController =
         TextEditingController(text: widget.applicantProfile.fullName);
     _saIdController =
@@ -163,9 +148,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
   }
 
   Future<void> _handleUploadCv() async {
-    // TODO(file_picker): wire up real file picker (PDF, DOC) once the
-    // file upload service exists. Mocked here so the flow is demoable.
-    // [UIUX-PRIV-001] — generic placeholder used instead of a real name
     setState(() => _cvFileName = 'my_cv.pdf');
   }
 
@@ -195,8 +177,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
           : _experienceController.text.trim(),
       status: ProgrammeApplicationStatus.pending,
     );
-
-    // [UIUX-PRIV-004] — store privacyConsent: true via ApplicantService when user registers
 
     final submitFn = widget.onSubmit ?? _mockSubmit;
     final result = await submitFn(data);
@@ -247,7 +227,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Drag handle
                 Padding(
                   padding: const EdgeInsets.only(top: 10, bottom: 4),
                   child: Container(
@@ -259,7 +238,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                     ),
                   ),
                 ),
-                // Header row: title + close button
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 8, 12, 8),
                   child: Row(
@@ -308,7 +286,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                   ),
                 ),
                 const Divider(height: 1, thickness: 0.5, color: AppTheme.border),
-                // Scrollable form body
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
@@ -317,7 +294,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Auto-fill banner
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.symmetric(
@@ -347,7 +323,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                           ),
                           const SizedBox(height: 14),
 
-                          // Full Name
                           const _FieldLabel(
                             icon: Icons.person_outline,
                             label: 'Full Name',
@@ -363,7 +338,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                           ),
                           const SizedBox(height: 10),
 
-                          // SA ID Number
                           const _FieldLabel(
                             icon: Icons.tag,
                             label: 'SA ID Number',
@@ -386,7 +360,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                           ),
                           const SizedBox(height: 10),
 
-                          // Email + Phone row
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -435,7 +408,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                           ),
                           const SizedBox(height: 10),
 
-                          // CV / Resume upload
                           const _FieldLabel(
                             icon: Icons.description_outlined,
                             label: 'CV / Resume',
@@ -493,7 +465,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                           ],
                           const SizedBox(height: 10),
 
-                          // Cover Letter
                           const _FieldLabel(label: 'Cover Letter (Optional)'),
                           const SizedBox(height: 4),
                           _AppTextField(
@@ -521,7 +492,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                           ),
                           const SizedBox(height: 10),
 
-                          // Previous Experience
                           const _FieldLabel(
                               label: 'Previous Experience (Optional)'),
                           const SizedBox(height: 4),
@@ -532,7 +502,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                           ),
                           const SizedBox(height: 14),
 
-                          // [UIUX-PRIV-004] — Privacy consent block
                           Container(
                             padding: const EdgeInsets.all(13),
                             decoration: BoxDecoration(
@@ -585,11 +554,7 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                                   ],
                                 ),
                                 const SizedBox(height: 10),
-                                // [UIUX-PRIV-004] — Privacy Policy link
                                 GestureDetector(
-                                  // TODO(privacy_policy): wire up to open
-                                  // Privacy Policy URL in browser or in-app
-                                  // web view once the policy document exists.
                                   onTap: () {},
                                   child: const Text(
                                     'Read our Privacy Policy',
@@ -610,14 +575,12 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
                     ),
                   ),
                 ),
-                // Bottom divider + submit button
                 const Divider(height: 1, thickness: 0.5, color: AppTheme.border),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
                   child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      // [UIUX-PRIV-004] — disabled until consent is given
                       onPressed: (_isSubmitting || !_privacyConsentGiven)
                           ? null
                           : _handleSubmit,
@@ -659,10 +622,6 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
   }
 }
 
-// ───────────────────────────────────────────────────────────────────────
-// SECTION 2: SUCCESS SCREEN
-// ───────────────────────────────────────────────────────────────────────
-
 class ProgrammeApplicationSuccessScreen extends StatelessWidget {
   final Programme programme;
   final ProgrammeApplicationData applicationData;
@@ -685,7 +644,6 @@ class ProgrammeApplicationSuccessScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Success icon circle — matches .pi-circle in HTML (72x72, green-low bg)
               Container(
                 width: 72,
                 height: 72,
@@ -700,7 +658,6 @@ class ProgrammeApplicationSuccessScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              // Title — matches .plogtitle: 18px bold
               const Text(
                 'Application Submitted!',
                 textAlign: TextAlign.center,
@@ -711,7 +668,6 @@ class ProgrammeApplicationSuccessScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              // Subtitle — matches .plogsubt: 12px, t2 colour, line-height 1.6
               Text(
                 'Your enrolment for ${programme.title} has been received and is now Pending review.',
                 textAlign: TextAlign.center,
@@ -722,7 +678,6 @@ class ProgrammeApplicationSuccessScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              // Status card — matches .info-block / surf2 card pattern
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 14),
@@ -764,7 +719,6 @@ class ProgrammeApplicationSuccessScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              // Primary action button — matches .pbtn: 10px radius, 13px text
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -794,9 +748,6 @@ class ProgrammeApplicationSuccessScreen extends StatelessWidget {
   }
 }
 
-// ───────────────────────────────────────────────────────────────────────
-// SHARED PRESENTATION WIDGETS
-// ───────────────────────────────────────────────────────────────────────
 class _FieldLabel extends StatelessWidget {
   final String label;
   final IconData? icon;
@@ -898,6 +849,3 @@ class _AppTextField extends StatelessWidget {
     );
   }
 }
-// ═══════════════════════════════════════════════════════════════════════
-// Lutfeeya-UIUX-012
-// ═══════════════════════════════════════════════════════════════════════

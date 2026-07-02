@@ -26,9 +26,9 @@ class StaffRegistrationService {
       // 2. Prepare data for applicants table (match your exact column names)
       final staffData = {
         'user_id': user.id,
-        'first_name': firstName,
-        'last_name': lastName,
-        'email_address': email, // confirm if column is 'email' or 'email_address'
+        'First_Name': firstName,
+        'Last_Name': lastName,
+        'Email': email, // confirm if column is 'email' or 'email_address'
         'role': 'staff',
         'status': 'pending_approval',
         'company_name': companyName,
@@ -36,8 +36,8 @@ class StaffRegistrationService {
         // sf_id is omitted because it's now nullable and we don't need it
       };
 
-      // 3. Insert into applicants (NOT upsert)
-      await _supabase.from('applicants').insert(staffData);
+      // 3. Insert into Applicant (NOT upsert)
+      await _supabase.from('Applicant').insert(staffData);
 
       return {
         'success': true,
@@ -56,7 +56,7 @@ class StaffRegistrationService {
   static Future<List<Map<String, dynamic>>> getPendingStaff() async {
     try {
       final response = await _supabase
-          .from('applicants')
+          .from('Applicant')
           .select()
           .eq('role', 'staff')
           .eq('status', 'pending_approval');
@@ -72,7 +72,7 @@ class StaffRegistrationService {
   static Future<void> updateStaffStatus(String userId, String status) async {
     try {
       await _supabase
-          .from('applicants')
+          .from('Applicant')
           .update({'status': status})
           .eq('user_id', userId);
     } catch (e) {
@@ -85,7 +85,7 @@ class StaffRegistrationService {
   static Future<Map<String, dynamic>?> checkUserRole(String userId) async {
     try {
       final data = await _supabase
-          .from('applicants')
+          .from('Applicant')
           .select('role, status')
           .eq('user_id', userId)
           .maybeSingle(); // Use maybeSingle to avoid throwing if not found

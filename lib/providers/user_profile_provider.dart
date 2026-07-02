@@ -1,8 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/user_profile.dart';
-import '../models/programme.dart';
-import '../core/errors/delete_account_error.dart';
-import '../services/user_profile_service.dart';
+import 'package:futurepath_employment_hub/models/user_profile.dart';
+import 'package:futurepath_employment_hub/models/programme.dart';
+import 'package:futurepath_employment_hub/core/errors/delete_account_error.dart';
+import 'package:futurepath_employment_hub/services/user_profile_service.dart';
+
 // Mock data for development
 final mockUserProfile = UserProfile(
   id: '1',
@@ -18,14 +19,14 @@ final mockUserProfile = UserProfile(
   completedProgrammes: [
     Programme(
       id: '1',
-      name: 'Computer Literacy Certificate',
+      title: 'Computer Literacy Certificate',
       status: 'Certificate issued',
       isCompleted: true,
       progress: 1.0,
     ),
     Programme(
       id: '2',
-      name: 'Customer Service Training',
+      title: 'Customer Service Training',
       status: 'Certificate issued',
       isCompleted: true,
       progress: 1.0,
@@ -34,7 +35,7 @@ final mockUserProfile = UserProfile(
   enrolledProgrammes: [
     Programme(
       id: '3',
-      name: 'Introduction to Logistics',
+      title: 'Introduction to Logistics',
       status: 'In progress',
       isCompleted: false,
       progress: 0.6,
@@ -42,8 +43,11 @@ final mockUserProfile = UserProfile(
   ],
 );
 
-class UserProfileNotifier extends StateNotifier<UserProfile> {
-  UserProfileNotifier() : super(mockUserProfile);
+class UserProfileNotifier extends Notifier<UserProfile> {
+  @override
+  UserProfile build() {
+    return mockUserProfile;
+  }
 
   void setUserProfile(UserProfile profile) {
     state = profile;
@@ -108,6 +112,7 @@ class UserProfileNotifier extends StateNotifier<UserProfile> {
   void clearProfile() {
     state = mockUserProfile;
   }
+
   // ── Delete-account state ────────────────────────────────────────────────
 
   bool _isDeletingAccount = false;
@@ -117,12 +122,6 @@ class UserProfileNotifier extends StateNotifier<UserProfile> {
   DeleteAccountException? get deleteAccountError => _deleteAccountError;
 
   /// Deletes the account for [userId] then clears local profile state.
-  ///
-  /// Returns `true` on success so the caller can navigate away.
-  /// On failure, populates [deleteAccountError] and returns `false`.
-  ///
-  /// AUTH-007 — wire the signOut call to AuthService when that ticket lands.
-  /// INT-013  — deleteUserAccount() mock will be replaced with real Supabase calls.
   Future<bool> deleteAccount(String userId) async {
     _isDeletingAccount = true;
     _deleteAccountError = null;
@@ -147,15 +146,11 @@ class UserProfileNotifier extends StateNotifier<UserProfile> {
     }
   }
 
-  /// Clears residual delete-account error state after the error sheet
-  /// is dismissed without retrying.
   void clearDeleteAccountError() {
     _deleteAccountError = null;
   }
 }
 
-// 👇 THIS IS THE MISSING LINE 👇
-final userProfileProvider =
-StateNotifierProvider<UserProfileNotifier, UserProfile>((ref) {
+final userProfileProvider = NotifierProvider<UserProfileNotifier, UserProfile>(() {
   return UserProfileNotifier();
 });

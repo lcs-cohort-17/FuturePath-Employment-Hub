@@ -20,8 +20,11 @@ class SearchFilterState {
   }
 }
 
-class SearchFilterNotifier extends StateNotifier<SearchFilterState> {
-  SearchFilterNotifier() : super(SearchFilterState());
+class SearchFilterNotifier extends Notifier<SearchFilterState> {
+  @override
+  SearchFilterState build() {
+    return SearchFilterState();
+  }
 
   void toggleLocation(String location) {
     if (location == "All Locations") {
@@ -42,8 +45,7 @@ class SearchFilterNotifier extends StateNotifier<SearchFilterState> {
   }
 }
 
-// 👇 THIS IS THE MISSING PROVIDER 👇
 final searchFilterProvider =
-StateNotifierProvider<SearchFilterNotifier, SearchFilterState>((ref) {
+    NotifierProvider<SearchFilterNotifier, SearchFilterState>(() {
   return SearchFilterNotifier();
 });

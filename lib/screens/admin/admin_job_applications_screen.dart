@@ -5,6 +5,7 @@
 
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import '../../services/public_data_service.dart';
 
 // ---------------------------------------------------------------------------
 // Data model
@@ -21,6 +22,17 @@ extension ApplicationStatusLabel on ApplicationStatus {
         return 'Accepted';
       case ApplicationStatus.rejected:
         return 'Rejected';
+    }
+  }
+
+  static ApplicationStatus fromString(String status) {
+    switch (status.toLowerCase()) {
+      case 'accepted':
+        return ApplicationStatus.accepted;
+      case 'rejected':
+        return ApplicationStatus.rejected;
+      default:
+        return ApplicationStatus.underReview;
     }
   }
 
@@ -68,58 +80,13 @@ class JobApplication {
     required this.qualification,
     required this.status,
   });
-}
 
-// ---------------------------------------------------------------------------
-// Mock service — replace internals with Supabase calls in public_data_service.dart
-// ---------------------------------------------------------------------------
-
-class _MockApplicationService {
-  Future<List<JobApplication>> getApplicationsForJob(String jobId) async {
-    await Future.delayed(const Duration(milliseconds: 800));
-    return [
-      JobApplication(
-        applicationId: 'APP-0041',
-        qualification: 'Matric / NSC',
-        status: ApplicationStatus.underReview,
-      ),
-      JobApplication(
-        applicationId: 'APP-0078',
-        qualification: 'National Diploma (NQF 6)',
-        status: ApplicationStatus.accepted,
-      ),
-      JobApplication(
-        applicationId: 'APP-0093',
-        qualification: 'Bachelor\'s Degree (NQF 7)',
-        status: ApplicationStatus.underReview,
-      ),
-      JobApplication(
-        applicationId: 'APP-0112',
-        qualification: 'Matric / NSC',
-        status: ApplicationStatus.rejected,
-      ),
-      JobApplication(
-        applicationId: 'APP-0134',
-        qualification: 'Higher Certificate (NQF 5)',
-        status: ApplicationStatus.underReview,
-      ),
-      JobApplication(
-        applicationId: 'APP-0157',
-        qualification: 'National Diploma (NQF 6)',
-        status: ApplicationStatus.accepted,
-      ),
-    ];
-  }
-
-  Future<void> updateApplicationStatus(
-      String applicationId,
-      ApplicationStatus newStatus,
-      ) async {
-    await Future.delayed(const Duration(milliseconds: 400));
-    // [SUPABASE-HOOK] Replace with:
-    // await supabase.from('applications')
-    //   .update({'status': newStatus.label})
-    //   .eq('application_id', applicationId);
+  factory JobApplication.fromMap(Map<String, dynamic> map) {
+    return JobApplication(
+      applicationId: map['id'] ?? map['applicant_id'] ?? 'Unknown',
+      qualification: map['qualification'] ?? 'N/A',
+      status: ApplicationStatusLabel.fromString(map['status'] ?? ''),
+    );
   }
 }
 
@@ -144,7 +111,6 @@ class AdminJobApplicationsScreen extends StatefulWidget {
 
 class _AdminJobApplicationsScreenState
     extends State<AdminJobApplicationsScreen> {
-  final _service = _MockApplicationService();
 
   List<JobApplication> _all = [];
   List<JobApplication> _filtered = [];
@@ -166,9 +132,9 @@ class _AdminJobApplicationsScreenState
       _error = null;
     });
     try {
-      final data = await _service.getApplicationsForJob(widget.jobId);
+      final data = await PublicDataService.getApplicationsForJob(widget.jobId);
       setState(() {
-        _all = data;
+        _all = data.map((m) => JobApplication.fromMap(m)).toList();
         _applyFilter();
         _loading = false;
       });
@@ -202,8 +168,8 @@ class _AdminJobApplicationsScreenState
     setState(() => _updating.add(application.applicationId));
 
     try {
-      await _service.updateApplicationStatus(
-          application.applicationId, newStatus);
+      await PublicDataService.updateApplicationStatus(
+          application.applicationId, newStatus.label.toLowerCase().replaceAll(' ', '_'));
       setState(() {
         application.status = newStatus;
         _applyFilter();

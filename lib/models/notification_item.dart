@@ -5,7 +5,7 @@ class NotificationItem {
   final String title;
   final String body;
   final String timestamp;
-  bool isRead;
+  final bool isRead;
 
   NotificationItem({
     required this.id,
@@ -17,6 +17,26 @@ class NotificationItem {
     this.isRead = false,
   });
 
+  NotificationItem copyWith({
+    String? id,
+    String? type,
+    String? referenceId,
+    String? title,
+    String? body,
+    String? timestamp,
+    bool? isRead,
+  }) {
+    return NotificationItem(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      referenceId: referenceId ?? this.referenceId,
+      title: title ?? this.title,
+      body: body ?? this.body,
+      timestamp: timestamp ?? this.timestamp,
+      isRead: isRead ?? this.isRead,
+    );
+  }
+
   factory NotificationItem.fromJson(Map<String, dynamic> json) {
     return NotificationItem(
       id: json['id'] ?? '',
@@ -27,5 +47,17 @@ class NotificationItem {
       timestamp: json['timestamp'] ?? '',
       isRead: json['isRead'] ?? false,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'type': type,
+      'referenceId': referenceId,
+      'title': title,
+      'body': body,
+      'timestamp': timestamp,
+      'isRead': isRead,
+    };
   }
 }

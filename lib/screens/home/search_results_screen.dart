@@ -26,6 +26,13 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final initialQuery = ModalRoute.of(context)?.settings.arguments as String?;
+      if (initialQuery != null) {
+        searchController.text = initialQuery;
+        onSearch(initialQuery);
+      }
+    });
     loadData();
   }
 
