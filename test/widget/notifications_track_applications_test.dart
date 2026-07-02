@@ -23,7 +23,7 @@ void main() {
           ProviderScope(
             child: MaterialApp(
               theme: AppTheme.lightTheme,
-              home: const NotificationsScreen(),
+              home: const NotificationsScreen(notifications: []),
             ),
           ),
         );
@@ -36,7 +36,7 @@ void main() {
           ProviderScope(
             child: MaterialApp(
               theme: AppTheme.lightTheme,
-              home: const NotificationsScreen(),
+              home: const NotificationsScreen(notifications: []),
             ),
           ),
         );
@@ -49,7 +49,7 @@ void main() {
           ProviderScope(
             child: MaterialApp(
               theme: AppTheme.lightTheme,
-              home: const NotificationsScreen(),
+              home: const NotificationsScreen(notifications: []),
             ),
           ),
         );
@@ -62,7 +62,7 @@ void main() {
           ProviderScope(
             child: MaterialApp(
               theme: AppTheme.lightTheme,
-              home: const NotificationsScreen(),
+              home: const NotificationsScreen(notifications: []),
             ),
           ),
         );

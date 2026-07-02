@@ -186,6 +186,9 @@ class _MockAuthService implements AuthService {
   _MockAuthService(this.onLogout);
 
   @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+
+  @override
   Future<void> logout() async {
     onLogout();
   }

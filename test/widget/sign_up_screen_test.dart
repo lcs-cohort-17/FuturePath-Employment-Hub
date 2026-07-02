@@ -12,7 +12,7 @@ void main() {
 
     await Supabase.initialize(
       url: 'https://supabase.co',
-      publishableKey: 'mock-anon-key-12345',
+      anonKey: 'mock-anon-key-12345',
     );
   });
 

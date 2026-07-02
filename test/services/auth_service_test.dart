@@ -23,8 +23,8 @@ void main() {
       await expectLater(authService.logout(), completes);
     });
 
-    test('isLoggedIn should return a boolean', () async {
-      final result = await AuthService.isLoggedIn();
+    test('isLoggedIn should return a boolean', () {
+      final result = authService.isLoggedIn;
       expect(result, isA<bool>());
     });
 
