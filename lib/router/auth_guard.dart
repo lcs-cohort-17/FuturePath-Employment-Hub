@@ -28,7 +28,7 @@ class _AuthGuardState extends ConsumerState<AuthGuard> {
     if (!authService.isLoggedIn) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          Navigator.of(context).pushReplacementNamed(AppRouter.login);
+          Navigator.of(context).pushReplacementNamed(AppRouter.adminLogin);
         }
       });
       return;
@@ -38,7 +38,7 @@ class _AuthGuardState extends ConsumerState<AuthGuard> {
     if (userId == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          Navigator.of(context).pushReplacementNamed(AppRouter.login);
+          Navigator.of(context).pushReplacementNamed(AppRouter.adminLogin);
         }
       });
       return;

@@ -87,8 +87,8 @@ void main() {
                   body: Text('Protected Content'),
                 ),
               ),
-          AppRouter.login: (context) => const Scaffold(
-                body: Text('Login Screen'),
+          AppRouter.adminLogin: (context) => const Scaffold(
+                body: Text('Admin Login Screen'),
               ),
           AppRouter.home: (context) => const Scaffold(
                 body: Text('Applicant Home'),
@@ -99,13 +99,13 @@ void main() {
   }
 
   group('AuthGuard Role Protection Tests', () {
-    testWidgets('Unauthenticated user is redirected to Login', (WidgetTester tester) async {
+    testWidgets('Unauthenticated user is redirected to Admin Login', (WidgetTester tester) async {
       await tester.pumpWidget(createTestWidget(isLoggedIn: false));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
       await tester.pumpAndSettle();
 
-      expect(find.text('Login Screen'), findsOneWidget);
+      expect(find.text('Admin Login Screen'), findsOneWidget);
       expect(find.text('Protected Content'), findsNothing);
     });
 
