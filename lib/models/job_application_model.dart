@@ -1,5 +1,5 @@
 // lib/models/job_application_model.dart
-// ✅ Model for Job_Applications (used by applicant and staff)
+// Model for Job_Applications table
 
 class JobApplicationModel {
   final String id;
@@ -8,6 +8,7 @@ class JobApplicationModel {
   final DateTime applicationDate;
   final String status;
   final String? cvUrl;
+  final String? motivationalLetterUrl; // NEW
   final bool consentGiven;
   final DateTime? consentGivenAt;
 
@@ -18,6 +19,7 @@ class JobApplicationModel {
     required this.applicationDate,
     required this.status,
     this.cvUrl,
+    this.motivationalLetterUrl, // NEW
     required this.consentGiven,
     this.consentGivenAt,
   });
@@ -32,6 +34,7 @@ class JobApplicationModel {
           : DateTime.now(),
       status: json['Application_Status'] ?? 'pending',
       cvUrl: json['cv_url'],
+      motivationalLetterUrl: json['motivational_letter_url'], // NEW
       consentGiven: json['consent_given'] ?? false,
       consentGivenAt: json['consent_given_at'] != null
           ? DateTime.parse(json['consent_given_at'])
@@ -47,6 +50,7 @@ class JobApplicationModel {
       'Application_Date': applicationDate.toIso8601String().split('T').first,
       'Application_Status': status,
       'cv_url': cvUrl,
+      'motivational_letter_url': motivationalLetterUrl, // NEW
       'consent_given': consentGiven,
       'consent_given_at': consentGivenAt?.toIso8601String(),
     };

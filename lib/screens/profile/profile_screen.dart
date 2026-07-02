@@ -9,12 +9,58 @@ import 'cv_screen.dart';
 import '../../core/errors/delete_account_error.dart';
 import '../../core/widgets/delete_account_dialog.dart';
 import '../../core/widgets/delete_account_error_sheet.dart';
+import '../../services/job_application_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  List<Map<String, dynamic>> _applications = [];
+  bool _loadingApplications = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadApplications();
+  }
+
+  Future<void> _loadApplications() async {
+    setState(() => _loadingApplications = true);
+    try {
+      final user = AuthService().currentUser;
+      if (user != null) {
+        final supabase = Supabase.instance.client;
+        final profile = await supabase
+            .from('Applicant')
+            .select('id')
+            .eq('user_id', user.id)
+            .maybeSingle();
+        final applicantId = profile?['id'] as int?;
+        print('🔍 [ProfileScreen] applicantId: $applicantId');
+        if (applicantId != null) {
+          final apps = await JobApplicationService.getApplicationsForApplicant(applicantId);
+          print('📋 [ProfileScreen] Found ${apps.length} applications');
+          setState(() {
+            _applications = apps;
+            _loadingApplications = false;
+          });
+          return;
+        }
+      }
+      setState(() => _loadingApplications = false);
+    } catch (e) {
+      print('❌ Error loading applications: $e');
+      setState(() => _loadingApplications = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final userProfile = ref.watch(userProfileProvider);
     final authService = ref.watch(authServiceProvider);
 
@@ -44,6 +90,9 @@ class ProfileScreen extends ConsumerWidget {
           MaterialPageRoute(builder: (_) => const CVScreen()),
         );
       },
+      applications: _applications,
+      loadingApplications: _loadingApplications,
+      onRefresh: _loadApplications, // <-- Added refresh callback
     );
   }
 }
@@ -53,6 +102,9 @@ class ProfileScreenContent extends StatefulWidget {
   final VoidCallback onSignOut;
   final VoidCallback onNavigateToCV;
   final WidgetRef ref;
+  final List<Map<String, dynamic>> applications;
+  final bool loadingApplications;
+  final VoidCallback onRefresh; // <-- Added
 
   const ProfileScreenContent({
     super.key,
@@ -60,6 +112,9 @@ class ProfileScreenContent extends StatefulWidget {
     required this.onSignOut,
     required this.onNavigateToCV,
     required this.ref,
+    required this.applications,
+    required this.loadingApplications,
+    required this.onRefresh,
   });
 
   @override
@@ -72,26 +127,31 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
     return Scaffold(
       backgroundColor: AppTheme.surface,
       body: SafeArea(
-        child: Column(
-          children: [
-            _buildTopBar(),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildProfileHeader(),
-                    _buildHiredBanner(),
-                    _buildContactIdentityBlock(),
-                    _buildSkillsBlock(),
-                    _buildApplicationsBlock(),
-                    _buildSignOutButton(),
-                    const SizedBox(height: 8),
-                  ],
+        child: RefreshIndicator(
+          onRefresh: () async => widget.onRefresh(),
+          color: AppTheme.primary,
+          child: Column(
+            children: [
+              _buildTopBar(),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildProfileHeader(),
+                      _buildHiredBanner(),
+                      _buildContactIdentityBlock(),
+                      _buildSkillsBlock(),
+                      _buildApplicationsBlock(),
+                      _buildSignOutButton(),
+                      const SizedBox(height: 8),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -494,6 +554,8 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
     );
   }
 
+  // ─── DYNAMIC APPLICATIONS BLOCK ──────────────────────────────────────────
+
   Widget _buildApplicationsBlock() {
     return Container(
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 10),
@@ -516,32 +578,96 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
             ),
           ),
           const SizedBox(height: 10),
-          _buildApplicationRow(
-            iconBg: AppTheme.successLow,
-            icon: Icons.check,
-            iconColor: AppTheme.success,
-            title: 'Flutter Mobile Dev',
-            badgeLabel: 'Accepted',
-            badgeColor: AppTheme.success,
-            badgeBg: AppTheme.successLow,
-            progress: 1.0,
-            progressColor: AppTheme.success,
-          ),
-          const SizedBox(height: 10),
-          _buildApplicationRow(
-            iconBg: AppTheme.warningLow,
-            icon: Icons.access_time,
-            iconColor: AppTheme.warning,
-            title: 'Data Analyst Trainee',
-            badgeLabel: 'Under Review',
-            badgeColor: AppTheme.warning,
-            badgeBg: AppTheme.warningLow,
-            progress: 0.5,
-            progressColor: AppTheme.warning,
-          ),
+
+          // Loading state
+          if (widget.loadingApplications)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: CircularProgressIndicator(color: AppTheme.primary),
+              ),
+            )
+
+          // Empty state
+          else if (widget.applications.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Text(
+                'No applications yet.',
+                style: TextStyle(color: AppTheme.mutedText, fontSize: 11),
+              ),
+            )
+
+          // Display real applications
+          else
+            ...widget.applications.map((app) {
+              final status = app['Application_Status'] ?? 'pending';
+              final jobTitle = app['Employment Opportunity']?['Position_Title'] ?? 'Unknown Job';
+              final statusColor = _getStatusColor(status);
+              final progress = _getProgress(status);
+              final icon = _getIcon(status);
+
+              print('📝 [ProfileScreen] Displaying: $jobTitle - $status');
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _buildApplicationRow(
+                  iconBg: statusColor.withOpacity(0.12),
+                  icon: icon,
+                  iconColor: statusColor,
+                  title: jobTitle,
+                  badgeLabel: status.replaceAll('_', ' ').toUpperCase(),
+                  badgeColor: statusColor,
+                  badgeBg: statusColor.withOpacity(0.12),
+                  progress: progress,
+                  progressColor: statusColor,
+                ),
+              );
+            }).toList(),
         ],
       ),
     );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'accepted':
+        return AppTheme.success;
+      case 'under_review':
+        return AppTheme.warning;
+      case 'rejected':
+        return AppTheme.error;
+      default:
+        return AppTheme.info;
+    }
+  }
+
+  double _getProgress(String status) {
+    switch (status) {
+      case 'accepted':
+        return 1.0;
+      case 'under_review':
+        return 0.6;
+      case 'pending':
+        return 0.3;
+      case 'rejected':
+        return 0.0;
+      default:
+        return 0.3;
+    }
+  }
+
+  IconData _getIcon(String status) {
+    switch (status) {
+      case 'accepted':
+        return Icons.check_rounded;
+      case 'under_review':
+        return Icons.access_time_rounded;
+      case 'rejected':
+        return Icons.close_rounded;
+      default:
+        return Icons.pending_rounded;
+    }
   }
 
   Widget _buildApplicationRow({

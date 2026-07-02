@@ -6,7 +6,7 @@ import '../../services/public_data_service.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import '../../models/programme.dart';
 import '../../models/staff_job_model.dart';
-
+import '../../screens/jobs/job_detail_screen.dart';
 
 class SearchResultsScreen extends StatefulWidget {
   const SearchResultsScreen({super.key});
@@ -65,12 +65,12 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
         final lowerQuery = query.toLowerCase();
         results = [
           ...programmes.where((p) =>
-            p.title.toLowerCase().contains(lowerQuery) ||
-            p.description.toLowerCase().contains(lowerQuery)
+          p.title.toLowerCase().contains(lowerQuery) ||
+              p.description.toLowerCase().contains(lowerQuery)
           ),
           ...opportunities.where((o) =>
-            o.positionTitle.toLowerCase().contains(lowerQuery) ||
-            (o.positionDescription?.toLowerCase().contains(lowerQuery) ?? false)
+          o.positionTitle.toLowerCase().contains(lowerQuery) ||
+              (o.positionDescription?.toLowerCase().contains(lowerQuery) ?? false)
           ),
         ];
       }
@@ -211,12 +211,13 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
               itemCount: results.length,
               itemBuilder: (context, index) {
                 final item = results[index];
-                
+
                 String title = '';
                 String subtitle = '';
                 String typeLabel = '';
                 bool isOpen = true;
                 List<String> tags = [];
+                StaffJobModel? jobModel;
 
                 if (item is Programme) {
                   title = item.title;
@@ -230,11 +231,23 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                   typeLabel = 'Job';
                   isOpen = item.opportunityStatus.toLowerCase() == 'open';
                   tags = item.requiredSkills ?? [];
+                  jobModel = item;
                 }
 
                 return GestureDetector(
                   onTap: () {
-                    // Navigate to detail
+                    if (item is StaffJobModel) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => StaffJobDetailScreen(job: item),
+                        ),
+                      );
+                    } else if (item is Programme) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Programme detail: $title')),
+                      );
+                    }
                   },
                   child: Container(
                     margin: const EdgeInsets.fromLTRB(14, 0, 14, 9),
@@ -297,30 +310,33 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                                 ],
                               ),
                             ),
-                            // Status badge
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: item is Programme
-                                    ? AppTheme.infoLow
-                                    : isOpen
-                                    ? AppTheme.successLow
-                                    : AppTheme.warningLow,
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                              child: Text(
-                                typeLabel,
-                                style: TextStyle(
+                            // Show "Apply" button for jobs, type label for programmes
+                            if (item is StaffJobModel)
+                              _applyButton(item)
+                            else
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                decoration: BoxDecoration(
                                   color: item is Programme
-                                      ? AppTheme.info
+                                      ? AppTheme.infoLow
                                       : isOpen
-                                      ? AppTheme.success
-                                      : AppTheme.warning,
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w700,
+                                      ? AppTheme.successLow
+                                      : AppTheme.warningLow,
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                child: Text(
+                                  typeLabel,
+                                  style: TextStyle(
+                                    color: item is Programme
+                                        ? AppTheme.info
+                                        : isOpen
+                                        ? AppTheme.success
+                                        : AppTheme.warning,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
                               ),
-                            ),
                           ],
                         ),
 
@@ -358,6 +374,34 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _applyButton(StaffJobModel job) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => StaffJobDetailScreen(job: job),
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+        decoration: BoxDecoration(
+          color: AppTheme.primary,
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: const Text(
+          'Apply',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 9,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       ),
     );
   }

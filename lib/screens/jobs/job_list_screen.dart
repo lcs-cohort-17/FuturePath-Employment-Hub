@@ -5,7 +5,6 @@ import 'package:futurepath_employment_hub/core/widgets/skill_chip.dart';
 import 'package:futurepath_employment_hub/providers/search_filter_provider.dart';
 import 'package:futurepath_employment_hub/models/staff_job_model.dart';
 import '../../services/public_data_service.dart';
-import 'package:futurepath_employment_hub/models/opportunity.dart';
 import 'job_detail_screen.dart';
 
 enum SortOption { mostRelevant, closingDate, salaryHighest, newest }
@@ -90,16 +89,11 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
 
     if (_selectedSkill != 'All') {
       list = list.where((opportunity) =>
-          opportunity.requiredSkills?.any((skill) => skill.toLowerCase() == _selectedSkill.toLowerCase()) ?? false).toList();
+      opportunity.requiredSkills?.any((skill) => skill.toLowerCase() == _selectedSkill.toLowerCase()) ?? false).toList();
     }
-
-    // Note: Job Type might not be in StaffJobModel/Schema yet, using a default or mapping if available
-    // For now we'll skip job type filter or assume full-time
 
     if (filterState.selectedLocations.isNotEmpty) {
       // Location is not directly in StaffJobModel, would need Employer join
-      // list = list.where((opportunity) =>
-      //     filterState.selectedLocations.contains(opportunity.location)).toList();
     }
 
     switch (_sortOption) {
@@ -109,7 +103,6 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
         list = [...list]..sort((a, b) => (a.closingDate ?? DateTime.now()).compareTo(b.closingDate ?? DateTime.now()));
         break;
       case SortOption.salaryHighest:
-        // Salary not in schema
         break;
       case SortOption.newest:
         list = [...list]..sort((a, b) => (b.createdAt ?? DateTime.now()).compareTo(a.createdAt ?? DateTime.now()));
@@ -158,7 +151,6 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
                     ],
                   ),
                   const SizedBox(height: 24),
-
                   const Text(
                     'Location',
                     style: TextStyle(
@@ -186,7 +178,6 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
                     }).toList(),
                   ),
                   const SizedBox(height: 32),
-
                   Row(
                     children: [
                       Expanded(
@@ -286,7 +277,12 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
                         child: _OpportunityCard(
                           job: job,
                           onTap: () {
-                            // Detail screen needs update to handle StaffJobModel
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => StaffJobDetailScreen(job: job),
+                              ),
+                            );
                           },
                         ),
                       );
@@ -614,7 +610,7 @@ class _OpportunityCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       const Text(
-                        'Company Name', // Would need Employer join to display
+                        'Company Name',
                         style: TextStyle(
                           fontSize: 13,
                           color: AppTheme.accent,
@@ -624,29 +620,8 @@ class _OpportunityCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (job.opportunityStatus == 'open')
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFDCFCE7),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        Icon(Icons.circle, size: 6, color: Color(0xFF16A34A)),
-                        SizedBox(width: 4),
-                        Text(
-                          'Open',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF16A34A),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                // ✅ Pass context to _applyButton
+                _applyButton(context, job),
               ],
             ),
             const SizedBox(height: 10),
@@ -686,6 +661,35 @@ class _OpportunityCard extends StatelessWidget {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  // ✅ Now accepts BuildContext as a parameter
+  Widget _applyButton(BuildContext context, StaffJobModel job) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => StaffJobDetailScreen(job: job),
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+        decoration: BoxDecoration(
+          color: AppTheme.primary,
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: const Text(
+          'Apply',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 9,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );

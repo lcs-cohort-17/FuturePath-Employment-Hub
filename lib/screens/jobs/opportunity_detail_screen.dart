@@ -2,7 +2,9 @@
 // Complete file with Apply modal, CV upload, consent, and real submission
 
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:file_picker/file_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
@@ -411,7 +413,7 @@ class OpportunityDetailScreen extends StatelessWidget {
   }
 }
 
-// ─── Apply Modal (UPDATED with CV upload) ─────────────────────────────────
+// ─── Apply Modal (UPDATED with CV upload and web support) ─────────────────
 
 class _ApplyModal extends StatefulWidget {
   final Opportunity opportunity;
@@ -425,7 +427,12 @@ class _ApplyModal extends StatefulWidget {
 class _ApplyModalState extends State<_ApplyModal> {
   bool _privacyConsented = false;
   bool _isSubmitting = false;
-  File? _cvFile;
+
+  // CV handling
+  File? _cvFile;          // for mobile
+  Uint8List? _cvBytes;    // for web
+  String? _cvFileName;    // always set
+
   final _auth = AuthService();
   final _supabase = Supabase.instance.client;
 
@@ -433,16 +440,26 @@ class _ApplyModalState extends State<_ApplyModal> {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf'],
+      withData: true, // CRUCIAL for web
     );
-    if (result != null && result.files.single.path != null) {
+    if (result != null) {
+      final file = result.files.single;
       setState(() {
-        _cvFile = File(result.files.single.path!);
+        _cvFileName = file.name;
+        if (kIsWeb) {
+          _cvBytes = file.bytes;
+          _cvFile = null;
+        } else {
+          _cvFile = File(file.path!);
+          _cvBytes = null;
+        }
       });
     }
   }
 
   Future<void> _submitApplication() async {
-    if (_cvFile == null) {
+    // Validation
+    if (_cvFileName == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please upload your CV (PDF format)'),
@@ -477,8 +494,19 @@ class _ApplyModalState extends State<_ApplyModal> {
       final applicantId = profile?['id'] as int?;
       if (applicantId == null) throw Exception('Applicant profile not found');
 
-      // Upload CV to Supabase Storage
-      final cvUrl = await JobApplicationService.uploadCv(_cvFile!, user.id);
+      // Upload CV – platform-specific
+      String cvUrl;
+      if (kIsWeb) {
+        if (_cvBytes == null) throw Exception('CV bytes not available');
+        cvUrl = await JobApplicationService.uploadCvFromBytes(
+          _cvBytes!,
+          user.id,
+          _cvFileName!,
+        );
+      } else {
+        if (_cvFile == null) throw Exception('CV file not available');
+        cvUrl = await JobApplicationService.uploadCv(_cvFile!, user.id);
+      }
 
       // Submit application to Job_Applications table
       await JobApplicationService.submitApplication(
@@ -669,26 +697,26 @@ class _ApplyModalState extends State<_ApplyModal> {
                   color: AppTheme.surface,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: _cvFile != null ? AppTheme.success : AppTheme.border2,
-                    width: _cvFile != null ? 1.5 : 0.5,
+                    color: _cvFileName != null ? AppTheme.success : AppTheme.border2,
+                    width: _cvFileName != null ? 1.5 : 0.5,
                   ),
                 ),
                 child: Column(
                   children: [
                     Icon(
-                      _cvFile != null ? Icons.file_present : Icons.upload_file,
-                      color: _cvFile != null ? AppTheme.success : AppTheme.mutedText,
+                      _cvFileName != null ? Icons.file_present : Icons.upload_file,
+                      color: _cvFileName != null ? AppTheme.success : AppTheme.mutedText,
                       size: 28,
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      _cvFile != null
-                          ? 'CV selected: ${_cvFile!.path.split('/').last}'
+                      _cvFileName != null
+                          ? 'CV selected: $_cvFileName'
                           : 'Tap to select PDF',
                       style: TextStyle(
                         fontSize: 11,
-                        color: _cvFile != null ? AppTheme.success : AppTheme.mutedText,
-                        fontWeight: _cvFile != null ? FontWeight.w600 : FontWeight.w400,
+                        color: _cvFileName != null ? AppTheme.success : AppTheme.mutedText,
+                        fontWeight: _cvFileName != null ? FontWeight.w600 : FontWeight.w400,
                       ),
                     ),
                   ],
@@ -865,7 +893,7 @@ class _ApplyModalState extends State<_ApplyModal> {
   }
 }
 
-// ─── Private widgets ────────────────────────────────────────────────────────
+// ─── Private widgets (unchanged) ───────────────────────────────────────────
 
 class _SectionHeader extends StatelessWidget {
   final String label;

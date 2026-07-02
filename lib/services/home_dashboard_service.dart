@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../screens/home/home_screen.dart';
+import '../models/staff_job_model.dart';
+import '../models/staff_programme_model.dart';
 
 class HomeDashboardService {
   static final _supabase = Supabase.instance.client;
@@ -10,39 +12,69 @@ class HomeDashboardService {
       final jobsCount = await _supabase.from('Employment Opportunity').count(CountOption.exact);
       final employersCount = await _supabase.from('Employer').count(CountOption.exact);
 
-      final recommendedJobsRaw = await _supabase
+      // ✅ Fetch jobs – only columns that exist
+      final jobsRaw = await _supabase
           .from('Employment Opportunity')
-          .select('*, Employer(Company_Name)')
+          .select('''
+            opportunity_id,
+            opportunity_number,
+            Position_Title,
+            Position_Description,
+            Required_Skills,
+            Closing_Date,
+            Opportunity_Status,
+            Number_Of_Available_Positions,
+            employer_id,
+            Created_By
+          ''')
+          .eq('Opportunity_Status', 'open')
           .limit(3);
 
-      final featuredProgrammesRaw = await _supabase
+      final recommendedJobs = (jobsRaw as List).map((j) => StaffJobModel(
+        opportunityId: j['opportunity_id'] ?? '',
+        opportunityNumber: j['opportunity_number'],
+        positionTitle: j['Position_Title'] ?? '',
+        positionDescription: j['Position_Description'],
+        requiredSkills: List<String>.from(j['Required_Skills'] ?? []),
+        closingDate: j['Closing_Date'] != null ? DateTime.parse(j['Closing_Date']) : null,
+        opportunityStatus: j['Opportunity_Status'] ?? 'open',
+        numberAvailablePositions: j['Number_Of_Available_Positions'],
+        employerId: j['employer_id'],
+        createdBy: j['Created_By'],
+        createdAt: null,      // not in table
+        updatedAt: null,      // not in table
+      )).toList();
+
+      // Fetch featured programmes (keep as ProgrammeSummary)
+      final programmesRaw = await _supabase
           .from('Training Programme')
-          .select('*')
+          .select('''
+            programme_id,
+            Programme_Name,
+            Programme_Status,
+            category,
+            level,
+            duration_months,
+            enrolled_count,
+            Capacity
+          ''')
           .limit(3);
 
-      final recommendedJobs = (recommendedJobsRaw as List).map((j) {
-        final companyName = j['Employer']?['Company_Name'] ?? 'Unknown';
-        return JobSummary(
-          id: j['opportunity_id'],
-          title: j['Position_Title'],
-          company: companyName,
-          companyInitials: companyName.isNotEmpty ? companyName[0].toUpperCase() : '?',
-          skills: List<String>.from(j['Required_Skills'] ?? []),
-          employmentType: 'Full-time', // Schema missing job type
-          closingLabel: 'Closes ${j['Closing_Date']}',
-        );
-      }).toList();
-
-      final featuredProgrammes = (featuredProgrammesRaw as List).map((p) {
+      final featuredProgrammes = (programmesRaw as List).map((p) {
+        final status = p['Programme_Status'] == 'open'
+            ? ProgrammeStatus.open
+            : p['Programme_Status'] == 'upcoming'
+            ? ProgrammeStatus.startingSoon
+            : ProgrammeStatus.closed;
         return ProgrammeSummary(
-          id: p['programme_id'],
-          title: p['Programme_Name'],
-          provider: 'Provider', // Would need join or field
+          id: p['programme_id'] ?? '',
+          title: p['Programme_Name'] ?? '',
+          provider: 'Provider', // join with provider table if needed
           duration: '${p['duration_months'] ?? 0} months',
           level: p['level'] ?? 'Beginner',
           enrolled: p['enrolled_count'] ?? 0,
           capacity: p['Capacity'] ?? 0,
-          status: p['Programme_Status'] == 'open' ? ProgrammeStatus.open : ProgrammeStatus.closed,
+          status: status,
         );
       }).toList();
 

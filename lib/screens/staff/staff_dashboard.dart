@@ -1,5 +1,6 @@
 // TODO: Replace with final design (PO-UIUX-008)
 // ✅ Uses AppRouter for navigation
+// ✅ View Applications navigates directly to StaffApplications
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +8,8 @@ import '../../services/auth_services.dart';
 import '../../services/staff_dashboard_service.dart';
 import '../../router/app_router.dart';
 import '../../providers/user_profile_provider.dart';
+// ✅ Import the StaffApplications screen
+import 'staff_applications.dart';
 
 class StaffDashboard extends ConsumerStatefulWidget {
   const StaffDashboard({super.key});
@@ -136,10 +139,14 @@ class _StaffDashboardState extends ConsumerState<StaffDashboard> {
                 ],
               ),
               const SizedBox(height: 12),
+              // ✅ Updated "View Applications" button with direct navigation
               Row(
                 children: [
                   _buildActionButton('View Applications', Icons.assignment, () {
-                    Navigator.pushNamed(context, '/staff/applications');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const StaffApplications()),
+                    );
                   }),
                 ],
               ),

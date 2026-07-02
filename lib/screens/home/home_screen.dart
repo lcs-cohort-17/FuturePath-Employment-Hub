@@ -1,30 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import '../../services/home_dashboard_service.dart';
+import '../../models/staff_job_model.dart';
+import '../../screens/jobs/job_detail_screen.dart';
 
 typedef DashboardFetcher = Future<HomeDashboardData> Function();
-
-class JobSummary {
-  final String id;
-  final String title;
-  final String company;
-  final String companyInitials;
-  final List<String> skills;
-  final String employmentType;
-  final String closingLabel;
-  final bool isOpen;
-
-  const JobSummary({
-    required this.id,
-    required this.title,
-    required this.company,
-    required this.companyInitials,
-    required this.skills,
-    required this.employmentType,
-    required this.closingLabel,
-    this.isOpen = true,
-  });
-}
 
 enum ProgrammeStatus { open, startingSoon, closed }
 
@@ -56,7 +36,7 @@ class HomeDashboardData {
   final int programmesCount;
   final int openJobsCount;
   final int employersCount;
-  final List<JobSummary> recommendedJobs;
+  final List<StaffJobModel> recommendedJobs;  // Changed from JobSummary
   final List<ProgrammeSummary> featuredProgrammes;
 
   const HomeDashboardData({
@@ -90,7 +70,7 @@ class HomeScreen extends StatefulWidget {
   final ValueChanged<String>? onSearch;
   final VoidCallback? onSeeAllJobs;
   final VoidCallback? onSeeAllProgrammes;
-  final ValueChanged<JobSummary>? onJobTap;
+  final ValueChanged<StaffJobModel>? onJobTap;     // Changed from JobSummary
   final ValueChanged<ProgrammeSummary>? onProgrammeTap;
   final VoidCallback? onNotificationsTap;
 
@@ -139,10 +119,23 @@ class _HomeScreenState extends State<HomeScreen> {
         : _showWiringSnackBar('See all programmes (NAV-002)');
   }
 
-  void _handleJobTap(JobSummary job) {
+  void _handleJobTap(StaffJobModel job) {
     widget.onJobTap != null
         ? widget.onJobTap!(job)
-        : _showWiringSnackBar('Open job detail: ${job.title}');
+        : _navigateToJobDetail(job);
+  }
+
+  void _handleApplyJob(StaffJobModel job) {
+    _navigateToJobDetail(job);
+  }
+
+  void _navigateToJobDetail(StaffJobModel job) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => StaffJobDetailScreen(job: job),
+      ),
+    );
   }
 
   void _handleProgrammeTap(ProgrammeSummary programme) {
@@ -156,9 +149,6 @@ class _HomeScreenState extends State<HomeScreen> {
         .showSnackBar(SnackBar(content: Text('$message — navigation not wired yet')));
   }
 
-  /// Returns a background/foreground colour pair for a job avatar based on
-  /// the initials string, cycling through the app's semantic colour pairs so
-  /// each card feels distinct without requiring a data-model field.
   ({Color bg, Color fg}) _avatarColours(String initials) {
     final pairs = [
       (bg: AppTheme.infoLow, fg: AppTheme.info),
@@ -312,7 +302,6 @@ class _HomeScreenState extends State<HomeScreen> {
   // ── Greeting ──────────────────────────────────────────────────────────────
 
   Widget _buildGreeting() {
-    // [UIUX-PRIV-001] — userName removed from display. Generic greeting only.
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
       child: Text(
@@ -448,8 +437,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ── Job card ──────────────────────────────────────────────────────────────
 
-  Widget _jobCard(JobSummary job) {
-    final colours = _avatarColours(job.companyInitials);
+  Widget _jobCard(StaffJobModel job) {
+    final companyInitials = job.positionTitle.isNotEmpty ? job.positionTitle[0].toUpperCase() : '?';
+    final colours = _avatarColours(companyInitials);
     return GestureDetector(
       onTap: () => _handleJobTap(job),
       child: Container(
@@ -463,7 +453,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header row: avatar + title/company + status badge
+            // Header row: avatar + title/company + Apply button
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -476,7 +466,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   alignment: Alignment.center,
                   child: Text(
-                    job.companyInitials,
+                    companyInitials,
                     style: TextStyle(
                       color: colours.fg,
                       fontSize: 11,
@@ -490,7 +480,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        job.title,
+                        job.positionTitle,
                         style: const TextStyle(
                           color: AppTheme.textDark,
                           fontSize: 12,
@@ -499,7 +489,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 1),
                       Text(
-                        job.company,
+                        'Employer ID: ${job.employerId ?? 'N/A'}',
                         style: const TextStyle(
                           color: AppTheme.mutedText,
                           fontSize: 10,
@@ -509,32 +499,35 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                _openBadge(),
+                _applyButton(job),
               ],
             ),
             // Skill tags
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 7),
-              child: Wrap(
-                spacing: 4,
-                runSpacing: 4,
-                children: job.skills.map(_skillTag).toList(),
+            if (job.requiredSkills != null && job.requiredSkills!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 7),
+                child: Wrap(
+                  spacing: 4,
+                  runSpacing: 4,
+                  children: job.requiredSkills!.map(_skillTag).toList(),
+                ),
               ),
-            ),
             // Meta row
             Row(
               children: [
                 const Icon(Icons.work_outline, size: 11, color: AppTheme.subtleText),
                 const SizedBox(width: 3),
                 Text(
-                  job.employmentType,
+                  '${job.numberAvailablePositions ?? 0} positions',
                   style: const TextStyle(color: AppTheme.subtleText, fontSize: 9),
                 ),
                 const SizedBox(width: 10),
                 const Icon(Icons.access_time, size: 11, color: AppTheme.subtleText),
                 const SizedBox(width: 3),
                 Text(
-                  job.closingLabel,
+                  job.closingDate != null
+                      ? 'Closes ${job.closingDate!.year}-${job.closingDate!.month.toString().padLeft(2, '0')}-${job.closingDate!.day.toString().padLeft(2, '0')}'
+                      : 'No closing date',
                   style: const TextStyle(color: AppTheme.subtleText, fontSize: 9),
                 ),
               ],
@@ -560,19 +553,22 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _openBadge() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-        color: AppTheme.successLow,
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: const Text(
-        '● Open',
-        style: TextStyle(
-          color: AppTheme.success,
-          fontSize: 9,
-          fontWeight: FontWeight.w700,
+  Widget _applyButton(StaffJobModel job) {
+    return GestureDetector(
+      onTap: () => _handleApplyJob(job),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+        decoration: BoxDecoration(
+          color: AppTheme.primary,
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: const Text(
+          'Apply',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 9,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );
