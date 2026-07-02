@@ -135,6 +135,7 @@ class _SignupScreenState extends State<SignupScreen> {
           dateOfBirth: _dobCtrl.text.trim(),
           gender: _genderCtrl.text.trim(),
           email: _emailCtrl.text.trim(),
+          phone: _phoneCtrl.text.trim(),
           residentialArea: _areaCtrl.text.trim(),
           highestQualification: _qualificationCtrl.text.trim(),
           employmentStatus: _employmentCtrl.text.trim(),

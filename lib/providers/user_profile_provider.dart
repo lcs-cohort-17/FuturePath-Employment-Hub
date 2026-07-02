@@ -43,10 +43,33 @@ final mockUserProfile = UserProfile(
   ],
 );
 
+// Empty profile for initial state
+final emptyUserProfile = UserProfile(
+  id: '',
+  name: '',
+  displayName: '',
+  location: '',
+  employmentStatus: '',
+  isHired: false,
+  email: '',
+  skills: [],
+  completedProgrammes: [],
+  enrolledProgrammes: [],
+);
+
 class UserProfileNotifier extends Notifier<UserProfile> {
+  final UserProfileService _profileService = UserProfileService();
+
   @override
   UserProfile build() {
-    return mockUserProfile;
+    return emptyUserProfile;
+  }
+
+  Future<void> fetchProfile(String userId) async {
+    final profile = await _profileService.fetchUserProfile(userId);
+    if (profile != null) {
+      state = profile;
+    }
   }
 
   void setUserProfile(UserProfile profile) {
@@ -110,7 +133,7 @@ class UserProfileNotifier extends Notifier<UserProfile> {
   }
 
   void clearProfile() {
-    state = mockUserProfile;
+    state = emptyUserProfile;
   }
 
   // ── Delete-account state ────────────────────────────────────────────────

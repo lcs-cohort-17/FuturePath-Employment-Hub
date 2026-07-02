@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../router/app_router.dart';
-import 'job_list_screen.dart'; // To reuse the Opportunity model
+import '../../models/opportunity.dart';
 
 class OpportunityDetailScreen extends StatelessWidget {
   final Opportunity opportunity;
@@ -15,7 +15,7 @@ class OpportunityDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // For demo purposes, we'll assume an admin role if a certain condition is met.
     // In a real app, this would come from an AuthProvider.
-    const bool isAdmin = true; 
+    const bool isAdmin = false; 
 
     return Scaffold(
       backgroundColor: AppTheme.background,

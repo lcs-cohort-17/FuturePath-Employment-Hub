@@ -2,18 +2,20 @@
 // ✅ Uses AppRouter for navigation
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/auth_services.dart';
 import '../../services/staff_dashboard_service.dart';
 import '../../router/app_router.dart';
+import '../../providers/user_profile_provider.dart';
 
-class StaffDashboard extends StatefulWidget {
+class StaffDashboard extends ConsumerStatefulWidget {
   const StaffDashboard({super.key});
 
   @override
-  State<StaffDashboard> createState() => _StaffDashboardState();
+  ConsumerState<StaffDashboard> createState() => _StaffDashboardState();
 }
 
-class _StaffDashboardState extends State<StaffDashboard> {
+class _StaffDashboardState extends ConsumerState<StaffDashboard> {
   late Future<Map<String, dynamic>> _statsFuture;
   final _auth = AuthService();
 
@@ -34,6 +36,9 @@ class _StaffDashboardState extends State<StaffDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final userProfile = ref.watch(userProfileProvider);
+    final displayName = userProfile.name.isEmpty ? 'Staff' : userProfile.name.split(' ').first;
+
     return Scaffold(
       backgroundColor: const Color(0xFF1A1C1E),
       appBar: AppBar(
@@ -57,7 +62,7 @@ class _StaffDashboardState extends State<StaffDashboard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Good morning, ${_auth.currentUser?.email?.split('@').first ?? 'Staff'}',
+                'Good morning, $displayName',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 20,

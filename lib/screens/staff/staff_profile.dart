@@ -2,15 +2,26 @@
 // Placeholder for staff profile.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/auth_services.dart';
+import '../../providers/user_profile_provider.dart';
 
-class StaffProfile extends StatelessWidget {
+class StaffProfile extends ConsumerWidget {
   const StaffProfile({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final auth = AuthService();
     final user = auth.currentUser;
+    final userProfile = ref.watch(userProfileProvider);
+
+    final String displayName = userProfile.name.isEmpty 
+        ? (user?.email?.split('@').first ?? 'Staff User')
+        : userProfile.name;
+    
+    final String initial = userProfile.name.isEmpty
+        ? (user?.email?.split('@').first.substring(0, 1).toUpperCase() ?? 'S')
+        : userProfile.name.substring(0, 1).toUpperCase();
 
     return Scaffold(
       backgroundColor: const Color(0xFF1A1C1E),
@@ -32,13 +43,13 @@ class StaffProfile extends StatelessWidget {
               radius: 40,
               backgroundColor: const Color(0xFFE03A2F),
               child: Text(
-                user?.email?.split('@').first.substring(0, 1).toUpperCase() ?? 'S',
+                initial,
                 style: const TextStyle(fontSize: 32, color: Colors.white),
               ),
             ),
             const SizedBox(height: 16),
             Text(
-              user?.email?.split('@').first ?? 'Staff User',
+              displayName,
               style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
@@ -61,6 +72,7 @@ class StaffProfile extends StatelessWidget {
               style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
+            _buildInfoRow('Name', userProfile.name),
             _buildInfoRow('Email', user?.email ?? 'No email'),
             _buildInfoRow('Role', 'Staff'),
 

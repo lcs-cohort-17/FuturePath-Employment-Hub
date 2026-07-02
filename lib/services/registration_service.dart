@@ -13,6 +13,7 @@ class RegistrationService {
     required String dateOfBirth, // Expected format: DD/MM/YYYY from UI
     required String gender,
     required String email,
+    String? phone,
     required String residentialArea,
     required String highestQualification,
     required String employmentStatus,
@@ -44,6 +45,7 @@ class RegistrationService {
       'Date_Of_Birth': formattedDate,
       'Gender': gender,
       'Email': email,
+      'contact_number': phone,
       'Residential_Area': residentialArea,
       'Highest_Qualification': highestQualification,
       'Current_Employment_Status': employmentStatus,

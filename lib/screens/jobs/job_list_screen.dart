@@ -3,101 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/core/widgets/skill_chip.dart';
 import 'package:futurepath_employment_hub/providers/search_filter_provider.dart';
-// import 'opportunity_detail_screen.dart';
-
-class Opportunity {
-  final String id;
-  final String title;
-  final String company;
-  final String companyIndustry;
-  final String location;
-  final String jobType;
-  final List<String> skills;
-  final String closingDate;
-  final int positions;
-  final String salaryRange;
-  final bool isOpen;
-  final String? duration;
-  final String description;
-  final List<RelatedProgramme> relatedProgrammes;
-  final String logoInitials;
-  final Color logoColor;
-
-  const Opportunity({
-    required this.id,
-    required this.title,
-    required this.company,
-    required this.companyIndustry,
-    required this.location,
-    required this.jobType,
-    required this.skills,
-    required this.closingDate,
-    required this.positions,
-    required this.salaryRange,
-    required this.isOpen,
-    this.duration,
-    required this.description,
-    required this.relatedProgrammes,
-    required this.logoInitials,
-    required this.logoColor,
-  });
-}
-
-class RelatedProgramme {
-  final String title;
-  final String duration;
-  final String level;
-  final bool isOpen;
-
-  const RelatedProgramme({
-    required this.title,
-    required this.duration,
-    required this.level,
-    required this.isOpen,
-  });
-}
-
-final List<Opportunity> _mockOpportunities = [
-  Opportunity(
-    id: '1',
-    title: 'Junior Flutter Developer',
-    company: 'TechNova Solutions',
-    companyIndustry: 'Technology',
-    location: 'Cape Town',
-    jobType: 'Full-time',
-    skills: ['Flutter', 'Dart', 'Firebase', 'REST APIs', 'Git'],
-    closingDate: '31 Jul 2026',
-    positions: 3,
-    salaryRange: 'R18,000 – R25,000',
-    isOpen: true,
-    description: 'TechNova Solutions is looking for a passionate Junior Flutter Developer.',
-    relatedProgrammes: [
-      RelatedProgramme(title: 'Flutter Development Bootcamp', duration: '3 months', level: 'Beginner', isOpen: true),
-    ],
-    logoInitials: 'T',
-    logoColor: AppTheme.accent,
-  ),
-  Opportunity(
-    id: '2',
-    title: 'Salesforce Administrator Intern',
-    company: 'FutureTech Africa',
-    companyIndustry: 'Business',
-    location: 'Johannesburg',
-    jobType: 'Internship',
-    skills: ['Salesforce', 'CRM', 'Data Management', 'Excel', 'Communication'],
-    closingDate: '15 Jul 2026',
-    positions: 5,
-    salaryRange: 'R12,000',
-    isOpen: true,
-    duration: '4 months',
-    description: 'Join FutureTech Africa as a Salesforce Administrator Intern.',
-    relatedProgrammes: [
-      RelatedProgramme(title: 'Salesforce Administration', duration: '3 months', level: 'Beginner', isOpen: true),
-    ],
-    logoInitials: 'F',
-    logoColor: const Color(0xFF7C3AED),
-  ),
-];
+import 'package:futurepath_employment_hub/models/staff_job_model.dart';
+import '../../services/public_data_service.dart';
+import 'package:futurepath_employment_hub/models/opportunity.dart';
+import 'job_detail_screen.dart';
 
 enum SortOption { mostRelevant, closingDate, salaryHighest, newest }
 
@@ -121,14 +30,7 @@ const List<String> _jobTypeFilters = ['All Types', 'Full-time', 'Part-time', 'In
 const List<String> _locationFilters = ['All Locations', 'Cape Town', 'Johannesburg', 'Durban', 'Remote'];
 
 class OpportunityListScreen extends ConsumerStatefulWidget {
-  final List<Opportunity> opportunities;
-  final Future<void> Function()? onRefresh;
-
-  const OpportunityListScreen({
-    super.key,
-    this.opportunities = const [],
-    this.onRefresh,
-  });
+  const OpportunityListScreen({super.key});
 
   @override
   ConsumerState<OpportunityListScreen> createState() => _OpportunityListScreenState();
@@ -141,12 +43,32 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
   String _selectedJobType = 'All Types';
   SortOption _sortOption = SortOption.mostRelevant;
 
+  List<StaffJobModel> _jobs = [];
+  bool _isLoading = true;
+
   @override
   void initState() {
     super.initState();
+    _loadJobs();
     _searchController.addListener(() {
       setState(() => _searchQuery = _searchController.text.toLowerCase());
     });
+  }
+
+  Future<void> _loadJobs() async {
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+    try {
+      final fetched = await PublicDataService.getJobs();
+      if (mounted) {
+        setState(() {
+          _jobs = fetched;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -155,60 +77,46 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
     super.dispose();
   }
 
-  List<Opportunity> get _source =>
-      widget.opportunities.isNotEmpty ? widget.opportunities : _mockOpportunities;
-
-  List<Opportunity> get _filtered {
-    List<Opportunity> list = _source;
+  List<StaffJobModel> get _filtered {
+    List<StaffJobModel> list = _jobs;
     final filterState = ref.read(searchFilterProvider);
 
     if (_searchQuery.isNotEmpty) {
       list = list.where((opportunity) {
-        return opportunity.title.toLowerCase().contains(_searchQuery) ||
-            opportunity.company.toLowerCase().contains(_searchQuery) ||
-            opportunity.skills.any((skill) => skill.toLowerCase().contains(_searchQuery));
+        return opportunity.positionTitle.toLowerCase().contains(_searchQuery) ||
+            (opportunity.requiredSkills?.any((skill) => skill.toLowerCase().contains(_searchQuery)) ?? false);
       }).toList();
     }
 
     if (_selectedSkill != 'All') {
       list = list.where((opportunity) =>
-          opportunity.skills.any((skill) => skill.toLowerCase() == _selectedSkill.toLowerCase())).toList();
+          opportunity.requiredSkills?.any((skill) => skill.toLowerCase() == _selectedSkill.toLowerCase()) ?? false).toList();
     }
 
-    if (_selectedJobType != 'All Types') {
-      list = list.where((opportunity) => opportunity.jobType == _selectedJobType).toList();
-    }
+    // Note: Job Type might not be in StaffJobModel/Schema yet, using a default or mapping if available
+    // For now we'll skip job type filter or assume full-time
 
     if (filterState.selectedLocations.isNotEmpty) {
-      list = list.where((opportunity) =>
-          filterState.selectedLocations.contains(opportunity.location)).toList();
+      // Location is not directly in StaffJobModel, would need Employer join
+      // list = list.where((opportunity) =>
+      //     filterState.selectedLocations.contains(opportunity.location)).toList();
     }
 
     switch (_sortOption) {
       case SortOption.mostRelevant:
         break;
       case SortOption.closingDate:
-        list = [...list]..sort((a, b) => a.closingDate.compareTo(b.closingDate));
+        list = [...list]..sort((a, b) => (a.closingDate ?? DateTime.now()).compareTo(b.closingDate ?? DateTime.now()));
         break;
       case SortOption.salaryHighest:
-        list = [...list]..sort((a, b) {
-          final aVal = _extractMaxSalary(a.salaryRange);
-          final bVal = _extractMaxSalary(b.salaryRange);
-          return bVal.compareTo(aVal);
-        });
+        // Salary not in schema
         break;
       case SortOption.newest:
-        list = list.reversed.toList();
+        list = [...list]..sort((a, b) => (b.createdAt ?? DateTime.now()).compareTo(a.createdAt ?? DateTime.now()));
         break;
     }
 
     return list;
-  }
-
-  int _extractMaxSalary(String salaryRange) {
-    final digits = RegExp(r'\d+').allMatches(salaryRange.replaceAll(',', ''));
-    if (digits.isEmpty) return 0;
-    return digits.map((match) => int.parse(match.group(0)!)).reduce((a, b) => a > b ? a : b);
   }
 
   void _showFilterBottomSheet() {
@@ -218,7 +126,6 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) => Consumer(
         builder: (context, ref, child) {
-          // Get both state and notifier
           final filterState = ref.watch(searchFilterProvider);
           final filterNotifier = ref.watch(searchFilterProvider.notifier);
 
@@ -273,59 +180,10 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
                         label: location,
                         selected: isSelected,
                         onTap: () {
-                          // Use notifier to call method
                           filterNotifier.toggleLocation(location);
                         },
                       );
                     }).toList(),
-                  ),
-                  const SizedBox(height: 24),
-
-                  const Text(
-                    'Job Type',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: _jobTypeFilters.map((jobType) {
-                      final isSelected = jobType == 'All Types'
-                          ? _selectedJobType == 'All Types'
-                          : _selectedJobType == jobType;
-
-                      return _FilterChip(
-                        label: jobType,
-                        selected: isSelected,
-                        onTap: () {
-                          setState(() {
-                            _selectedJobType = jobType;
-                          });
-                        },
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 24),
-
-                  const Text(
-                    'Skills',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Use the skills chips above the list to filter by skill',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white54,
-                    ),
                   ),
                   const SizedBox(height: 32),
 
@@ -334,7 +192,6 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
                       Expanded(
                         child: OutlinedButton(
                           onPressed: () {
-                            // Use notifier to call method
                             filterNotifier.clearFilters();
                             setState(() {
                               _selectedJobType = 'All Types';
@@ -388,6 +245,13 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: AppTheme.background,
+        body: Center(child: CircularProgressIndicator(color: AppTheme.accent)),
+      );
+    }
+
     final filtered = _filtered;
 
     return Scaffold(
@@ -395,7 +259,7 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
       body: SafeArea(
         child: RefreshIndicator(
           color: AppTheme.accent,
-          onRefresh: widget.onRefresh ?? () async {},
+          onRefresh: _loadJobs,
           child: CustomScrollView(
             slivers: [
               SliverToBoxAdapter(child: _buildHeader()),
@@ -413,35 +277,23 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
                   ),
                 )
               else
-                // SliverList(
-                //   delegate: SliverChildBuilderDelegate(
-                //         (context, index) {
-                //       return Padding(
-                //         padding: EdgeInsets.fromLTRB(16, index == 0 ? 4 : 0, 16, 12),
-                //         child: _OpportunityCard(
-                //           opportunity: filtered[index],
-                //           onTap: () => Navigator.push(
-                //             context,
-                //             MaterialPageRoute(
-                //               builder: (context) => OpportunityDetailScreen(
-                //                 opportunity: filtered[index],
-                //               ),
-                //             ),
-                //           ),
-                //           onCompanyTap: () => Navigator.push(
-                //             context,
-                //             MaterialPageRoute(
-                //               builder: (context) => const _PlaceholderScreen(
-                //                 message: 'Employer Detail Screen - coming soon',
-                //               ),
-                //             ),
-                //           ),
-                //         ),
-                //       );
-                //     },
-                //     childCount: filtered.length,
-                //   ),
-                // ),
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                      final job = filtered[index];
+                      return Padding(
+                        padding: EdgeInsets.fromLTRB(16, index == 0 ? 4 : 0, 16, 12),
+                        child: _OpportunityCard(
+                          job: job,
+                          onTap: () {
+                            // Detail screen needs update to handle StaffJobModel
+                          },
+                        ),
+                      );
+                    },
+                    childCount: filtered.length,
+                  ),
+                ),
               const SliverToBoxAdapter(child: SizedBox(height: 20)),
             ],
           ),
@@ -468,7 +320,6 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
             children: [
               Consumer(
                 builder: (context, ref, child) {
-                  // Get state only (for reading properties)
                   final filterState = ref.watch(searchFilterProvider);
                   return Stack(
                     children: [
@@ -500,32 +351,6 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
                   );
                 },
               ),
-              Stack(
-                children: [
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(Icons.notifications_outlined, color: AppTheme.textDark, size: 28),
-                  ),
-                  Positioned(
-                    right: 8,
-                    top: 8,
-                    child: Container(
-                      width: 16,
-                      height: 16,
-                      decoration: const BoxDecoration(
-                        color: AppTheme.accent,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Center(
-                        child: Text(
-                          '4',
-                          style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w700),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ],
           ),
         ],
@@ -540,7 +365,7 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
         controller: _searchController,
         style: const TextStyle(color: AppTheme.textDark, fontSize: 14),
         decoration: InputDecoration(
-          hintText: 'Search jobs, companies, skills...',
+          hintText: 'Search jobs, skills...',
           hintStyle: const TextStyle(color: AppTheme.mutedText, fontSize: 14),
           prefixIcon: const Icon(Icons.search, color: AppTheme.mutedText, size: 20),
           filled: true,
@@ -721,20 +546,19 @@ class _FilterChipItem extends StatelessWidget {
 }
 
 class _OpportunityCard extends StatelessWidget {
-  final Opportunity opportunity;
+  final StaffJobModel job;
   final VoidCallback onTap;
-  final VoidCallback onCompanyTap;
 
   const _OpportunityCard({
-    required this.opportunity,
+    required this.job,
     required this.onTap,
-    required this.onCompanyTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final visibleSkills = opportunity.skills.take(3).toList();
-    final extraSkills = opportunity.skills.length > 3 ? opportunity.skills.length - 3 : 0;
+    final skills = job.requiredSkills ?? [];
+    final visibleSkills = skills.take(3).toList();
+    final extraSkills = skills.length > 3 ? skills.length - 3 : 0;
 
     return GestureDetector(
       onTap: onTap,
@@ -761,12 +585,12 @@ class _OpportunityCard extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: opportunity.logoColor,
+                    color: AppTheme.accent,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Center(
                     child: Text(
-                      opportunity.logoInitials,
+                      job.positionTitle.isNotEmpty ? job.positionTitle[0].toUpperCase() : '?',
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
@@ -781,7 +605,7 @@ class _OpportunityCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        opportunity.title,
+                        job.positionTitle,
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
@@ -789,21 +613,18 @@ class _OpportunityCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 2),
-                      GestureDetector(
-                        onTap: onCompanyTap,
-                        child: Text(
-                          opportunity.company,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: AppTheme.accent,
-                            fontWeight: FontWeight.w500,
-                          ),
+                      const Text(
+                        'Company Name', // Would need Employer join to display
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppTheme.accent,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
                   ),
                 ),
-                if (opportunity.isOpen)
+                if (job.opportunityStatus == 'open')
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
@@ -826,27 +647,6 @@ class _OpportunityCard extends StatelessWidget {
                       ],
                     ),
                   ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                const Icon(Icons.location_on_outlined, size: 14, color: AppTheme.mutedText),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    opportunity.location,
-                    style: const TextStyle(fontSize: 12, color: AppTheme.mutedText),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                const Icon(Icons.access_time, size: 14, color: AppTheme.mutedText),
-                const SizedBox(width: 4),
-                Text(
-                  opportunity.jobType,
-                  style: const TextStyle(fontSize: 12, color: AppTheme.mutedText),
-                ),
               ],
             ),
             const SizedBox(height: 10),
@@ -878,53 +678,14 @@ class _OpportunityCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    'Closes ${opportunity.closingDate} · ${opportunity.positions} ${opportunity.positions == 1 ? 'position' : 'positions'}',
+                    'Closes ${job.closingDate?.toIso8601String().split('T').first ?? 'N/A'} · ${job.numberAvailablePositions ?? 0} positions',
                     style: const TextStyle(fontSize: 12, color: AppTheme.mutedText),
                     overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Text(
-                  opportunity.salaryRange,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.accent,
                   ),
                 ),
               ],
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PlaceholderScreen extends StatelessWidget {
-  final String message;
-
-  const _PlaceholderScreen({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: AppTheme.primary,
-        foregroundColor: Colors.white,
-        title: const Text('Coming Soon'),
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text(
-            message,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppTheme.mutedText,
-              fontSize: 16,
-            ),
-          ),
         ),
       ),
     );

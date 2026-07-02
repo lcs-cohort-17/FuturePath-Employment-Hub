@@ -67,8 +67,8 @@ class AdminDashboardService {
     try {
       // Fetch counts from Supabase tables
       final usersCount = await _supabase.from('Applicant').count(CountOption.exact);
-      final jobsCount = await _supabase.from('Employment Opportunity').count(CountOption.exact); // Assuming table name
-      final appsCount = await _supabase.from('job_applications').count(CountOption.exact);
+      final jobsCount = await _supabase.from('Employment Opportunity').count(CountOption.exact);
+      final appsCount = await _supabase.from('Job_Applications').count(CountOption.exact);
 
       return AdminDashboardStats(
         stats: [

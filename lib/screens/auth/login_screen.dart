@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 import '../../core/theme/app_theme.dart';
 import '../../services/auth_services.dart';
 import '../../services/staff_registration_service.dart';
 import '../../router/app_router.dart';
+import '../../providers/user_profile_provider.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final AuthService _authService = AuthService();
 
   final _loginFormKey = GlobalKey<FormState>();
@@ -100,6 +102,9 @@ class _LoginScreenState extends State<LoginScreen> {
         final status = profile['status'];
 
         if (role == 'staff') {
+          // Fetch profile for staff too
+          await ref.read(userProfileProvider.notifier).fetchProfile(user.id);
+
           if (status == 'active') {
             Navigator.of(context).pushNamedAndRemoveUntil(AppRouter.staffDashboard, (route) => false);
           } else if (status == 'pending_approval') {
@@ -117,6 +122,11 @@ class _LoginScreenState extends State<LoginScreen> {
           return;
         }
       }
+
+      // Fetch job seeker profile and update provider
+      await ref.read(userProfileProvider.notifier).fetchProfile(user.id);
+
+      if (!mounted) return;
 
       // Default for job seekers or if no profile found yet
       Navigator.of(context).pushNamedAndRemoveUntil(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
+import '../../services/home_dashboard_service.dart';
 
 typedef DashboardFetcher = Future<HomeDashboardData> Function();
 
@@ -73,7 +74,7 @@ class HomeScreen extends StatefulWidget {
     this.userName = 'there',
     this.userInitials = 'U',
     this.notificationCount = 0,
-    this.fetchDashboardData = _mockFetchDashboardData,
+    this.fetchDashboardData = HomeDashboardService.fetchDashboardData,
     this.onSearch,
     this.onSeeAllJobs,
     this.onSeeAllProgrammes,
@@ -92,65 +93,6 @@ class HomeScreen extends StatefulWidget {
   final ValueChanged<JobSummary>? onJobTap;
   final ValueChanged<ProgrammeSummary>? onProgrammeTap;
   final VoidCallback? onNotificationsTap;
-
-  static Future<HomeDashboardData> _mockFetchDashboardData() async {
-    await Future.delayed(const Duration(milliseconds: 600));
-    return const HomeDashboardData(
-      programmesCount: 6,
-      openJobsCount: 12,
-      employersCount: 4,
-      recommendedJobs: [
-        JobSummary(
-          id: 'job-tn-flutter',
-          title: 'Junior Flutter Developer',
-          company: 'TechNova Solutions',
-          companyInitials: 'TN',
-          skills: ['Flutter', 'Dart', 'Firebase'],
-          employmentType: 'Full-time',
-          closingLabel: 'Closes 31 Jul',
-        ),
-        JobSummary(
-          id: 'job-dgh-marketing',
-          title: 'Digital Marketing Assistant',
-          company: 'Digital Growth Hub',
-          companyInitials: 'DG',
-          skills: ['SEO', 'Social Media', 'Content Creation'],
-          employmentType: 'Full-time',
-          closingLabel: 'Closes 20 Jul',
-        ),
-      ],
-      featuredProgrammes: [
-        ProgrammeSummary(
-          id: 'prog-flutter-dev',
-          title: 'Flutter Mobile Development',
-          provider: 'TechNova Solutions',
-          duration: '3 months',
-          level: 'Beginner–Intermediate',
-          enrolled: 24,
-          capacity: 30,
-        ),
-        ProgrammeSummary(
-          id: 'prog-salesforce',
-          title: 'Salesforce Administration',
-          provider: 'FutureTech Africa',
-          duration: '3 months',
-          level: 'Beginner',
-          enrolled: 20,
-          capacity: 25,
-        ),
-        ProgrammeSummary(
-          id: 'prog-digital-marketing',
-          title: 'Digital Marketing Fundamentals',
-          provider: 'Digital Growth Hub',
-          duration: '2 months',
-          level: 'Beginner',
-          enrolled: 38,
-          capacity: 40,
-          status: ProgrammeStatus.startingSoon,
-        ),
-      ],
-    );
-  }
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();

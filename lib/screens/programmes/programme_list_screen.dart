@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/models/programme.dart';
-import '../../services/sheets_service.dart';
+import '../../services/public_data_service.dart';
 import '../../core/widgets/loading_overlay.dart';
 import '../../core/widgets/error_message.dart';
 import '../../core/widgets/empty_state.dart';
@@ -23,8 +23,6 @@ class ProgrammeListScreen extends StatefulWidget {
 }
 
 class _ProgrammeListScreenState extends State<ProgrammeListScreen> {
-  final SheetsService sheetsService = SheetsService();
-
   List<Programme> programmes = [];
   bool isLoading = true;
   bool hasError = false;
@@ -58,20 +56,30 @@ class _ProgrammeListScreenState extends State<ProgrammeListScreen> {
   /// DATA LOADING
   /// ─────────────────────────────────────────────────────────────
   Future<void> loadProgrammes() async {
-    setState(() {
-      isLoading = true;
-      hasError = false;
-    });
+    if (mounted) {
+      setState(() {
+        isLoading = true;
+        hasError = false;
+      });
+    }
 
-    await Future.delayed(const Duration(milliseconds: 500));
+    try {
+      final fetched = await PublicDataService.getProgrammes();
+      
+      if (!mounted) return;
 
-    // Use mockProgrammes from models/programme.dart
-    programmes = mockProgrammes;
-    lastUpdated = DateTime.now();
-
-    setState(() {
-      isLoading = false;
-    });
+      setState(() {
+        programmes = fetched;
+        lastUpdated = DateTime.now();
+        isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        isLoading = false;
+        hasError = true;
+      });
+    }
   }
 
   Future<void> _handleRefresh() async {

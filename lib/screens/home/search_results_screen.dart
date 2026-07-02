@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import '../../core/widgets/loading_overlay.dart';
 import '../../core/widgets/error_message.dart';
 import '../../core/widgets/empty_state.dart';
-import '../../services/sheets_service.dart';
-// import '../../theme/app_theme.dart';
+import '../../services/public_data_service.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
+import '../../models/programme.dart';
+import '../../models/staff_job_model.dart';
 
 
 class SearchResultsScreen extends StatefulWidget {
@@ -18,10 +19,9 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
   final TextEditingController searchController = TextEditingController();
   bool isLoading = false;
   bool hasError = false;
-  List programmes = [];
-  List opportunities = [];
-  List results = [];
-  final sheetsService = SheetsService();
+  List<Programme> programmes = [];
+  List<StaffJobModel> opportunities = [];
+  List<dynamic> results = [];
 
   @override
   void initState() {
@@ -43,8 +43,8 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
     });
 
     try {
-      programmes = await sheetsService.getProgrammes();
-      opportunities = await sheetsService.getOpportunities();
+      programmes = await PublicDataService.getProgrammes();
+      opportunities = await PublicDataService.getJobs();
       results = [...programmes, ...opportunities];
       setState(() {
         isLoading = false;
@@ -65,13 +65,12 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
         final lowerQuery = query.toLowerCase();
         results = [
           ...programmes.where((p) =>
-          (p['title']?.toString().toLowerCase().contains(lowerQuery) ?? false) ||
-              (p['description']?.toString().toLowerCase().contains(lowerQuery) ?? false)
+            p.title.toLowerCase().contains(lowerQuery) ||
+            p.description.toLowerCase().contains(lowerQuery)
           ),
           ...opportunities.where((o) =>
-          (o['title']?.toString().toLowerCase().contains(lowerQuery) ?? false) ||
-              (o['company']?.toString().toLowerCase().contains(lowerQuery) ?? false) ||
-              (o['description']?.toString().toLowerCase().contains(lowerQuery) ?? false)
+            o.positionTitle.toLowerCase().contains(lowerQuery) ||
+            (o.positionDescription?.toLowerCase().contains(lowerQuery) ?? false)
           ),
         ];
       }
@@ -212,22 +211,30 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
               itemCount: results.length,
               itemBuilder: (context, index) {
                 final item = results[index];
-                final String title = item['title']?.toString() ?? '';
-                final String company = item['company']?.toString() ?? '';
-                final String type = item['type']?.toString() ?? '';
-                final List tags = item['tags'] is List
-                    ? item['tags'] as List
-                    : (item['tags']?.toString().isNotEmpty == true
-                    ? [item['tags'].toString()]
-                    : []);
-                final String meta = item['location']?.toString() ?? '';
-                final String closes = item['closes']?.toString() ?? '';
-                final bool isOpen = item['status']?.toString().toLowerCase() == 'open' ||
-                    item['status'] == null;
+                
+                String title = '';
+                String subtitle = '';
+                String typeLabel = '';
+                bool isOpen = true;
+                List<String> tags = [];
+
+                if (item is Programme) {
+                  title = item.title;
+                  subtitle = item.provider;
+                  typeLabel = 'Programme';
+                  isOpen = item.status.toLowerCase() == 'open';
+                  tags = item.skills;
+                } else if (item is StaffJobModel) {
+                  title = item.positionTitle;
+                  subtitle = 'Job Opportunity';
+                  typeLabel = 'Job';
+                  isOpen = item.opportunityStatus.toLowerCase() == 'open';
+                  tags = item.requiredSkills ?? [];
+                }
 
                 return GestureDetector(
                   onTap: () {
-                    // NAV-004 handles navigation
+                    // Navigate to detail
                   },
                   child: Container(
                     margin: const EdgeInsets.fromLTRB(14, 0, 14, 9),
@@ -254,11 +261,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                               ),
                               alignment: Alignment.center,
                               child: Text(
-                                company.isNotEmpty
-                                    ? company.substring(0, company.length >= 2 ? 2 : 1).toUpperCase()
-                                    : title.isNotEmpty
-                                    ? title.substring(0, 1).toUpperCase()
-                                    : '?',
+                                title.isNotEmpty ? title[0].toUpperCase() : '?',
                                 style: const TextStyle(
                                   color: AppTheme.info,
                                   fontSize: 11,
@@ -267,7 +270,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                               ),
                             ),
                             const SizedBox(width: 9),
-                            // Title + company
+                            // Title + subtitle
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -280,11 +283,11 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
-                                  if (company.isNotEmpty)
+                                  if (subtitle.isNotEmpty)
                                     Padding(
                                       padding: const EdgeInsets.only(top: 1),
                                       child: Text(
-                                        company,
+                                        subtitle,
                                         style: const TextStyle(
                                           color: AppTheme.mutedText,
                                           fontSize: 10,
@@ -298,7 +301,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                               decoration: BoxDecoration(
-                                color: type.toLowerCase() == 'programme'
+                                color: item is Programme
                                     ? AppTheme.infoLow
                                     : isOpen
                                     ? AppTheme.successLow
@@ -306,13 +309,9 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                                 borderRadius: BorderRadius.circular(5),
                               ),
                               child: Text(
-                                type.toLowerCase() == 'programme'
-                                    ? 'Programme'
-                                    : isOpen
-                                    ? '● Open'
-                                    : '● Pending',
+                                typeLabel,
                                 style: TextStyle(
-                                  color: type.toLowerCase() == 'programme'
+                                  color: item is Programme
                                       ? AppTheme.info
                                       : isOpen
                                       ? AppTheme.success
@@ -341,7 +340,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                                     border: Border.all(color: AppTheme.border, width: 0.5),
                                   ),
                                   child: Text(
-                                    tag.toString(),
+                                    tag,
                                     style: const TextStyle(
                                       color: AppTheme.mutedText,
                                       fontSize: 9,
@@ -349,42 +348,6 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                                   ),
                                 );
                               }).toList(),
-                            ),
-                          ),
-
-                        // Meta row
-                        if (meta.isNotEmpty || closes.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 7),
-                            child: Row(
-                              children: [
-                                if (meta.isNotEmpty) ...[
-                                  const Icon(Icons.location_on_outlined,
-                                      size: 10, color: AppTheme.subtleText),
-                                  const SizedBox(width: 3),
-                                  Text(
-                                    meta,
-                                    style: const TextStyle(
-                                      color: AppTheme.subtleText,
-                                      fontSize: 9,
-                                    ),
-                                  ),
-                                ],
-                                if (meta.isNotEmpty && closes.isNotEmpty)
-                                  const SizedBox(width: 10),
-                                if (closes.isNotEmpty) ...[
-                                  const Icon(Icons.access_time_outlined,
-                                      size: 10, color: AppTheme.subtleText),
-                                  const SizedBox(width: 3),
-                                  Text(
-                                    'Closes $closes',
-                                    style: const TextStyle(
-                                      color: AppTheme.subtleText,
-                                      fontSize: 9,
-                                    ),
-                                  ),
-                                ],
-                              ],
                             ),
                           ),
                       ],

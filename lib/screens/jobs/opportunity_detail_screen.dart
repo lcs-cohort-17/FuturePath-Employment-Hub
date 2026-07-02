@@ -4,9 +4,8 @@
 // import 'opportunity_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
+import 'package:futurepath_employment_hub/models/opportunity.dart';
 import 'package:futurepath_employment_hub/screens/jobs/job_list_screen.dart';
-// You will also need to import your Opportunity model file here:
-// + //import 'package:futurepath_employment_hub/models/opportunity.dart';
 
 
 // ─── Public entry point ────────────────────────────────────────────────────

@@ -1,20 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../home/home_screen.dart';
 import '../programmes/programme_list_screen.dart';
 import '../jobs/job_list_screen.dart';
 import '../profile/profile_screen.dart';
-// import '../../theme.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
+import '../../providers/user_profile_provider.dart';
 
-class AppShell extends StatefulWidget {
+class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key});
 
   @override
-  State<AppShell> createState() => _AppShellState();
+  ConsumerState<AppShell> createState() => _AppShellState();
 }
 
-class _AppShellState extends State<AppShell> {
+class _AppShellState extends ConsumerState<AppShell> {
   int currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user != null) {
+      await ref.read(userProfileProvider.notifier).fetchProfile(user.id);
+    }
+  }
 
   final List<Widget> screens = const [
     HomeScreen(),

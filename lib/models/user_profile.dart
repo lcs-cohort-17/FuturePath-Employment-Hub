@@ -12,6 +12,9 @@ class UserProfile {
   final String email;
   final String? phone;
   final String? bio;
+  final String? idNumber; // Added
+  final String? dateOfBirth; // Added
+  final String? gender; // Added
   final List<String> skills;
   final List<Programme> completedProgrammes;
   final List<Programme> enrolledProgrammes;
@@ -31,6 +34,9 @@ class UserProfile {
     required this.email,
     this.phone,
     this.bio,
+    this.idNumber,
+    this.dateOfBirth,
+    this.gender,
     this.skills = const [],
     this.completedProgrammes = const [],
     this.enrolledProgrammes = const [],
@@ -51,6 +57,9 @@ class UserProfile {
     String? email,
     String? phone,
     String? bio,
+    String? idNumber,
+    String? dateOfBirth,
+    String? gender,
     List<String>? skills,
     List<Programme>? completedProgrammes,
     List<Programme>? enrolledProgrammes,
@@ -70,6 +79,9 @@ class UserProfile {
       email: email ?? this.email,
       phone: phone ?? this.phone,
       bio: bio ?? this.bio,
+      idNumber: idNumber ?? this.idNumber,
+      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+      gender: gender ?? this.gender,
       skills: skills ?? this.skills,
       completedProgrammes: completedProgrammes ?? this.completedProgrammes,
       enrolledProgrammes: enrolledProgrammes ?? this.enrolledProgrammes,
@@ -93,6 +105,9 @@ class UserProfile {
       email: json['email'] ?? '',
       phone: json['phone'],
       bio: json['bio'],
+      idNumber: json['idNumber'],
+      dateOfBirth: json['dateOfBirth'],
+      gender: json['gender'],
       skills: List<String>.from(json['skills'] ?? []),
       completedProgrammes: (json['completedProgrammes'] as List?)
           ?.map((e) => Programme.fromJson(e))
@@ -122,6 +137,9 @@ class UserProfile {
       'email': email,
       'phone': phone,
       'bio': bio,
+      'idNumber': idNumber,
+      'dateOfBirth': dateOfBirth,
+      'gender': gender,
       'skills': skills,
       'completedProgrammes': completedProgrammes.map((e) => e.toJson()).toList(),
       'enrolledProgrammes': enrolledProgrammes.map((e) => e.toJson()).toList(),

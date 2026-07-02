@@ -2,21 +2,37 @@
 // Placeholder staff shell with 5 bottom navigation tabs.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../providers/user_profile_provider.dart';
 import 'staff_dashboard.dart';
 import 'staff_manage_jobs.dart';
 import 'staff_manage_programmes.dart';
 import 'staff_content.dart';
 import 'staff_profile.dart';
 
-class StaffShell extends StatefulWidget {
+class StaffShell extends ConsumerStatefulWidget {
   const StaffShell({super.key});
 
   @override
-  State<StaffShell> createState() => _StaffShellState();
+  ConsumerState<StaffShell> createState() => _StaffShellState();
 }
 
-class _StaffShellState extends State<StaffShell> {
+class _StaffShellState extends ConsumerState<StaffShell> {
   int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user != null) {
+      await ref.read(userProfileProvider.notifier).fetchProfile(user.id);
+    }
+  }
 
   static const List<Widget> _screens = [
     StaffDashboard(),

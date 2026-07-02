@@ -1,12 +1,44 @@
-// lib/services/user_profile_service.dart
-
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../models/user_profile.dart';
 import '../core/errors/delete_account_error.dart';
 
 /// Service responsible for user profile operations.
-///
-/// INT-013 — replace the mock [deleteUserAccount] stub with real
-/// Supabase calls when that ticket is implemented.
 class UserProfileService {
+  final _supabase = Supabase.instance.client;
+
+  /// Fetches the user profile from the 'Applicant' table.
+  Future<UserProfile?> fetchUserProfile(String userId) async {
+    try {
+      final data = await _supabase
+          .from('Applicant')
+          .select()
+          .eq('user_id', userId)
+          .maybeSingle();
+
+      if (data == null) return null;
+
+      return UserProfile(
+        id: data['id']?.toString() ?? '', // bigint ID as String
+        userId: data['user_id'], // UUID
+        name: '${data['First_Name'] ?? ''} ${data['Last_Name'] ?? ''}'.trim(),
+        displayName: '${data['First_Name'] ?? ''} ${data['Last_Name'] ?? ''}'.trim(),
+        location: data['Residential_Area'] ?? '',
+        employmentStatus: data['Current_Employment_Status'] ?? 'Unemployed',
+        isHired: false,
+        email: data['Email'] ?? '',
+        phone: data['contact_number'] ?? '',
+        idNumber: data['id_number'] ?? '',
+        dateOfBirth: data['Date_Of_Birth'] ?? '',
+        gender: data['Gender'] ?? '',
+        education: data['Highest_Qualification'] ?? '',
+        skills: List<String>.from(data['Skills'] ?? []),
+      );
+    } catch (e) {
+      print('❌ Error fetching user profile: $e');
+      return null;
+    }
+  }
+
   /// Permanently deletes the user's applicant record, all related data
   /// (applications, enrolments — cascade handled by DB foreign keys), and
   /// finally removes the Supabase Auth user.

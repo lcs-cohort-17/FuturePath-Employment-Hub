@@ -142,7 +142,7 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
           ),
           Stack(
             children: [
-              Icon(Icons.notifications_none, color: AppTheme.mutedText, size: 18),
+              const Icon(Icons.notifications_none, color: AppTheme.mutedText, size: 18),
               Positioned(
                 top: 0,
                 right: 0,
@@ -185,7 +185,6 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // [UIUX-PRIV-002] Avatar with initials — only visible to authenticated user on their own profile
                   Container(
                     width: 56,
                     height: 56,
@@ -205,7 +204,6 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  // [UIUX-PRIV-002] Name — only visible to authenticated user on their own profile
                   Text(
                     widget.userProfile.name,
                     style: const TextStyle(
@@ -216,12 +214,12 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                   ),
                   const SizedBox(height: 2),
                   Row(
-                    children: const [
-                      Icon(Icons.location_on_outlined, size: 11, color: AppTheme.mutedText),
-                      SizedBox(width: 4),
+                    children: [
+                      const Icon(Icons.location_on_outlined, size: 11, color: AppTheme.mutedText),
+                      const SizedBox(width: 4),
                       Text(
-                        'Cape Town, Western Cape',
-                        style: TextStyle(
+                        widget.userProfile.location.isNotEmpty ? widget.userProfile.location : 'Location not set',
+                        style: const TextStyle(
                           fontSize: 11,
                           color: AppTheme.mutedText,
                         ),
@@ -341,7 +339,6 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
   }
 
   Widget _buildContactIdentityBlock() {
-    // [UIUX-PRIV-002] Personal data — only visible to the authenticated user on their own profile
     return Container(
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 10),
       padding: const EdgeInsets.all(13),
@@ -369,7 +366,7 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                 child: _buildInfoCell('EMAIL', widget.userProfile.email),
               ),
               Expanded(
-                child: _buildInfoCell('PHONE', '071 234 5678'),
+                child: _buildInfoCell('PHONE', widget.userProfile.phone?.isNotEmpty == true ? widget.userProfile.phone! : 'Not provided'),
               ),
             ],
           ),
@@ -377,14 +374,14 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
           Row(
             children: [
               Expanded(
-                child: _buildInfoCell('ID NUMBER', '000101•••083'),
+                child: _buildInfoCell('ID NUMBER', widget.userProfile.idNumber?.isNotEmpty == true ? _maskId(widget.userProfile.idNumber!) : 'Not provided'),
               ),
               Expanded(
                 child: _buildInfoCell(
                   'QUALIFICATION',
                   widget.userProfile.education?.isNotEmpty == true
                       ? widget.userProfile.education!
-                      : 'Matric / NSC',
+                      : 'Not provided',
                 ),
               ),
             ],
@@ -392,6 +389,11 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
         ],
       ),
     );
+  }
+
+  String _maskId(String id) {
+    if (id.length < 10) return id;
+    return '${id.substring(0, 6)}•••••${id.substring(id.length - 3)}';
   }
 
   Widget _buildInfoCell(String label, String value) {
@@ -618,7 +620,6 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
   Widget _buildSignOutButton() {
     return Column(
       children: [
-        // ── Sign Out ────────────────────────────────────────────────────────
         GestureDetector(
           onTap: widget.onSignOut,
           child: Container(
@@ -648,8 +649,6 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
             ),
           ),
         ),
-
-        // ── Delete Account ──────────────────────────────────────────────────
         GestureDetector(
           onTap: () => _handleDeleteAccount(widget.ref),
           child: Container(
@@ -680,8 +679,6 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
             ),
           ),
         ),
-
-        // ── POPIA footnote ──────────────────────────────────────────────────
         Padding(
           padding: const EdgeInsets.fromLTRB(14, 0, 14, 4),
           child: Row(
@@ -691,8 +688,7 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
               SizedBox(width: 5),
               Expanded(
                 child: Text(
-                  'Deleting your account permanently removes all personal '
-                      'data in accordance with POPIA.',
+                  'Deleting your account permanently removes all personal data in accordance with POPIA.',
                   style: TextStyle(
                     fontSize: 9,
                     color: AppTheme.subtleText,
@@ -711,9 +707,13 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
     final confirmed = await showDeleteAccountDialog(context);
     if (!confirmed || !mounted) return;
 
-    // INT-013 — replace 'mock-user-id' with real userId from auth state,
-    // e.g. Supabase.instance.client.auth.currentUser?.id
-    const String userId = 'mock-user-id';
+    final String? userId = widget.userProfile.userId;
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error: User ID not found.')),
+      );
+      return;
+    }
 
     final notifier = ref.read(userProfileProvider.notifier);
     final success = await notifier.deleteAccount(userId);
@@ -740,10 +740,11 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
   }
 
   String _getInitials(String name) {
+    if (name.isEmpty) return '?';
     final names = name.split(' ');
     if (names.length >= 2) {
       return '${names[0][0]}${names[1][0]}'.toUpperCase();
     }
-    return name.substring(0, 2).toUpperCase();
+    return name[0].toUpperCase();
   }
 }

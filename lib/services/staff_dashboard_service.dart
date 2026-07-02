@@ -29,7 +29,7 @@ class StaffDashboardService {
 
       // Get applications (for jobs created by this staff)
       final applications = await _supabase
-          .from('job_applications')
+          .from('Job_Applications')
           .select('*, "Employment Opportunity"!inner(Created_By)')
           .eq('"Employment Opportunity".Created_By', userId);
 
@@ -37,12 +37,12 @@ class StaffDashboardService {
 
       // Get enrollments (for programmes created by this staff)
       final enrollments = await _supabase
-          .from('programme_enrollments')
+          .from('Programme_Enrolments')
           .select('*, "Training Programme"!inner(created_by)')
           .eq('"Training Programme".created_by', userId);
 
       final totalEnrollments = enrollments.length;
-      final completed = enrollments.where((e) => e['enrolment_status'] == 'completed').length;
+      final completed = enrollments.where((e) => e['Enrolment_Status'] == 'completed').length;
       final completionRate = totalEnrollments > 0
           ? (completed / totalEnrollments * 100).round()
           : 0;

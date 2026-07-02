@@ -12,12 +12,12 @@ class StaffApplicationService {
   static Future<List<StaffApplicationModel>> getStaffApplications(String staffId) async {
     try {
       final response = await _supabase
-          .from('job_applications')
+          .from('Job_Applications')
           .select(
           '''
-            job_application_id,
-            application_status,
-            application_date,
+            Job_Application_id,
+            Application_Status,
+            Application_Date,
             "Employment Opportunity"!inner (
               opportunity_id,
               Position_Title,
@@ -31,13 +31,13 @@ class StaffApplicationService {
             '''
       )
           .eq('"Employment Opportunity".Created_By', staffId)
-          .order('application_date', ascending: false);
+          .order('Application_Date', ascending: false);
 
       return List<StaffApplicationModel>.from(
           response.map((app) => StaffApplicationModel.fromJson({
-            'id': app['job_application_id'],
-            'status': app['application_status'],
-            'applied_at': app['application_date'],
+            'id': app['Job_Application_id'],
+            'status': app['Application_Status'],
+            'applied_at': app['Application_Date'],
             'cv_url': null, // cv_url not in schema?
             'applicant_id': app['Applicant']['id'].toString(),
             'highest_qualification': app['Applicant']['Highest_Qualification'],
@@ -54,9 +54,9 @@ class StaffApplicationService {
   static Future<void> updateApplicationStatus(String applicationId, String status) async {
     try {
       await _supabase
-          .from('job_applications')
-          .update({'application_status': status})
-          .eq('job_application_id', applicationId);
+          .from('Job_Applications')
+          .update({'Application_Status': status})
+          .eq('Job_Application_id', applicationId);
       print('✅ Application status updated: $status');
     } catch (e) {
       print('❌ Error updating application status: $e');
