@@ -8,6 +8,11 @@ import '../profile/profile_screen.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 
 class AppShell extends StatefulWidget {
+  static const int homeTabIndex = 0;
+  static const int programmesTabIndex = 1;
+  static const int jobsTabIndex = 2;
+  static const int profileTabIndex = 3;
+
   const AppShell({super.key});
 
   @override
@@ -37,7 +42,8 @@ class _AppShellState extends State<AppShell> {
         AppRouter.jobs: 2,
         AppRouter.profile: 3,
       };
-      if (currentRouteName != null && routeIndices.containsKey(currentRouteName)) {
+      if (currentRouteName != null &&
+          routeIndices.containsKey(currentRouteName)) {
         currentIndex = routeIndices[currentRouteName]!;
       }
     }
@@ -50,12 +56,7 @@ class _AppShellState extends State<AppShell> {
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           color: AppTheme.surface,
-          border: Border(
-            top: BorderSide(
-              color: AppTheme.border,
-              width: 0.5,
-            ),
-          ),
+          border: Border(top: BorderSide(color: AppTheme.border, width: 0.5)),
         ),
         child: BottomNavigationBar(
           currentIndex: currentIndex,

@@ -1,15 +1,24 @@
-//notifications_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import '../../providers/notifications_provider.dart';
+import '../../router/app_router.dart';
+import '../../services/notification_navigation_service.dart';
+import '../shell/main_shell.dart';
 
 class NotificationsScreen extends ConsumerStatefulWidget {
   final List<Map<String, dynamic>> notifications;
-  const NotificationsScreen({super.key, required this.notifications});
+  final int fromTabIndex;
+
+  const NotificationsScreen({
+    super.key,
+    required this.notifications,
+    this.fromTabIndex = AppShell.profileTabIndex,
+  });
 
   @override
-  ConsumerState<NotificationsScreen> createState() => _NotificationsScreenState();
+  ConsumerState<NotificationsScreen> createState() =>
+      _NotificationsScreenState();
 }
 
 class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
@@ -36,6 +45,37 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     });
   }
 
+  void _showError(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _navigateNotification(Map<String, dynamic> item) {
+    final target = NotificationNavigationResolver.resolve(item);
+    if (target == null) {
+      _showError('Unable to open this notification.');
+      return;
+    }
+
+    Navigator.of(context).pop();
+
+    switch (target.kind) {
+      case NotificationTargetKind.programme:
+        Navigator.of(
+          context,
+          rootNavigator: true,
+        ).pushNamed(AppRouter.programmes);
+        break;
+      case NotificationTargetKind.job:
+        Navigator.of(context, rootNavigator: true).pushNamed(AppRouter.jobs);
+        break;
+      case NotificationTargetKind.application:
+        Navigator.of(context, rootNavigator: true).pushNamed(AppRouter.profile);
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final unread = _localNotifications.where((n) => !n['isRead']).toList();
@@ -48,7 +88,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         elevation: 0,
         toolbarHeight: 52,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.textDark, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_rounded,
+            color: AppTheme.textDark,
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Row(
@@ -61,12 +105,23 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 borderRadius: BorderRadius.circular(7),
               ),
               alignment: Alignment.center,
-              child: const Text('FP', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)),
+              child: const Text(
+                'FP',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
             const SizedBox(width: 7),
             const Text(
               'Notifications',
-              style: TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w700, fontSize: 14),
+              style: TextStyle(
+                color: AppTheme.textDark,
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+              ),
             ),
           ],
         ),
@@ -78,7 +133,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 onPressed: () => _toggleRead({}, all: true),
                 child: const Text(
                   'Mark all read',
-                  style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w700, fontSize: 11),
+                  style: TextStyle(
+                    color: AppTheme.primary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 11,
+                  ),
                 ),
               ),
             ),
@@ -87,7 +146,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                const Icon(Icons.notifications_outlined, color: AppTheme.mutedText, size: 20),
+                const Icon(
+                  Icons.notifications_outlined,
+                  color: AppTheme.mutedText,
+                  size: 20,
+                ),
                 if (unread.isNotEmpty)
                   Positioned(
                     top: 8,
@@ -95,11 +158,18 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     child: Container(
                       width: 13,
                       height: 13,
-                      decoration: const BoxDecoration(color: AppTheme.primary, shape: BoxShape.circle),
+                      decoration: const BoxDecoration(
+                        color: AppTheme.primary,
+                        shape: BoxShape.circle,
+                      ),
                       alignment: Alignment.center,
                       child: Text(
                         '${unread.length}',
-                        style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w700),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ),
@@ -115,19 +185,19 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       body: _localNotifications.isEmpty
           ? _buildEmptyState()
           : ListView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.only(bottom: 40),
-        children: [
-          if (unread.isNotEmpty) ...[
-            _buildSectionHeader('NEW ALERTS', AppTheme.primary),
-            ..._buildItems(unread, 'un'),
-          ],
-          if (read.isNotEmpty) ...[
-            _buildSectionHeader('EARLIER', AppTheme.mutedText),
-            ..._buildItems(read, 'r'),
-          ],
-        ],
-      ),
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.only(bottom: 40),
+              children: [
+                if (unread.isNotEmpty) ...[
+                  _buildSectionHeader('NEW ALERTS', AppTheme.primary),
+                  ..._buildItems(unread, 'un'),
+                ],
+                if (read.isNotEmpty) ...[
+                  _buildSectionHeader('EARLIER', AppTheme.mutedText),
+                  ..._buildItems(read, 'r'),
+                ],
+              ],
+            ),
     );
   }
 
@@ -200,7 +270,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                           child: Text(
                             item['title'] ?? '',
                             style: TextStyle(
-                              fontWeight: isUnread ? FontWeight.w700 : FontWeight.w600,
+                              fontWeight: isUnread
+                                  ? FontWeight.w700
+                                  : FontWeight.w600,
                               color: AppTheme.textDark,
                               fontSize: 11,
                             ),
@@ -210,32 +282,56 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                           Container(
                             width: 7,
                             height: 7,
-                            decoration: const BoxDecoration(color: AppTheme.primary, shape: BoxShape.circle),
+                            decoration: const BoxDecoration(
+                              color: AppTheme.primary,
+                              shape: BoxShape.circle,
+                            ),
                           ),
                       ],
                     ),
                     const SizedBox(height: 2),
                     GestureDetector(
-                      onTap: () => setState(() => isExpanded ? _expandedIds.remove(id) : _expandedIds.add(id)),
+                      onTap: () => setState(() {
+                        if (isExpanded) {
+                          _expandedIds.remove(id);
+                        } else {
+                          _expandedIds.add(id);
+                        }
+                      }),
                       child: RichText(
                         text: TextSpan(
-                          style: const TextStyle(color: AppTheme.mutedText, fontSize: 10, height: 1.4),
+                          style: const TextStyle(
+                            color: AppTheme.mutedText,
+                            fontSize: 10,
+                            height: 1.4,
+                          ),
                           children: [
                             TextSpan(text: item['body'] ?? ''),
                             TextSpan(
-                              text: isExpanded ? '  Show Less' : ' ... Show More',
-                              style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w700, fontSize: 9),
+                              text: isExpanded
+                                  ? '  Show Less'
+                                  : ' ... Show More',
+                              style: const TextStyle(
+                                color: AppTheme.primary,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 9,
+                              ),
                             ),
                           ],
                         ),
                         maxLines: isExpanded ? null : 2,
-                        overflow: isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+                        overflow: isExpanded
+                            ? TextOverflow.visible
+                            : TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       item['timestamp'] ?? '',
-                      style: const TextStyle(color: AppTheme.subtleText, fontSize: 9),
+                      style: const TextStyle(
+                        color: AppTheme.subtleText,
+                        fontSize: 9,
+                      ),
                     ),
                   ],
                 ),
@@ -245,13 +341,6 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         ),
       );
     });
-  }
-
-  IconData _getIcon(String type) {
-    if (type.contains('Accepted')) return Icons.verified_rounded;
-    if (type.contains('Update')) return Icons.rate_review_rounded;
-    if (type.contains('Submitted')) return Icons.assignment_turned_in_rounded;
-    return Icons.notifications_rounded;
   }
 
   Widget _buildEmptyState() {
@@ -267,12 +356,20 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: const Icon(Icons.notifications_none_rounded, size: 32, color: AppTheme.mutedText),
+            child: const Icon(
+              Icons.notifications_none_rounded,
+              size: 32,
+              color: AppTheme.mutedText,
+            ),
           ),
           const SizedBox(height: 16),
           const Text(
             'All Caught Up!',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.textDark),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.textDark,
+            ),
           ),
           const SizedBox(height: 8),
           const Text(
@@ -283,5 +380,12 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         ],
       ),
     );
+  }
+
+  IconData _getIcon(String type) {
+    if (type.contains('Accepted')) return Icons.verified_rounded;
+    if (type.contains('Update')) return Icons.rate_review_rounded;
+    if (type.contains('Submitted')) return Icons.assignment_turned_in_rounded;
+    return Icons.notifications_rounded;
   }
 }
