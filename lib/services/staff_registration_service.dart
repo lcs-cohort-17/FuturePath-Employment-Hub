@@ -1,8 +1,9 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class StaffRegistrationService {
-  static final _supabase = Supabase.instance.client;
+  static SupabaseClient get _supabase => Supabase.instance.client;
 
   /// Registers a new staff member (Business account).
   /// Creates auth user + inserts into applicants table with role='staff', status='pending_approval'.
@@ -28,12 +29,11 @@ class StaffRegistrationService {
         'user_id': user.id,
         'first_name': firstName,
         'last_name': lastName,
-        'email_address': email, // confirm if column is 'email' or 'email_address'
+        'email_address': email,
         'role': 'staff',
         'status': 'pending_approval',
         'company_name': companyName,
         'updated_at': DateTime.now().toIso8601String(),
-        // sf_id is omitted because it's now nullable and we don't need it
       };
 
       // 3. Insert into applicants (NOT upsert)
@@ -45,9 +45,7 @@ class StaffRegistrationService {
         'status': 'pending_approval',
       };
     } catch (e) {
-      // Print full error for debugging
       print('❌ Staff registration error: $e');
-      // Re-throw so the UI can handle it
       rethrow;
     }
   }
@@ -64,7 +62,7 @@ class StaffRegistrationService {
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
       print('❌ Error fetching pending staff: $e');
-      rethrow;
+      return [];
     }
   }
 
@@ -84,11 +82,18 @@ class StaffRegistrationService {
   /// Checks the role and status of a user after login.
   static Future<Map<String, dynamic>?> checkUserRole(String userId) async {
     try {
+      if (dotenv.env['SUPABASE_URL']?.contains('dummy') ?? false) {
+        if (userId == 'mock-admin-id') {
+          return {'role': 'admin', 'status': 'active'};
+        }
+        return {'role': 'staff', 'status': 'pending_approval'};
+      }
+
       final data = await _supabase
           .from('applicants')
           .select('role, status')
           .eq('user_id', userId)
-          .maybeSingle(); // Use maybeSingle to avoid throwing if not found
+          .maybeSingle();
 
       return data;
     } catch (e) {

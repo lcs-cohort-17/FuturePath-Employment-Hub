@@ -2,6 +2,8 @@
 // Placeholder staff shell with 5 bottom navigation tabs.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../../router/app_router.dart';
 import 'staff_dashboard.dart';
 import 'staff_manage_jobs.dart';
 import 'staff_manage_programmes.dart';
@@ -17,6 +19,7 @@ class StaffShell extends StatefulWidget {
 
 class _StaffShellState extends State<StaffShell> {
   int _selectedIndex = 0;
+  bool _isInit = true;
 
   static const List<Widget> _screens = [
     StaffDashboard(),
@@ -43,6 +46,25 @@ class _StaffShellState extends State<StaffShell> {
   ];
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isInit) {
+      _isInit = false;
+      final currentRouteName = ModalRoute.of(context)?.settings.name;
+      final routeIndices = {
+        AppRouter.staffDashboard: 0,
+        AppRouter.staffJobs: 1,
+        AppRouter.staffProgrammes: 2,
+        AppRouter.staffContent: 3,
+        AppRouter.staffProfile: 4,
+      };
+      if (currentRouteName != null && routeIndices.containsKey(currentRouteName)) {
+        _selectedIndex = routeIndices[currentRouteName]!;
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _screens[_selectedIndex],
@@ -52,6 +74,14 @@ class _StaffShellState extends State<StaffShell> {
           setState(() {
             _selectedIndex = index;
           });
+          final paths = [
+            AppRouter.staffDashboard,
+            AppRouter.staffJobs,
+            AppRouter.staffProgrammes,
+            AppRouter.staffContent,
+            AppRouter.staffProfile,
+          ];
+          SystemNavigator.routeInformationUpdated(location: paths[index]);
         },
         type: BottomNavigationBarType.fixed,
         items: List.generate(5, (index) {

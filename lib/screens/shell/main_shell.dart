@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../../router/app_router.dart';
 import '../home/home_screen.dart';
 import '../programmes/programme_list_screen.dart';
 import '../jobs/job_list_screen.dart';
 import '../profile/profile_screen.dart';
-// import '../../theme.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 
 class AppShell extends StatefulWidget {
@@ -15,6 +16,7 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   int currentIndex = 0;
+  bool _isInit = true;
 
   final List<Widget> screens = const [
     HomeScreen(),
@@ -22,6 +24,24 @@ class _AppShellState extends State<AppShell> {
     OpportunityListScreen(),
     ProfileScreen(),
   ];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isInit) {
+      _isInit = false;
+      final currentRouteName = ModalRoute.of(context)?.settings.name;
+      final routeIndices = {
+        AppRouter.home: 0,
+        AppRouter.programmes: 1,
+        AppRouter.jobs: 2,
+        AppRouter.profile: 3,
+      };
+      if (currentRouteName != null && routeIndices.containsKey(currentRouteName)) {
+        currentIndex = routeIndices[currentRouteName]!;
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +71,13 @@ class _AppShellState extends State<AppShell> {
             setState(() {
               currentIndex = index;
             });
+            final paths = [
+              AppRouter.home,
+              AppRouter.programmes,
+              AppRouter.jobs,
+              AppRouter.profile,
+            ];
+            SystemNavigator.routeInformationUpdated(location: paths[index]);
           },
           items: const [
             BottomNavigationBarItem(
