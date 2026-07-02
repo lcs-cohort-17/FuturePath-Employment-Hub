@@ -1,15 +1,13 @@
-// ✅ No PII — only af_id + qualification
-// Staff sees anonymous applicant data only.
+// lib/services/staff_application_service.dart
+// ✅ Updated to fetch CV URL and anonymised applicant data
 
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/staff_application_model.dart';
+import '../models/job_application_model.dart';
 
 class StaffApplicationService {
   static final _supabase = Supabase.instance.client;
 
-  // Returns applications for jobs created by this staff member.
-  // ⚠️ Only af_id and highest_qualification are fetched — no names/emails/phones.
-  static Future<List<StaffApplicationModel>> getStaffApplications(String staffId) async {
+  static Future<List<Map<String, dynamic>>> getStaffApplications(String staffId) async {
     try {
       final response = await _supabase
           .from('Job_Applications')
@@ -18,11 +16,12 @@ class StaffApplicationService {
             Job_Application_id,
             Application_Status,
             Application_Date,
-            "Employment Opportunity"!inner (
+            cv_url,
+            consent_given,
+            Employment_Opportunity!inner (
               opportunity_id,
               Position_Title,
-              Created_By,
-              employer_id
+              Created_By
             ),
             Applicant!inner (
               id,
@@ -30,21 +29,10 @@ class StaffApplicationService {
             )
             '''
       )
-          .eq('"Employment Opportunity".Created_By', staffId)
+          .eq('Employment_Opportunity.Created_By', staffId)
           .order('Application_Date', ascending: false);
 
-      return List<StaffApplicationModel>.from(
-          response.map((app) => StaffApplicationModel.fromJson({
-            'id': app['Job_Application_id'],
-            'status': app['Application_Status'],
-            'applied_at': app['Application_Date'],
-            'cv_url': null, // cv_url not in schema?
-            'applicant_id': app['Applicant']['id'].toString(),
-            'highest_qualification': app['Applicant']['Highest_Qualification'],
-            'position_title': app['Employment Opportunity']['Position_Title'],
-            'company_name': 'N/A', // Would need Employer join
-          }))
-      );
+      return List<Map<String, dynamic>>.from(response);
     } catch (e) {
       print('❌ Error fetching staff applications: $e');
       rethrow;
