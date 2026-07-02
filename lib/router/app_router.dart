@@ -8,15 +8,15 @@ import '../screens/admin/admin_employers_screen.dart';
 import '../screens/admin/admin_job_applications_screen.dart';
 import '../screens/admin/admin_applicants_screen.dart';
 import '../screens/admin/admin_enrolments_screen.dart';
-import '../screens/shell/admin_shell.dart';
 import '../screens/admin/admin_activity_screen.dart';
+import '../screens/auth/admin_login_screen.dart';
+import '../screens/auth/staff_registration_screen.dart';
+import '../screens/admin/admin_staff_mgmt_screen.dart';
 import '../screens/admin/admin_programmes_screen.dart';
 import '../screens/admin/admin_profile_screen.dart';
 import '../screens/profile/notifications_screen.dart';
 import '../providers/notifications_provider.dart';
-import '../screens/auth/admin_login_screen.dart';
-import '../screens/auth/staff_registration_screen.dart';
-import '../screens/admin/admin_staff_mgmt_screen.dart';
+import '../screens/shell/admin_shell.dart';
 // Staff imports
 import '../screens/staff/staff_shell.dart';
 import '../screens/staff/staff_add_job.dart';
@@ -122,6 +122,7 @@ class AppRouter {
           builder: (_) => const AdminEmployersScreen(),
           settings: settings,
         );
+
       case adminApplicants:
         return MaterialPageRoute(
           builder: (_) => const AdminApplicantsScreen(),
@@ -157,6 +158,7 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => const AdminProfileScreen(),
         );
+
       case staffAddJob:
         return MaterialPageRoute(
           builder: (_) => const StaffAddJobScreen(),
@@ -179,6 +181,7 @@ class AppRouter {
           builder: (_) => StaffEditProgrammeScreen(programme: programme),
           settings: settings,
         );
+
       default:
         return MaterialPageRoute(
           builder: (_) => const LoginScreen(),
@@ -187,3 +190,4 @@ class AppRouter {
     }
   }
 }
+
