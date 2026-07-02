@@ -118,7 +118,7 @@ class _AdminApplicantsScreenState extends State<AdminApplicantsScreen> {
     });
     try {
       final response = await _supabase
-          .from('applicants')
+          .from('Applicant')
           .select()
           .eq('role', 'job_seeker'); // Only fetch job seekers
 
