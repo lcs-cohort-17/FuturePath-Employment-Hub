@@ -38,30 +38,30 @@ class RegistrationService {
     // 3. Build the payload matching the schema image columns exactly
     final applicantData = {
       'user_id': user.id,
-      'first_name': firstName,
-      'last_name': lastName,
+      'First_Name': firstName,
+      'Last_Name': lastName,
       'id_number': idNumber,
-      'date_of_birth': formattedDate,
-      'gender': gender,
-      'email_address': email,
-      'residential_area': residentialArea,
-      'highest_qualification': highestQualification,
-      'current_employment_status': employmentStatus,
-      'skills': skills, // ✅ FIXED: Pass List<String> directly — Supabase converts to array
+      'Date_Of_Birth': formattedDate,
+      'Gender': gender,
+      'Email': email,
+      'Residential_Area': residentialArea,
+      'Highest_Qualification': highestQualification,
+      'Current_Employment_Status': employmentStatus,
+      'Skills': skills, // ✅ FIXED: Pass List<String> directly — Supabase converts to array
       'role': 'applicant',
       'updated_at': DateTime.now().toIso8601String(),
     };
 
     // 4. Use upsert to prevent duplicate errors if registration is retried
     await _supabase
-        .from('applicants')
+        .from('Applicant')
         .upsert(applicantData, onConflict: 'user_id');
   }
 
   /// Helper fetch method to read applicant profiles out of your database instance table
   static Future<List<Map<String, dynamic>>> getApplicants() async {
     final response = await _supabase
-        .from('applicants')
+        .from('Applicant')
         .select();
     return List<Map<String, dynamic>>.from(response);
   }

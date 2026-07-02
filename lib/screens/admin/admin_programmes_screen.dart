@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/loading_indicator.dart';
+import '../../core/widgets/error_message.dart';
+import '../../core/widgets/empty_state.dart';
 import '../../router/app_router.dart';
 import '../../models/programme.dart';
 
-/// Admin screen to view and manage all programmes.
-/// [UIUX-017 / UIUX-021]
 class AdminProgrammesScreen extends StatefulWidget {
   const AdminProgrammesScreen({super.key});
 
@@ -16,14 +17,15 @@ class AdminProgrammesScreen extends StatefulWidget {
 class _AdminProgrammesScreenState extends State<AdminProgrammesScreen> {
   final _supabase = Supabase.instance.client;
   List<Programme> _programmes = [];
-  bool _loading = true;
+  bool _isLoading = true;
+  String? _error;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _load();
+    _loadProgrammes();
   }
 
   @override
@@ -32,18 +34,28 @@ class _AdminProgrammesScreenState extends State<AdminProgrammesScreen> {
     super.dispose();
   }
 
-  Future<void> _load() async {
-    setState(() => _loading = true);
+  Future<void> _loadProgrammes() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
     try {
-      final response = await _supabase.from('opportunities').select().eq('category', 'Programme');
+      // Fetching from 'Training Programme'
+      final response = await _supabase
+          .from('Training Programme')
+          .select();
+
       final data = List<Map<String, dynamic>>.from(response);
       setState(() {
         _programmes = data.map((m) => Programme.fromJson(m)).toList();
-        _loading = false;
+        _isLoading = false;
       });
     } catch (e) {
-      print('❌ Error loading programmes: $e');
-      setState(() => _loading = false);
+      print('❌ Error loading admin programmes: $e');
+      setState(() {
+        _error = 'Failed to load programmes. Please try again.';
+        _isLoading = false;
+      });
     }
   }
 
@@ -56,18 +68,6 @@ class _AdminProgrammesScreenState extends State<AdminProgrammesScreen> {
         .toList();
   }
 
-  void _navigateToEnrolments(Programme programme) {
-    // [UIUX-021] — Navigate to enrolments for this programme
-    Navigator.pushNamed(
-      context,
-      AppRouter.adminEnrolments,
-      arguments: {
-        'programmeId': programme.id,
-        'programmeName': programme.title,
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -78,7 +78,11 @@ class _AdminProgrammesScreenState extends State<AdminProgrammesScreen> {
             _buildTopBar(),
             _buildSearchBar(),
             Expanded(
-              child: _buildList(),
+              child: _isLoading
+                  ? const Center(child: LoadingIndicator(color: AppTheme.primary))
+                  : _error != null
+                      ? ErrorMessage(message: _error!, onRetry: _loadProgrammes)
+                      : _buildList(),
             ),
           ],
         ),
@@ -124,6 +128,13 @@ class _AdminProgrammesScreenState extends State<AdminProgrammesScreen> {
             ),
           ),
           const Spacer(),
+          IconButton(
+            icon: const Icon(Icons.refresh, color: AppTheme.mutedText, size: 18),
+            onPressed: _loadProgrammes,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+          const SizedBox(width: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
@@ -176,23 +187,14 @@ class _AdminProgrammesScreenState extends State<AdminProgrammesScreen> {
   Widget _buildList() {
     final list = _filteredProgrammes;
     if (list.isEmpty) {
-      return const Center(
-        child: Text(
-          'No programmes found.',
-          style: TextStyle(color: AppTheme.mutedText, fontSize: 13),
-        ),
-      );
+      return const EmptyState(message: 'No programmes found.');
     }
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       itemCount: list.length,
       itemBuilder: (context, index) {
-        final p = list[index];
-        return _AdminProgrammeCard(
-          programme: p,
-          onTap: () => _navigateToEnrolments(p),
-        );
+        return _AdminProgrammeCard(programme: list[index]);
       },
     );
   }
@@ -200,20 +202,28 @@ class _AdminProgrammesScreenState extends State<AdminProgrammesScreen> {
 
 class _AdminProgrammeCard extends StatelessWidget {
   final Programme programme;
-  final VoidCallback onTap;
 
-  const _AdminProgrammeCard({required this.programme, required this.onTap});
+  const _AdminProgrammeCard({required this.programme});
 
   @override
   Widget build(BuildContext context) {
-    final progress = programme.capacity == 0
-        ? 0.0
-        : programme.enrolledCount / programme.capacity;
+    final progress = programme.capacity > 0
+        ? (programme.enrolledCount / programme.capacity).clamp(0.0, 1.0)
+        : 0.0;
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        Navigator.pushNamed(
+          context,
+          AppRouter.adminEnrolments,
+          arguments: {
+            'programmeId': programme.id,
+            'programmeName': programme.title,
+          },
+        );
+      },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
+        margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(13),
         decoration: BoxDecoration(
           color: AppTheme.surface2,
@@ -249,7 +259,7 @@ class _AdminProgrammeCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right, size: 16, color: AppTheme.mutedText),
+                const Icon(Icons.chevron_right_rounded, color: AppTheme.subtleText, size: 18),
               ],
             ),
             const SizedBox(height: 12),
@@ -272,7 +282,7 @@ class _AdminProgrammeCard extends StatelessWidget {
                   value: programme.status.toUpperCase(),
                   color: programme.status.toLowerCase() == 'open'
                       ? AppTheme.success
-                      : AppTheme.mutedText,
+                      : AppTheme.warning,
                 ),
               ],
             ),

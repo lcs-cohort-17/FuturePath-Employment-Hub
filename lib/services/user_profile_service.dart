@@ -15,7 +15,7 @@ class UserProfileService {
   /// present a categorised error to the user.
   ///
   /// INT-013 — replace this mock with real Supabase calls:
-  ///   1. await supabase.from('applicants').delete().eq('id', userId);
+  ///   1. await supabase.from('Applicant').delete().eq('id', userId);
   ///   2. Use a Supabase Edge Function to call the Admin API and delete
   ///      the auth user server-side.
   Future<void> deleteUserAccount(String userId) async {

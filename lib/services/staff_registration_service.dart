@@ -26,9 +26,9 @@ class StaffRegistrationService {
       // 2. Prepare data for applicants table (match your exact column names)
       final staffData = {
         'user_id': user.id,
-        'first_name': firstName,
-        'last_name': lastName,
-        'email_address': email, // confirm if column is 'email' or 'email_address'
+        'First_Name': firstName,
+        'Last_Name': lastName,
+        'Email': email, // confirm if column is 'email' or 'email_address'
         'role': 'staff',
         'status': 'pending_approval',
         'company_name': companyName,

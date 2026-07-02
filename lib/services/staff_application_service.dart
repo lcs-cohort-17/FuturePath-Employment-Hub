@@ -15,35 +15,34 @@ class StaffApplicationService {
           .from('job_applications')
           .select(
           '''
-            id,
-            status,
-            applied_at,
-            cv_url,
-            employment_opportunities!inner (
-              id,
-              title,
-              created_by,
-              company_name
+            job_application_id,
+            application_status,
+            application_date,
+            "Employment Opportunity"!inner (
+              opportunity_id,
+              Position_Title,
+              Created_By,
+              employer_id
             ),
-            applicants!inner (
-              af_id,
-              highest_qualification
+            Applicant!inner (
+              id,
+              Highest_Qualification
             )
             '''
       )
-          .eq('employment_opportunities.created_by', staffId)
-          .order('applied_at', ascending: false);
+          .eq('"Employment Opportunity".Created_By', staffId)
+          .order('application_date', ascending: false);
 
       return List<StaffApplicationModel>.from(
           response.map((app) => StaffApplicationModel.fromJson({
-            'id': app['id'],
-            'status': app['status'],
-            'applied_at': app['applied_at'],
-            'cv_url': app['cv_url'],
-            'applicant_id': app['applicants']['af_id'],
-            'highest_qualification': app['applicants']['highest_qualification'],
-            'position_title': app['employment_opportunities']['title'],
-            'company_name': app['employment_opportunities']['company_name'],
+            'id': app['job_application_id'],
+            'status': app['application_status'],
+            'applied_at': app['application_date'],
+            'cv_url': null, // cv_url not in schema?
+            'applicant_id': app['Applicant']['id'].toString(),
+            'highest_qualification': app['Applicant']['Highest_Qualification'],
+            'position_title': app['Employment Opportunity']['Position_Title'],
+            'company_name': 'N/A', // Would need Employer join
           }))
       );
     } catch (e) {
@@ -56,8 +55,8 @@ class StaffApplicationService {
     try {
       await _supabase
           .from('job_applications')
-          .update({'status': status})
-          .eq('id', applicationId);
+          .update({'application_status': status})
+          .eq('job_application_id', applicationId);
       print('✅ Application status updated: $status');
     } catch (e) {
       print('❌ Error updating application status: $e');

@@ -30,12 +30,12 @@ class Employer {
 
   factory Employer.fromMap(Map<String, dynamic> map) {
     return Employer(
-      id: map['id']?.toString() ?? '',
-      companyName: map['company_name']?.toString() ?? '',
-      industry: map['industry']?.toString() ?? '',
-      location: map['location']?.toString() ?? '',
-      contactEmail: map['contact_email']?.toString(),
-      contactPhone: map['contact_phone']?.toString(),
+      id: map['employer_id']?.toString() ?? map['id']?.toString() ?? '',
+      companyName: map['Company_Name']?.toString() ?? map['company_name']?.toString() ?? '',
+      industry: map['Industry']?.toString() ?? map['industry']?.toString() ?? '',
+      location: map['Company_Location']?.toString() ?? map['location']?.toString() ?? '',
+      contactEmail: map['Email']?.toString() ?? map['contact_email']?.toString(),
+      contactPhone: map['Contact_Number']?.toString() ?? map['contact_phone']?.toString(),
       website: map['website']?.toString(),
       description: map['description']?.toString(),
       createdAt: map['created_at'] != null
@@ -48,13 +48,13 @@ class Employer {
 
   Map<String, dynamic> toMap() {
     return {
-      'company_name': companyName,
-      'industry': industry,
-      'location': location,
+      'Company_Name': companyName,
+      'Industry': industry,
+      'Company_Location': location,
       if (contactEmail != null && contactEmail!.isNotEmpty)
-        'contact_email': contactEmail,
+        'Email': contactEmail,
       if (contactPhone != null && contactPhone!.isNotEmpty)
-        'contact_phone': contactPhone,
+        'Contact_Number': contactPhone,
       if (website != null && website!.isNotEmpty) 'website': website,
       if (description != null && description!.isNotEmpty)
         'description': description,

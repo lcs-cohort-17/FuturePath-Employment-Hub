@@ -20,9 +20,9 @@ class EmployerService {
   /// Supabase equivalent:
   /// ```dart
   /// final rows = await _client
-  ///     .from('employers')
+  ///     .from('Employer')
   ///     .select()
-  ///     .order('company_name', ascending: true);
+  ///     .order('Company_Name', ascending: true);
   /// return (rows as List).map((r) => Employer.fromMap(r)).toList();
   /// ```
   Future<List<Employer>> fetchEmployers() async {
@@ -39,7 +39,7 @@ class EmployerService {
   /// Supabase equivalent:
   /// ```dart
   /// final row = await _client
-  ///     .from('employers')
+  ///     .from('Employer')
   ///     .insert(payload)
   ///     .select()
   ///     .single();
@@ -49,7 +49,7 @@ class EmployerService {
     // [SUPABASE-CONNECT] Replace with real Supabase insert (see above).
     await Future.delayed(const Duration(milliseconds: 300));
     return Employer.fromMap({
-      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'employer_id': DateTime.now().millisecondsSinceEpoch.toString(),
       'created_at': DateTime.now().toIso8601String(),
       ...payload,
     });
@@ -60,9 +60,9 @@ class EmployerService {
   /// Supabase equivalent:
   /// ```dart
   /// final row = await _client
-  ///     .from('employers')
+  ///     .from('Employer')
   ///     .update(payload)
-  ///     .eq('id', id)
+  ///     .eq('employer_id', id)
   ///     .select()
   ///     .single();
   /// return Employer.fromMap(row);
@@ -72,7 +72,7 @@ class EmployerService {
     // [SUPABASE-CONNECT] Replace with real Supabase update (see above).
     await Future.delayed(const Duration(milliseconds: 300));
     return Employer.fromMap({
-      'id': id,
+      'employer_id': id,
       'created_at': DateTime.now().toIso8601String(),
       ...payload,
     });
@@ -82,7 +82,7 @@ class EmployerService {
   ///
   /// Supabase equivalent:
   /// ```dart
-  /// await _client.from('employers').delete().eq('id', id);
+  /// await _client.from('Employer').delete().eq('employer_id', id);
   /// ```
   Future<void> deleteEmployer(String id) async {
     // [SUPABASE-CONNECT] Replace with real Supabase delete (see above).
