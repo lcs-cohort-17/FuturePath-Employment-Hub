@@ -2,6 +2,7 @@
 // Lutfeeya-UIUX-018
 // ═══════════════════════════════════════════════════════════════════════
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/app_theme.dart';
 // ---------------------------------------------------------------------------
 // Data models — replaced by real Supabase-backed models when service is wired
@@ -30,67 +31,110 @@ class ProgrammePerformanceItem {
 // ---------------------------------------------------------------------------
 // Mock service — [SUPABASE-SERVICE] replace body with real service calls
 // ---------------------------------------------------------------------------
-class _MockPerformanceService {
-  // [SUPABASE-SERVICE] — Replace with SupabaseService.getTopAppliedJobs()
-  // Returns top-5 jobs ordered by application count desc.
-  // Percentage = job_applications / total_applications * 100.
+class PerformanceService {
+  final _supabase = Supabase.instance.client;
+
   Future<List<JobPerformanceItem>> fetchTopJobs() async {
-    await Future.delayed(const Duration(milliseconds: 600));
-    return const [
-      JobPerformanceItem(
-        title: 'Junior Flutter Developer',
-        company: 'TechNova Solutions',
-        percentage: 0.92,
-      ),
-      JobPerformanceItem(
-        title: 'Data Analyst Trainee',
-        company: 'Innovate SA',
-        percentage: 0.78,
-      ),
-      JobPerformanceItem(
-        title: 'Digital Marketing Assistant',
-        company: 'Digital Growth Hub',
-        percentage: 0.65,
-      ),
-      JobPerformanceItem(
-        title: 'Cloud Support Engineer',
-        company: 'Amazon SA',
-        percentage: 0.54,
-      ),
-      JobPerformanceItem(
-        title: 'Salesforce Admin Intern',
-        company: 'FutureTech Africa',
-        percentage: 0.41,
-      ),
-    ];
+    try {
+      final apps = await _supabase
+          .from('job_applications')
+          .select('employment_opportunity_id');
+      final jobs = await _supabase
+          .from('Employment Opportunity')
+          .select('opportunity_id, Position_Title, employer_id');
+      final employers = await _supabase
+          .from('Employer')
+          .select('employer_id, Company_Name');
+
+      final totalApps = apps.length;
+      final appCounts = <String, int>{};
+      for (final app in apps) {
+        final jobIdx = app['employment_opportunity_id']?.toString() ?? '';
+        if (jobIdx.isNotEmpty) {
+          appCounts[jobIdx] = (appCounts[jobIdx] ?? 0) + 1;
+        }
+      }
+
+      final jobItems = <JobPerformanceItem>[];
+      for (final job in jobs) {
+        final id = job['opportunity_id']?.toString() ?? '';
+        final title = job['Position_Title']?.toString() ?? 'Unknown Position';
+        final empId = job['employer_id']?.toString() ?? '';
+
+        final employer = employers.firstWhere(
+          (e) => e['employer_id']?.toString() == empId,
+          orElse: () => <String, dynamic>{},
+        );
+        final company = employer['Company_Name']?.toString() ?? 'Unknown Company';
+
+        final count = appCounts[id] ?? 0;
+        final pct = totalApps > 0 ? (count / totalApps) : 0.0;
+
+        jobItems.add(JobPerformanceItem(
+          title: title,
+          company: company,
+          percentage: pct,
+        ));
+      }
+
+      jobItems.sort((a, b) => b.percentage.compareTo(a.percentage));
+      return jobItems.take(5).toList();
+    } catch (e) {
+      print('❌ Error fetching top jobs performance: $e');
+      rethrow;
+    }
   }
-  // [SUPABASE-SERVICE] — Replace with SupabaseService.getTopEnrolledProgrammes()
-  // Returns top-5 programmes ordered by enrolment count desc.
-  // Completion rate = completed_enrolments / total_enrolments * 100.
+
   Future<List<ProgrammePerformanceItem>> fetchTopProgrammes() async {
-    await Future.delayed(const Duration(milliseconds: 600));
-    return const [
-      ProgrammePerformanceItem(
-        name: 'Flutter Mobile Development',
-        completionRate: 0.80,
-      ),
-      ProgrammePerformanceItem(
-        name: 'Digital Marketing Fundamentals',
-        completionRate: 0.95,
-      ),
-      ProgrammePerformanceItem(
-        name: 'Salesforce Administration',
-        completionRate: 0.80,
-      ),
-      ProgrammePerformanceItem(
-        name: 'Data Analytics Bootcamp',
-        completionRate: 0.55,
-      ),
-      ProgrammePerformanceItem(
-        name: 'Cloud Computing Essentials',
-        completionRate: 0.60,
-      ),
-    ];
+    try {
+      final enrollments = await _supabase
+          .from('programme_enrollments')
+          .select('training_programme_id, enrolment_status');
+      final programmes = await _supabase
+          .from('Training Programme')
+          .select('programme_id, Programme_Name');
+
+      final enrolCounts = <String, int>{};
+      final completedCounts = <String, int>{};
+      for (final enrolment in enrollments) {
+        final progId = enrolment['training_programme_id']?.toString() ?? '';
+        final status = enrolment['enrolment_status']?.toString() ?? '';
+        if (progId.isNotEmpty) {
+          enrolCounts[progId] = (enrolCounts[progId] ?? 0) + 1;
+          if (status == 'completed') {
+            completedCounts[progId] = (completedCounts[progId] ?? 0) + 1;
+          }
+        }
+      }
+
+      final progItems = <Map<String, dynamic>>[];
+      for (final prog in programmes) {
+        final id = prog['programme_id']?.toString() ?? '';
+        final name = prog['Programme_Name']?.toString() ?? 'Unknown Programme';
+
+        final totalEnrolled = enrolCounts[id] ?? 0;
+        final completed = completedCounts[id] ?? 0;
+        final completionRate = totalEnrolled > 0 ? (completed / totalEnrolled) : 0.0;
+
+        progItems.add({
+          'name': name,
+          'completionRate': completionRate,
+          'enrolCount': totalEnrolled,
+        });
+      }
+
+      progItems.sort((a, b) => (b['enrolCount'] as int).compareTo(a['enrolCount'] as int));
+      return progItems
+          .take(5)
+          .map((p) => ProgrammePerformanceItem(
+                name: p['name'] as String,
+                completionRate: p['completionRate'] as double,
+              ))
+          .toList();
+    } catch (e) {
+      print('❌ Error fetching top programmes performance: $e');
+      rethrow;
+    }
   }
 }
 // ---------------------------------------------------------------------------
@@ -104,7 +148,7 @@ class AdminPerformanceScreen extends StatefulWidget {
 }
 
 class _AdminPerformanceScreenState extends State<AdminPerformanceScreen> {
-  final _service = _MockPerformanceService();
+  final _service = PerformanceService();
 
   late Future<List<JobPerformanceItem>> _jobsFuture;
   late Future<List<ProgrammePerformanceItem>> _programmesFuture;
