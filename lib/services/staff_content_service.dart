@@ -1,4 +1,4 @@
-// TODO: Replace with final service
+// lib/services/staff_content_service.dart
 // ✅ Uses actual column names from both tables
 
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -112,6 +112,68 @@ class StaffContentService {
       print('✅ Programme deleted');
     } catch (e) {
       print('❌ Error deleting programme: $e');
+      rethrow;
+    }
+  }
+
+  // ─── ENROLMENTS ───────────────────────────────────────────────────────────
+
+  /// Get all programme enrolments for programmes created by this staff member.
+  static Future<List<Map<String, dynamic>>> getStaffEnrolments(String staffId) async {
+    try {
+      // ✅ FIXED: Table name with space MUST be in double quotes
+      final response = await _supabase
+          .from('Programme_Enrolments')
+          .select('''
+            Enrolment_id,
+            Enrolment_Status,
+            Completion_Date,
+            Applicant_id,
+            "Training Programme" (
+              programme_id,
+              Programme_Name,
+              created_by,
+              level,
+              duration_months,
+              enrolled_count,
+              Capacity,
+              Programme_Status
+            )
+          ''')
+          .eq('"Training Programme".created_by', staffId)
+          .order('Enrolment_Status', ascending: true);
+
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      print('❌ Error fetching staff enrolments: $e');
+      rethrow;
+    }
+  }
+
+  /// Update enrolment status.
+  static Future<void> updateEnrolmentStatus(String enrolmentId, String status) async {
+    try {
+      await _supabase
+          .from('Programme_Enrolments')
+          .update({'Enrolment_Status': status})
+          .eq('Enrolment_id', enrolmentId);
+      print('✅ Enrolment status updated: $status');
+    } catch (e) {
+      print('❌ Error updating enrolment status: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete an enrolment.
+  static Future<void> deleteEnrolment(String enrolmentId) async {
+    try {
+      await _supabase
+          .from('Programme_Enrolments')
+          .delete()
+          .eq('Enrolment_id', enrolmentId);
+      print('✅ Enrolment deleted: $enrolmentId');
+    } catch (e) {
+      print('❌ Error deleting enrolment: $e');
       rethrow;
     }
   }

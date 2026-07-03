@@ -8,8 +8,8 @@ import '../../services/auth_services.dart';
 import '../../services/staff_dashboard_service.dart';
 import '../../router/app_router.dart';
 import '../../providers/user_profile_provider.dart';
-// ✅ Import the StaffApplications screen
 import 'staff_applications.dart';
+import 'staff_enrolments.dart'; // ✅ Import the new screen
 
 class StaffDashboard extends ConsumerStatefulWidget {
   const StaffDashboard({super.key});
@@ -138,14 +138,21 @@ class _StaffDashboardState extends ConsumerState<StaffDashboard> {
                   }),
                 ],
               ),
-              const SizedBox(height: 12),
-              // ✅ Updated "View Applications" button with direct navigation
+              const SizedBox(height: 8),
               Row(
                 children: [
                   _buildActionButton('View Applications', Icons.assignment, () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const StaffApplications()),
+                    );
+                  }),
+                  const SizedBox(width: 12),
+                  // ✅ NEW: View Enrolments button
+                  _buildActionButton('View Enrolments', Icons.school, () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const StaffEnrolments()),
                     );
                   }),
                 ],

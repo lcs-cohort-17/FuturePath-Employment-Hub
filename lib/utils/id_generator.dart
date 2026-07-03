@@ -29,4 +29,7 @@ class IdGenerator {
   static String generateOpportunityId() => _generateShortId('OPP');
   static String generateOpportunityNumber() => _generateShortId('ON');
   static String generateProgrammeId() => _generateShortId('PRG');
+
+  // ✅ Generate enrolment ID (e.g., ENR1234)
+  static String generateEnrolmentId() => _generateShortId('ENR');
 }

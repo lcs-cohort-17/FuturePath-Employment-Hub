@@ -4,6 +4,10 @@
 import 'package:flutter/material.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/models/programme.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../services/auth_services.dart';
+import '../../services/public_data_service.dart';
+import 'my_programmes_screen.dart'; // same folder
 
 // ───────────────────────────────────────────────────────────────────────
 // MODELS
@@ -151,40 +155,73 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
     setState(() => _cvFileName = 'my_cv.pdf');
   }
 
-  Future<ApplicationResult> _mockSubmit(
-      ProgrammeApplicationData data) async {
-    await Future.delayed(const Duration(milliseconds: 900));
-    return const ApplicationResult.ok();
-  }
+  // ─── REAL SUBMISSION ──────────────────────────────────────────────────
 
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
+    if (!_privacyConsentGiven) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please consent to data processing'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
 
     setState(() => _isSubmitting = true);
 
-    final data = ProgrammeApplicationData(
-      programmeId: widget.programme.id,
-      fullName: _fullNameController.text.trim(),
-      saIdNumber: _saIdController.text.trim(),
-      email: _emailController.text.trim(),
-      phone: _phoneController.text.trim(),
-      cvFileName: _cvFileName,
-      motivationStatement: _motivationController.text.trim().isEmpty
-          ? null
-          : _motivationController.text.trim(),
-      previousExperience: _experienceController.text.trim().isEmpty
-          ? null
-          : _experienceController.text.trim(),
-      status: ProgrammeApplicationStatus.pending,
-    );
+    try {
+      // 1. Get current user
+      final user = AuthService().currentUser;
+      if (user == null) throw Exception('Not logged in');
 
-    final submitFn = widget.onSubmit ?? _mockSubmit;
-    final result = await submitFn(data);
+      // 2. Get applicant ID from Applicant table
+      final supabase = Supabase.instance.client;
+      final profile = await supabase
+          .from('Applicant')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+      final applicantId = profile?['id'] as int?;
+      if (applicantId == null) throw Exception('Applicant profile not found');
 
-    if (!mounted) return;
-    setState(() => _isSubmitting = false);
+      // 3. Build application data
+      final data = ProgrammeApplicationData(
+        programmeId: widget.programme.id,
+        fullName: _fullNameController.text.trim(),
+        saIdNumber: _saIdController.text.trim(),
+        email: _emailController.text.trim(),
+        phone: _phoneController.text.trim(),
+        cvFileName: _cvFileName,
+        motivationStatement: _motivationController.text.trim().isEmpty
+            ? null
+            : _motivationController.text.trim(),
+        previousExperience: _experienceController.text.trim().isEmpty
+            ? null
+            : _experienceController.text.trim(),
+        status: ProgrammeApplicationStatus.pending,
+      );
 
-    if (result.success) {
+      // 4. Either use custom submit (if provided) or default database insert
+      if (widget.onSubmit != null) {
+        final result = await widget.onSubmit!(data);
+        if (!result.success) {
+          throw Exception(result.errorMessage ?? 'Submission failed');
+        }
+      } else {
+        // Default: insert into Programme_Enrolments
+        await PublicDataService.enrolInProgramme(
+          applicantId: applicantId,
+          programmeId: widget.programme.id,
+          status: 'pending',
+        );
+      }
+
+      if (!mounted) return;
+      setState(() => _isSubmitting = false);
+
+      // 5. Success – show success screen
       if (widget.onSuccess != null) {
         widget.onSuccess!(data);
       } else {
@@ -197,12 +234,12 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
           ),
         );
       }
-    } else {
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isSubmitting = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            result.errorMessage ?? 'Something went wrong. Please try again.',
-          ),
+          content: Text('Error: ${e.toString()}'),
           backgroundColor: AppTheme.error,
         ),
       );
@@ -211,6 +248,7 @@ class _ProgrammeApplyScreenState extends State<ProgrammeApplyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ... (the UI remains exactly as before, unchanged) ...
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SafeArea(
@@ -723,8 +761,14 @@ class ProgrammeApplicationSuccessScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: onViewMyProgrammes ??
-                          () => Navigator.of(context)
-                          .popUntil((route) => route.isFirst),
+                          () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const MyProgrammesScreen(),
+                          ),
+                        );
+                      },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primary,
                     foregroundColor: Colors.white,

@@ -11,6 +11,7 @@ import '../../core/widgets/delete_account_dialog.dart';
 import '../../core/widgets/delete_account_error_sheet.dart';
 import '../../services/job_application_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../programmes/my_programmes_screen.dart';// ✅ NEW IMPORT
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -41,10 +42,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             .eq('user_id', user.id)
             .maybeSingle();
         final applicantId = profile?['id'] as int?;
-        print('🔍 [ProfileScreen] applicantId: $applicantId');
         if (applicantId != null) {
           final apps = await JobApplicationService.getApplicationsForApplicant(applicantId);
-          print('📋 [ProfileScreen] Found ${apps.length} applications');
           setState(() {
             _applications = apps;
             _loadingApplications = false;
@@ -92,7 +91,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       },
       applications: _applications,
       loadingApplications: _loadingApplications,
-      onRefresh: _loadApplications, // <-- Added refresh callback
+      onRefresh: _loadApplications,
     );
   }
 }
@@ -104,7 +103,7 @@ class ProfileScreenContent extends StatefulWidget {
   final WidgetRef ref;
   final List<Map<String, dynamic>> applications;
   final bool loadingApplications;
-  final VoidCallback onRefresh; // <-- Added
+  final VoidCallback onRefresh;
 
   const ProfileScreenContent({
     super.key,
@@ -144,6 +143,7 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                       _buildContactIdentityBlock(),
                       _buildSkillsBlock(),
                       _buildApplicationsBlock(),
+                      _buildProgrammesSummary(), // ✅ NEW CARD
                       _buildSignOutButton(),
                       const SizedBox(height: 8),
                     ],
@@ -156,6 +156,8 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
       ),
     );
   }
+
+  // ─── All existing methods (unchanged) ──────────────────────────────────
 
   Widget _buildTopBar() {
     return Container(
@@ -554,7 +556,7 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
     );
   }
 
-  // ─── DYNAMIC APPLICATIONS BLOCK ──────────────────────────────────────────
+  // ─── Active Job Applications ─────────────────────────────────────────────
 
   Widget _buildApplicationsBlock() {
     return Container(
@@ -578,8 +580,6 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
             ),
           ),
           const SizedBox(height: 10),
-
-          // Loading state
           if (widget.loadingApplications)
             const Center(
               child: Padding(
@@ -587,8 +587,6 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                 child: CircularProgressIndicator(color: AppTheme.primary),
               ),
             )
-
-          // Empty state
           else if (widget.applications.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 16),
@@ -597,17 +595,13 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                 style: TextStyle(color: AppTheme.mutedText, fontSize: 11),
               ),
             )
-
-          // Display real applications
           else
             ...widget.applications.map((app) {
               final status = app['Application_Status'] ?? 'pending';
-              final jobTitle = app['Employment Opportunity']?['Position_Title'] ?? 'Unknown Job';
+              final jobTitle = app['Employment Opportunity']?['Position_Title'] ?? 'Unknown job';
               final statusColor = _getStatusColor(status);
               final progress = _getProgress(status);
               final icon = _getIcon(status);
-
-              print('📝 [ProfileScreen] Displaying: $jobTitle - $status');
 
               return Padding(
                 padding: const EdgeInsets.only(bottom: 10),
@@ -742,6 +736,52 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
       ],
     );
   }
+
+  // ─── NEW: My Programmes card ─────────────────────────────────────────────
+
+  Widget _buildProgrammesSummary() {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const MyProgrammesScreen(),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+        padding: const EdgeInsets.all(13),
+        decoration: BoxDecoration(
+          color: AppTheme.surface2,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppTheme.border, width: 0.5),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.school_outlined, color: AppTheme.primary, size: 20),
+                const SizedBox(width: 10),
+                const Text(
+                  'My Programmes',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.textDark,
+                  ),
+                ),
+              ],
+            ),
+            const Icon(Icons.arrow_forward_ios, color: AppTheme.mutedText, size: 14),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── Sign Out & Delete ─────────────────────────────────────────────────
 
   Widget _buildSignOutButton() {
     return Column(
