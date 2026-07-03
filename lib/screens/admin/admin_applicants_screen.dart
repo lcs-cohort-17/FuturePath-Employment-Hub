@@ -33,7 +33,7 @@ class Applicant {
   factory Applicant.fromMap(Map<String, dynamic> map) {
     return Applicant(
       applicantId: map['user_id']?.toString().substring(0, 8).toUpperCase() ?? 'APP-UNK',
-      idNumber: map['id_number']?.toString() ?? 'N/A',
+      idNumber: map['ID_Number']?.toString() ?? 'N/A',
       skills: (map['Skills'] as List?)?.map((e) => e.toString()).toList() ?? (map['skills'] as List?)?.map((e) => e.toString()).toList() ?? [],
       qualification: map['Highest_Qualification'] ?? map['highest_qualification'] ?? 'N/A',
       employmentStatus: map['Current_Employment_Status'] ?? map['employment_status'] ?? 'N/A',
