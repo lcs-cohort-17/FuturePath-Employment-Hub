@@ -1,3 +1,5 @@
+#pub sec yaml
+#pub sec yaml
 name: futurepath_employment_hub
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
@@ -28,12 +30,31 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  http: ^1.1.0
+  url_launcher: ^6.2.5
   flutter:
     sdk: flutter
+
+  # Add this line below flutter sdk
+  flutter_riverpod: ^2.6.1
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+
+  # Session management and local storage
+  shared_preferences: ^2.3.3
+
+  # File picker for CV uploads
+  file_picker: ^8.1.4
+
+  provider: ^6.1.2
+
+  # Connects your mobile app to your real database server
+  supabase_flutter: 2.8.0
+
+  # Safely reads secret keys from the local root .env configuration file
+  flutter_dotenv: ^6.0.1
 
 dev_dependencies:
   flutter_test:
@@ -45,6 +66,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  mocktail: ^1.0.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -58,9 +80,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
