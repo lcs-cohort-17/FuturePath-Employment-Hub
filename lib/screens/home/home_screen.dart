@@ -3,6 +3,7 @@ import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import '../../services/home_dashboard_service.dart';
 import '../../models/staff_job_model.dart';
 import '../../screens/jobs/job_detail_screen.dart';
+import '../../core/widgets/notification_badge.dart';
 
 typedef DashboardFetcher = Future<HomeDashboardData> Function();
 
@@ -259,41 +260,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const Spacer(),
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              GestureDetector(
-                onTap: widget.onNotificationsTap,
-                child: const Icon(
-                  Icons.notifications_outlined,
-                  color: AppTheme.mutedText,
-                  size: 22,
-                ),
-              ),
-              if (widget.notificationCount > 0)
-                Positioned(
-                  top: -2,
-                  right: -2,
-                  child: Container(
-                    width: 13,
-                    height: 13,
-                    decoration: const BoxDecoration(
-                      color: AppTheme.primary,
-                      shape: BoxShape.circle,
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      '${widget.notificationCount}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 8,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
+          const NotificationBadge(),
         ],
       ),
     );

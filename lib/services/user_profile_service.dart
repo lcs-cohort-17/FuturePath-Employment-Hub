@@ -39,6 +39,20 @@ class UserProfileService {
     }
   }
 
+  /// Updates the user profile in the 'Applicant' table.
+  Future<bool> updateUserProfile(String userId, Map<String, dynamic> updates) async {
+    try {
+      await _supabase
+          .from('Applicant')
+          .update(updates)
+          .eq('user_id', userId);
+      return true;
+    } catch (e) {
+      print('❌ Error updating user profile: $e');
+      return false;
+    }
+  }
+
   /// Permanently deletes the user's applicant record, all related data
   /// (applications, enrolments — cascade handled by DB foreign keys), and
   /// finally removes the Supabase Auth user.

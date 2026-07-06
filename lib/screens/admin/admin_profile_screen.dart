@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import '../../router/app_router.dart';
+import '../../core/widgets/notification_badge.dart';
+import '../../providers/notifications_provider.dart';
+import '../../providers/notifications_provider.dart';
 
 // ---------------------------------------------------------------------------
 // Mock model — replace with real AdminProfile from your data layer (AUTH-007)
@@ -93,14 +97,14 @@ const List<_PermissionEntry> _kPermissions = [
 // Screen
 // ---------------------------------------------------------------------------
 
-class AdminProfileScreen extends StatefulWidget {
+class AdminProfileScreen extends ConsumerStatefulWidget {
   const AdminProfileScreen({super.key});
 
   @override
-  State<AdminProfileScreen> createState() => _AdminProfileScreenState();
+  ConsumerState<AdminProfileScreen> createState() => _AdminProfileScreenState();
 }
 
-class _AdminProfileScreenState extends State<AdminProfileScreen> {
+class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> {
   final _service = _AdminProfileService();
 
   late Future<AdminProfileData> _profileFuture;
@@ -186,12 +190,15 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
 // Top app bar — mirrors HTML topbar() helper
 // ---------------------------------------------------------------------------
 
-class _TopBar extends StatelessWidget implements PreferredSizeWidget {
+class _TopBar extends ConsumerWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize => const Size.fromHeight(52);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notifications = ref.watch(notificationsProvider);
+    final unreadCount = notifications.where((n) => !n.isRead).length;
+
     return Container(
       height: 52,
       decoration: const BoxDecoration(
@@ -231,35 +238,7 @@ class _TopBar extends StatelessWidget implements PreferredSizeWidget {
             ),
           ),
           const Spacer(),
-          // Notification bell
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              const Icon(Icons.notifications_outlined,
-                  color: AppTheme.mutedText, size: 20),
-              Positioned(
-                top: -2,
-                right: -2,
-                child: Container(
-                  width: 13,
-                  height: 13,
-                  decoration: const BoxDecoration(
-                    color: AppTheme.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    '2',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 8,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+          const NotificationBadge(),
         ],
       ),
     );

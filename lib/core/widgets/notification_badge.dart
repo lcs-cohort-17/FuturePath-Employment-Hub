@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/notifications_provider.dart';
 import '../../router/app_router.dart';
+import '../theme/app_theme.dart';
 
 class NotificationBadge extends ConsumerWidget {
   final Color iconColor;
+  final double size;
 
   const NotificationBadge({
     super.key,
-    this.iconColor = Colors.white,
+    this.iconColor = AppTheme.mutedText,
+    this.size = 22,
   });
 
   @override
@@ -16,48 +19,41 @@ class NotificationBadge extends ConsumerWidget {
     final notifications = ref.watch(notificationsProvider);
     final unreadCount = notifications.where((n) => !n.isRead).length;
 
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        IconButton(
-          icon: Icon(Icons.notifications_none_rounded, color: iconColor, size: 26),
-          onPressed: () {
-            Navigator.pushNamed(
-              context,
-              AppRouter.notifications,
-            );
-          },
-        ),
-        if (unreadCount > 0)
-          Positioned(
-            top: 8,
-            right: 8,
-            child: IgnorePointer(
+    return IconButton(
+      onPressed: () => Navigator.pushNamed(context, AppRouter.notifications),
+      splashRadius: 22,
+      icon: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Icon(
+            Icons.notifications_outlined,
+            color: iconColor,
+            size: size,
+          ),
+          if (unreadCount > 0)
+            Positioned(
+              top: -2,
+              right: -2,
               child: Container(
-                padding: const EdgeInsets.all(2),
+                width: 14,
+                height: 14,
                 decoration: const BoxDecoration(
-                  color: Colors.red,
+                  color: AppTheme.primary,
                   shape: BoxShape.circle,
                 ),
-                constraints: const BoxConstraints(
-                  minWidth: 16,
-                  minHeight: 16,
-                ),
-                child: Center(
-                  child: Text(
-                    unreadCount > 9 ? '9+' : '$unreadCount',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
+                alignment: Alignment.center,
+                child: Text(
+                  unreadCount > 9 ? '9+' : '$unreadCount',
+                  style: const TextStyle(
+                    fontSize: 8,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.textDark,
                   ),
                 ),
               ),
             ),
-          )
-      ],
+        ],
+      ),
     );
   }
 }

@@ -13,6 +13,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import '../../services/admin_dashboard_service.dart';
 import '../../providers/admin_nav_provider.dart';
+import '../../providers/notifications_provider.dart';
+import '../../router/app_router.dart';
+import '../../core/widgets/notification_badge.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -92,9 +95,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 // TOP BAR
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _TopBar extends StatelessWidget {
+class _TopBar extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notifications = ref.watch(notificationsProvider);
+    final unreadCount = notifications.where((n) => !n.isRead).length;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
       decoration: const BoxDecoration(
@@ -136,34 +142,7 @@ class _TopBar extends StatelessWidget {
               ),
             ],
           ),
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              const Icon(Icons.notifications_outlined,
-                  color: AppTheme.mutedText, size: 22),
-              Positioned(
-                top: -2,
-                right: -2,
-                child: Container(
-                  width: 13,
-                  height: 13,
-                  decoration: const BoxDecoration(
-                    color: AppTheme.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    '2',
-                    style: TextStyle(
-                      fontSize: 8,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.textDark,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+          const NotificationBadge(),
         ],
       ),
     );

@@ -5,6 +5,9 @@ import '../../core/theme/app_theme.dart';
 import '../../core/widgets/skill_chip.dart';
 import '../../providers/user_profile_provider.dart';
 import '../../models/programme.dart';
+import '../../providers/notifications_provider.dart';
+import '../../router/app_router.dart';
+import '../../core/widgets/notification_badge.dart';
 
 class CVScreen extends ConsumerWidget {
   const CVScreen({super.key});
@@ -111,40 +114,8 @@ class _CvScreenContentState extends State<CvScreenContent> {
           ],
         ),
         actions: [
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              const Padding(
-                padding: EdgeInsets.only(right: 16),
-                child: Icon(
-                  Icons.notifications_none,
-                  color: AppTheme.mutedText,
-                  size: 22,
-                ),
-              ),
-              Positioned(
-                top: 0,
-                right: 14,
-                child: Container(
-                  width: 13,
-                  height: 13,
-                  decoration: const BoxDecoration(
-                    color: AppTheme.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    '2',
-                    style: TextStyle(
-                      fontSize: 8,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+          const NotificationBadge(),
+          const SizedBox(width: 8),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),

@@ -22,6 +22,14 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     _localNotifications = List<Map<String, dynamic>>.from(widget.notifications);
   }
 
+  @override
+  void didUpdateWidget(NotificationsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.notifications != oldWidget.notifications) {
+      _localNotifications = List<Map<String, dynamic>>.from(widget.notifications);
+    }
+  }
+
   void _toggleRead(Map<String, dynamic> item, {bool all = false}) {
     setState(() {
       if (all) {
@@ -82,30 +90,6 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 ),
               ),
             ),
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                const Icon(Icons.notifications_outlined, color: AppTheme.mutedText, size: 20),
-                if (unread.isNotEmpty)
-                  Positioned(
-                    top: 8,
-                    right: 0,
-                    child: Container(
-                      width: 13,
-                      height: 13,
-                      decoration: const BoxDecoration(color: AppTheme.primary, shape: BoxShape.circle),
-                      alignment: Alignment.center,
-                      child: Text(
-                        '${unread.length}',
-                        style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
@@ -159,7 +143,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     return List.generate(items.length, (idx) {
       final item = items[idx];
       final bool isUnread = !item['isRead'];
-      final String id = '${prefix}_$idx';
+      final String id = item['id']?.toString() ?? '${prefix}_$idx';
       final bool isExpanded = _expandedIds.contains(id);
 
       return GestureDetector(
@@ -249,6 +233,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
   IconData _getIcon(String type) {
     if (type.contains('Accepted')) return Icons.verified_rounded;
+    if (type.contains('Rejected')) return Icons.error_outline_rounded;
     if (type.contains('Update')) return Icons.rate_review_rounded;
     if (type.contains('Submitted')) return Icons.assignment_turned_in_rounded;
     return Icons.notifications_rounded;
@@ -258,24 +243,13 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color: AppTheme.surface3,
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: const Icon(Icons.notifications_none_rounded, size: 32, color: AppTheme.mutedText),
-          ),
-          const SizedBox(height: 16),
-          const Text(
+        children: const [
+          Text(
             'All Caught Up!',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.textDark),
           ),
-          const SizedBox(height: 8),
-          const Text(
+          SizedBox(height: 8),
+          Text(
             'No new notifications at this time.',
             style: TextStyle(fontSize: 12, color: AppTheme.mutedText),
             textAlign: TextAlign.center,

@@ -7,6 +7,7 @@ import '../jobs/job_list_screen.dart';
 import '../profile/profile_screen.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import '../../providers/user_profile_provider.dart';
+import '../../providers/notifications_provider.dart';
 
 class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key});
@@ -28,6 +29,15 @@ class _AppShellState extends ConsumerState<AppShell> {
     final user = Supabase.instance.client.auth.currentUser;
     if (user != null) {
       await ref.read(userProfileProvider.notifier).fetchProfile(user.id);
+      
+      // Initialize real-time notifications for the applicant
+      final profile = ref.read(userProfileProvider);
+      if (profile.id.isNotEmpty) {
+        final applicantId = int.tryParse(profile.id);
+        if (applicantId != null) {
+          ref.read(notificationsProvider.notifier).initRealtime(applicantId);
+        }
+      }
     }
   }
 

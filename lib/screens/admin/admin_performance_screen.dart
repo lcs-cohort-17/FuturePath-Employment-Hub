@@ -2,7 +2,11 @@
 // Lutfeeya-UIUX-018
 // ═══════════════════════════════════════════════════════════════════════
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
+import '../../providers/notifications_provider.dart';
+import '../../router/app_router.dart';
+
 // ---------------------------------------------------------------------------
 // Data models — replaced by real Supabase-backed models when service is wired
 // ---------------------------------------------------------------------------
@@ -96,14 +100,14 @@ class _MockPerformanceService {
 // ---------------------------------------------------------------------------
 // Screen
 // ---------------------------------------------------------------------------
-class AdminPerformanceScreen extends StatefulWidget {
+class AdminPerformanceScreen extends ConsumerStatefulWidget {
   const AdminPerformanceScreen({super.key});
 
   @override
-  State<AdminPerformanceScreen> createState() => _AdminPerformanceScreenState();
+  ConsumerState<AdminPerformanceScreen> createState() => _AdminPerformanceScreenState();
 }
 
-class _AdminPerformanceScreenState extends State<AdminPerformanceScreen> {
+class _AdminPerformanceScreenState extends ConsumerState<AdminPerformanceScreen> {
   final _service = _MockPerformanceService();
 
   late Future<List<JobPerformanceItem>> _jobsFuture;
@@ -183,9 +187,12 @@ class _AdminPerformanceScreenState extends State<AdminPerformanceScreen> {
 // ---------------------------------------------------------------------------
 // Top bar — matches HTML .topbar pattern exactly
 // ---------------------------------------------------------------------------
-class _TopBar extends StatelessWidget {
+class _TopBar extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notifications = ref.watch(notificationsProvider);
+    final unreadCount = notifications.where((n) => !n.isRead).length;
+
     return Container(
       decoration: const BoxDecoration(
         color: AppTheme.surface,
@@ -225,36 +232,40 @@ class _TopBar extends StatelessWidget {
           ),
           const Spacer(),
           // Notification bell
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              const Icon(
-                Icons.notifications_none_rounded,
-                color: AppTheme.mutedText,
-                size: 22,
-              ),
-              Positioned(
-                top: -2,
-                right: -2,
-                child: Container(
-                  width: 13,
-                  height: 13,
-                  decoration: const BoxDecoration(
-                    color: AppTheme.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    '2',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 8,
-                      fontWeight: FontWeight.w700,
+          IconButton(
+            onPressed: () => Navigator.pushNamed(context, AppRouter.notifications),
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                const Icon(
+                  Icons.notifications_none_rounded,
+                  color: AppTheme.mutedText,
+                  size: 22,
+                ),
+                if (unreadCount > 0)
+                  Positioned(
+                    top: -2,
+                    right: -2,
+                    child: Container(
+                      width: 13,
+                      height: 13,
+                      decoration: const BoxDecoration(
+                        color: AppTheme.primary,
+                        shape: BoxShape.circle,
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        '$unreadCount',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

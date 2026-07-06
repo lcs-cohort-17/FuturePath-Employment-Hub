@@ -2,6 +2,7 @@
 // Lutfeeya-UIUX-004
 // ═══════════════════════════════════════════════════════════════════════
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/models/programme.dart';
@@ -10,19 +11,22 @@ import '../../core/widgets/loading_overlay.dart';
 import '../../core/widgets/error_message.dart';
 import '../../core/widgets/empty_state.dart';
 import 'programme_detail_screen.dart';
+import '../../providers/notifications_provider.dart';
+import '../../router/app_router.dart';
+import '../../core/widgets/notification_badge.dart';
 
 /// ─────────────────────────────────────────────────────────────
 /// SCREEN
 /// ─────────────────────────────────────────────────────────────
-class ProgrammeListScreen extends StatefulWidget {
+class ProgrammeListScreen extends ConsumerStatefulWidget {
   const ProgrammeListScreen({super.key});
 
   @override
-  State<ProgrammeListScreen> createState() =>
+  ConsumerState<ProgrammeListScreen> createState() =>
       _ProgrammeListScreenState();
 }
 
-class _ProgrammeListScreenState extends State<ProgrammeListScreen> {
+class _ProgrammeListScreenState extends ConsumerState<ProgrammeListScreen> {
   List<Programme> programmes = [];
   bool isLoading = true;
   bool hasError = false;
@@ -182,37 +186,7 @@ class _ProgrammeListScreenState extends State<ProgrammeListScreen> {
                         ),
                       ],
                     ),
-                    Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        const Icon(
-                          Icons.notifications_none,
-                          color: AppTheme.mutedText,
-                          size: 22,
-                        ),
-                        Positioned(
-                          top: -2,
-                          right: -2,
-                          child: Container(
-                            width: 13,
-                            height: 13,
-                            decoration: const BoxDecoration(
-                              color: AppTheme.primary,
-                              shape: BoxShape.circle,
-                            ),
-                            alignment: Alignment.center,
-                            child: const Text(
-                              '2',
-                              style: TextStyle(
-                                fontSize: 8,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                    const NotificationBadge(),
                   ],
                 ),
               ),

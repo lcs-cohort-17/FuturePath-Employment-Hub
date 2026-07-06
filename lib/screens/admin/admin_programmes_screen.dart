@@ -4,6 +4,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/widgets/loading_indicator.dart';
 import '../../core/widgets/error_message.dart';
 import '../../core/widgets/empty_state.dart';
+import '../../core/widgets/notification_badge.dart';
 import '../../router/app_router.dart';
 import '../../models/programme.dart';
 
@@ -134,7 +135,9 @@ class _AdminProgrammesScreenState extends State<AdminProgrammesScreen> {
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
+          const NotificationBadge(size: 18),
+          const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(

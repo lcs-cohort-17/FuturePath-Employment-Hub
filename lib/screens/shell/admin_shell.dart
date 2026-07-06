@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/admin_nav_provider.dart';
+import '../../providers/notifications_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../admin/admin_dashboard_screen.dart';
 import '../admin/admin_activity_screen.dart';
 import '../admin/admin_applicants_screen.dart';
@@ -11,9 +13,14 @@ import '../admin/admin_staff_mgmt_screen.dart';
 
 /// The shell for the Admin role, containing the bottom navigation.
 /// [NAV-010]
-class AdminShell extends ConsumerWidget {
+class AdminShell extends ConsumerStatefulWidget {
   const AdminShell({super.key});
 
+  @override
+  ConsumerState<AdminShell> createState() => _AdminShellState();
+}
+
+class _AdminShellState extends ConsumerState<AdminShell> {
   final List<Widget> _screens = const [
     AdminDashboardScreen(),
     AdminActivityScreen(),
@@ -24,7 +31,18 @@ class AdminShell extends ConsumerWidget {
   ];
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void initState() {
+    super.initState();
+    _initNotifications();
+  }
+
+  void _initNotifications() {
+    // For Admin, we use the staff listener for now to see new activity
+    ref.read(notificationsProvider.notifier).initStaffRealtime();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final currentIndex = ref.watch(adminNavProvider);
 
     return Scaffold(

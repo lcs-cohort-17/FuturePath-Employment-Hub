@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../screens/auth/login_screen.dart';
+import '../screens/auth/splash_screen.dart';
 import '../screens/auth/sign_up_screen.dart';
 import '../screens/auth/forgot_password_screen.dart';
 import '../screens/shell/main_shell.dart';
@@ -28,6 +29,7 @@ import '../models/staff_programme_model.dart';
 
 class AppRouter {
   static const String login = '/login';
+  static const String splash = '/';
   static const String adminLogin = '/admin-login';
   static const String adminStaffMgmt = '/admin/staff-management';
   static const String signup = '/signup';
@@ -55,6 +57,14 @@ class AppRouter {
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case splash:
+        return MaterialPageRoute(
+          builder: (context) => SplashScreen(
+            onNavigateHome: () => Navigator.pushReplacementNamed(context, home),
+            onNavigateLogin: () => Navigator.pushReplacementNamed(context, login),
+          ),
+          settings: settings,
+        );
       case login:
         return MaterialPageRoute(
           builder: (_) => const LoginScreen(),

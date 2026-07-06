@@ -4,6 +4,7 @@ import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
 import 'package:futurepath_employment_hub/core/widgets/empty_state.dart';
 import 'package:futurepath_employment_hub/core/widgets/error_message.dart';
 import 'package:futurepath_employment_hub/core/widgets/loading_indicator.dart';
+import 'package:futurepath_employment_hub/core/widgets/notification_badge.dart';
 
 // ---------------------------------------------------------------------------
 // Model
@@ -240,6 +241,8 @@ class _TopBar extends StatelessWidget {
             ),
           ),
           const Spacer(),
+          const NotificationBadge(size: 18),
+          const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(

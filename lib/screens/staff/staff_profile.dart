@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/auth_services.dart';
 import '../../providers/user_profile_provider.dart';
+import '../profile/edit_profile_screen.dart';
 
 class StaffProfile extends ConsumerWidget {
   const StaffProfile({super.key});
@@ -32,6 +33,19 @@ class StaffProfile extends ConsumerWidget {
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => EditProfileScreen(profile: userProfile),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),

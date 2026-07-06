@@ -3,6 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════════
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/notification_badge.dart';
 
 // ---------------------------------------------------------------------------
 // MOCK DATA — remove this block and replace with SupabaseService calls
@@ -163,34 +164,7 @@ class _AdminSystemScreenState extends State<AdminSystemScreen> {
           ),
           const Spacer(),
           // Notification bell
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              const Icon(Icons.notifications_outlined,
-                  size: 20, color: AppTheme.mutedText),
-              Positioned(
-                top: -2,
-                right: -2,
-                child: Container(
-                  width: 13,
-                  height: 13,
-                  decoration: const BoxDecoration(
-                    color: AppTheme.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    '2',
-                    style: TextStyle(
-                      fontSize: 8,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+          const NotificationBadge(),
         ],
       ),
     );

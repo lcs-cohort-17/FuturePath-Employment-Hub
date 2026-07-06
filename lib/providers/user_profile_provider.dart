@@ -80,6 +80,14 @@ class UserProfileNotifier extends Notifier<UserProfile> {
     state = updatedProfile;
   }
 
+  Future<bool> saveProfile(String userId, Map<String, dynamic> updates) async {
+    final success = await _profileService.updateUserProfile(userId, updates);
+    if (success) {
+      await fetchProfile(userId);
+    }
+    return success;
+  }
+
   void addSkill(String skill) {
     final trimmed = skill.trim();
     if (trimmed.isNotEmpty && !state.skills.contains(trimmed)) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/staff_registration_service.dart';
+import '../../core/widgets/notification_badge.dart';
 
 class AdminStaffMgmtScreen extends StatefulWidget {
   const AdminStaffMgmtScreen({super.key});
@@ -31,7 +32,8 @@ class _AdminStaffMgmtScreenState extends State<AdminStaffMgmtScreen> {
         backgroundColor: Colors.transparent,
         title: const Text('Staff Management', style: TextStyle(color: Colors.white)),
         actions: [
-          IconButton(onPressed: _refreshList, icon: const Icon(Icons.refresh, color: Colors.white))
+          IconButton(onPressed: _refreshList, icon: const Icon(Icons.refresh, color: Colors.white)),
+          const NotificationBadge(iconColor: Colors.white),
         ],
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(

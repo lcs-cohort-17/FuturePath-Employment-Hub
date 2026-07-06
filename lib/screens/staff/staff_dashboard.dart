@@ -8,6 +8,8 @@ import '../../services/auth_services.dart';
 import '../../services/staff_dashboard_service.dart';
 import '../../router/app_router.dart';
 import '../../providers/user_profile_provider.dart';
+import '../../providers/notifications_provider.dart';
+import '../../core/widgets/notification_badge.dart';
 import 'staff_applications.dart';
 import 'staff_enrolments.dart'; // ✅ Import the new screen
 
@@ -56,6 +58,7 @@ class _StaffDashboardState extends ConsumerState<StaffDashboard> {
             icon: const Icon(Icons.refresh, color: Colors.white),
             onPressed: _loadStats,
           ),
+          const NotificationBadge(iconColor: Colors.white, size: 24),
         ],
       ),
       body: Padding(
@@ -129,10 +132,6 @@ class _StaffDashboardState extends ConsumerState<StaffDashboard> {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  _buildActionButton('View Analytics', Icons.analytics, () {
-                    Navigator.pushNamed(context, '/staff/content');
-                  }),
-                  const SizedBox(width: 12),
                   _buildActionButton('My Activity', Icons.history, () {
                     Navigator.pushNamed(context, '/staff/content');
                   }),

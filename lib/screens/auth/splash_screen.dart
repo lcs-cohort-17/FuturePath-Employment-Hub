@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:futurepath_employment_hub/core/theme/app_theme.dart';
+import '../../services/auth_services.dart';
 
 class SplashScreen extends StatefulWidget {
   final VoidCallback onNavigateHome;
@@ -57,17 +57,15 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkAuthAndNavigate() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    final hasSession =
-        prefs.getString('session_token') != null;
+    final authService = AuthService();
+    final isLoggedIn = authService.isLoggedIn;
 
     _navigationTimer = Timer(
       Duration(milliseconds: widget.minimumSplashMs),
           () {
         if (!mounted) return;
 
-        if (hasSession) {
+        if (isLoggedIn) {
           widget.onNavigateHome();
         } else {
           widget.onNavigateLogin();
@@ -181,7 +179,7 @@ class _AppIconWidget extends StatelessWidget {
       child: const Icon(
         Icons.work_outline,
         size: 60,
-        color: Colors.blue,
+        color: AppTheme.primary,
       ),
     );
   }

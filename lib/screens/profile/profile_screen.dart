@@ -6,12 +6,15 @@ import '../../services/auth_services.dart';
 import '../../models/user_profile.dart';
 import '../../router/app_router.dart';
 import 'cv_screen.dart';
+import 'edit_profile_screen.dart';
 import '../../core/errors/delete_account_error.dart';
 import '../../core/widgets/delete_account_dialog.dart';
 import '../../core/widgets/delete_account_error_sheet.dart';
 import '../../services/job_application_service.dart';
+import '../../providers/notifications_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../programmes/my_programmes_screen.dart';// ✅ NEW IMPORT
+import '../../core/widgets/notification_badge.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -160,6 +163,9 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
   // ─── All existing methods (unchanged) ──────────────────────────────────
 
   Widget _buildTopBar() {
+    final notifications = widget.ref.watch(notificationsProvider);
+    final unreadCount = notifications.where((n) => !n.isRead).length;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       decoration: const BoxDecoration(
@@ -202,33 +208,7 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
               ),
             ],
           ),
-          Stack(
-            children: [
-              const Icon(Icons.notifications_none, color: AppTheme.mutedText, size: 18),
-              Positioned(
-                top: 0,
-                right: 0,
-                child: Container(
-                  width: 13,
-                  height: 13,
-                  decoration: const BoxDecoration(
-                    color: AppTheme.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Center(
-                    child: Text(
-                      '2',
-                      style: TextStyle(
-                        fontSize: 8,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+          const NotificationBadge(),
         ],
       ),
     );
@@ -320,25 +300,35 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                   ),
                 ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: AppTheme.surface2,
-                  borderRadius: BorderRadius.circular(7),
-                  border: Border.all(color: AppTheme.border, width: 0.5),
-                ),
-                child: Row(
-                  children: const [
-                    Icon(Icons.edit_outlined, size: 12, color: AppTheme.primary),
-                    SizedBox(width: 4),
-                    Text(
-                      'Edit',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: AppTheme.primary,
-                      ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => EditProfileScreen(profile: widget.userProfile),
                     ),
-                  ],
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surface2,
+                    borderRadius: BorderRadius.circular(7),
+                    border: Border.all(color: AppTheme.border, width: 0.5),
+                  ),
+                  child: Row(
+                    children: const [
+                      Icon(Icons.edit_outlined, size: 12, color: AppTheme.primary),
+                      SizedBox(width: 4),
+                      Text(
+                        'Edit',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: AppTheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

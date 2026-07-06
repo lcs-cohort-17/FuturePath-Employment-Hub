@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../providers/user_profile_provider.dart';
+import '../../providers/notifications_provider.dart';
 import 'staff_dashboard.dart';
 import 'staff_manage_jobs.dart';
 import 'staff_manage_programmes.dart';
@@ -31,6 +32,9 @@ class _StaffShellState extends ConsumerState<StaffShell> {
     final user = Supabase.instance.client.auth.currentUser;
     if (user != null) {
       await ref.read(userProfileProvider.notifier).fetchProfile(user.id);
+      
+      // Initialize staff notifications
+      ref.read(notificationsProvider.notifier).initStaffRealtime();
     }
   }
 

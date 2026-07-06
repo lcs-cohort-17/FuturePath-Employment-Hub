@@ -1,30 +1,25 @@
 // Antonio ticket 017 starts here
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../models/activity_log_event.dart';
 import '../../services/activity_log_service.dart';
+import '../../providers/notifications_provider.dart';
+import '../../router/app_router.dart';
+import '../../core/widgets/notification_badge.dart';
 
 /// Admin — Activity Log screen.
-///
-/// Standalone screen (no logged ticket ID yet — built on top of INT-013,
-/// distinct from the "Anonymized Activity Feed" section embedded in the
-/// Admin Dashboard / UIUX-016). Matches the HTML mock's
-/// Admin role → "Activity" tab exactly.
-///
-/// Shows fully anonymised activity events with filter chips for
-/// All / Applications / Enrollments / Staff. No user names, emails, or
-/// IDs are ever rendered here.
-class AdminActivityScreen extends StatefulWidget {
+class AdminActivityScreen extends ConsumerStatefulWidget {
   const AdminActivityScreen({super.key});
 
   @override
-  State<AdminActivityScreen> createState() => _AdminActivityScreenState();
+  ConsumerState<AdminActivityScreen> createState() => _AdminActivityScreenState();
 }
 
 enum _LoadState { loading, error, loaded }
 
-class _AdminActivityScreenState extends State<AdminActivityScreen> {
+class _AdminActivityScreenState extends ConsumerState<AdminActivityScreen> {
   final ActivityLogService _service = ActivityLogService();
 
   static const List<Map<String, String>> _filters = [
@@ -93,6 +88,9 @@ class _AdminActivityScreenState extends State<AdminActivityScreen> {
 
   // ---- Top bar (matches .topbar in the HTML mock) ----
   Widget _buildTopBar() {
+    final notifications = ref.watch(notificationsProvider);
+    final unreadCount = notifications.where((n) => !n.isRead).length;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       decoration: BoxDecoration(
@@ -132,34 +130,7 @@ class _AdminActivityScreenState extends State<AdminActivityScreen> {
               ),
             ],
           ),
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              const Icon(Icons.notifications_outlined,
-                  color: AppTheme.mutedText, size: 18),
-              Positioned(
-                top: -2,
-                right: -2,
-                child: Container(
-                  width: 13,
-                  height: 13,
-                  decoration: const BoxDecoration(
-                    color: AppTheme.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    '2',
-                    style: TextStyle(
-                      fontSize: 8,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+          const NotificationBadge(size: 18),
         ],
       ),
     );
